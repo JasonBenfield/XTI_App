@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Internal\XTI_Version\XTI_Version.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_App.DB.SqlServer\XTI_App.DB.SqlServer.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_App.EF\XTI_App.EF.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_App.Fakes\XTI_App.Fakes.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_Configuration.Extensions\XTI_Configuration.Extensions.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_Core.Fakes\XTI_Core.Fakes.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_Secrets.Extensions\XTI_Secrets.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>

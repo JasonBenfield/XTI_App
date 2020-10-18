@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "XTI_VersionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--Command=New --AppKey=Fake --AppType=WebApp --VersionType=$versionType",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

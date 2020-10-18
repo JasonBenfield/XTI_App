@@ -5,10 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.9" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\XTI_App.DB\XTI_App.DB.csproj" />
     <ProjectReference Include="..\XTI_App\XTI_App.csproj" />
+    <ProjectReference Include="..\XTI_Core.EF\XTI_Core.EF.csproj" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using XTI_App.DB;
+using XTI_App.Entities;
+using XTI_Core;
+using XTI_Core.EF;
 
 namespace XTI_App.EF
 {

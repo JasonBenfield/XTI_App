@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "XTI_UserApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--CredentialKey=Test --UserName=Test.user",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

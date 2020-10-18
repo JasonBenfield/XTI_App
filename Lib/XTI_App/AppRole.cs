@@ -1,6 +1,6 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using XTI_App.Entities;
+using XTI_Core;
 
 namespace XTI_App
 {
