@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Entities;
+using XTI_Core;
 
 namespace XTI_App
 {

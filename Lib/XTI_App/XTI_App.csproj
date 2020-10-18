@@ -5,10 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.9" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\XTI_App.Entities\XTI_App.Entities.csproj" />
     <ProjectReference Include="..\XTI_Core\XTI_Core.csproj" />
   </ItemGroup>
 

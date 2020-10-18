@@ -1,4 +1,5 @@
-﻿using XTI_Core;
+﻿using XTI_App.Entities;
+using XTI_Core;
 
 namespace XTI_App
 {
