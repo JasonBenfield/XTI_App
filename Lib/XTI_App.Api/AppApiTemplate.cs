@@ -20,6 +20,6 @@ namespace XTI_App.Api
                 .SelectMany(g => g.ObjectTemplates())
                 .Distinct();
 
-        public bool IsHub() => Name.Equals("Hub", StringComparison.OrdinalIgnoreCase);
+        public bool IsAuthenticator() => Name.Equals("Authenticator", StringComparison.OrdinalIgnoreCase);
     }
 }
