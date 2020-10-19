@@ -11,10 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		App.ps1 = App.ps1
 		db_add_migrations.ps1 = db_add_migrations.ps1
-		db_update_dev.ps1 = db_update_dev.ps1
-		db_update_prod.ps1 = db_update_prod.ps1
-		db_update_staging.ps1 = db_update_staging.ps1
-		db_update_test.ps1 = db_update_test.ps1
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App", "Lib\XTI_App\XTI_App.csproj", "{A01BA47E-C851-4D3A-8E5A-2B9CFDBDFA94}"
@@ -59,19 +55,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_Core.EF", "Lib\XTI_Core
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.DB", "Lib\XTI_App.DB\XTI_App.DB.csproj", "{3F1582D3-56D4-4B15-A3E3-46E9687E3F3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_App.DB.SqlServer", "Lib\XTI_App.DB.SqlServer\XTI_App.DB.SqlServer.csproj", "{7919B847-6B9A-4856-A3F0-D327B8DBCC5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.DB.SqlServer", "Lib\XTI_App.DB.SqlServer\XTI_App.DB.SqlServer.csproj", "{7919B847-6B9A-4856-A3F0-D327B8DBCC5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_Core.Extensions", "Lib\XTI_Core.Extensions\XTI_Core.Extensions.csproj", "{EC0AD9D4-8CD0-44B1-8E16-2AF9DC99B105}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_Core.Extensions", "Lib\XTI_Core.Extensions\XTI_Core.Extensions.csproj", "{EC0AD9D4-8CD0-44B1-8E16-2AF9DC99B105}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_App.DB.InMemory", "Lib\XTI_App.DB.InMemory\XTI_App.DB.InMemory.csproj", "{E2F43A47-27D3-4A13-9D3C-26C5C179D25D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.DB.InMemory", "Lib\XTI_App.DB.InMemory\XTI_App.DB.InMemory.csproj", "{E2F43A47-27D3-4A13-9D3C-26C5C179D25D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_App.Fakes", "Lib\XTI_App.Fakes\XTI_App.Fakes.csproj", "{4156F508-835F-40D8-9921-7C34B66CE91A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.Fakes", "Lib\XTI_App.Fakes\XTI_App.Fakes.csproj", "{4156F508-835F-40D8-9921-7C34B66CE91A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_Secrets.Fakes", "Lib\XTI_Secrets.Fakes\XTI_Secrets.Fakes.csproj", "{C8FD5FC7-8D58-4867-9BD4-5B4931883F35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_Secrets.Fakes", "Lib\XTI_Secrets.Fakes\XTI_Secrets.Fakes.csproj", "{C8FD5FC7-8D58-4867-9BD4-5B4931883F35}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.TestFakes", "Tests\XTI_App.TestFakes\XTI_App.TestFakes.csproj", "{D61E5C69-9648-45AB-845D-628452B48D41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_App.IntegrationTests", "Tests\XTI_App.IntegrationTests\XTI_App.IntegrationTests.csproj", "{60EED42A-F496-4BC5-B4AC-CC4C8C680E06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.IntegrationTests", "Tests\XTI_App.IntegrationTests\XTI_App.IntegrationTests.csproj", "{60EED42A-F496-4BC5-B4AC-CC4C8C680E06}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
