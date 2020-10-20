@@ -21,6 +21,10 @@ namespace XTI_App.DB
                 .HasOne<AppVersionRecord>()
                 .WithMany()
                 .HasForeignKey(r => r.VersionID);
+            builder
+                .HasOne<ResourceRecord>()
+                .WithMany()
+                .HasForeignKey(s => s.ResourceID);
         }
     }
 }

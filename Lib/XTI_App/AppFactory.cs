@@ -61,6 +61,24 @@ namespace XTI_App
         internal AppUserRole UserRole(AppUserRoleRecord record) =>
             new AppUserRole(CreateDataRepository<AppUserRoleRecord>(), record);
 
+        private ResourceGroupRepository groups;
+        internal ResourceGroupRepository Groups() =>
+            fetchRepo<ResourceGroupRecord, ResourceGroupRepository>
+            (
+                ref groups,
+                dataRepo => new ResourceGroupRepository(this, dataRepo)
+            );
+        internal ResourceGroup Group(ResourceGroupRecord record) => new ResourceGroup(this, record);
+
+        private ResourceRepository resources;
+        internal ResourceRepository Resources() =>
+            fetchRepo<ResourceRecord, ResourceRepository>
+            (
+                ref resources,
+                dataRepo => new ResourceRepository(this, dataRepo)
+            );
+        internal Resource Resource(ResourceRecord record) => new Resource(record);
+
         private TRepo fetchRepo<TRecord, TRepo>
         (
             ref TRepo repo,

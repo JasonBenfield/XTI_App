@@ -19,13 +19,14 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        internal async Task<AppRequest> Add(AppSession session, string requestKey, IAppVersion version, string path, DateTime timeRequested)
+        internal async Task<AppRequest> Add(AppSession session, string requestKey, IAppVersion version, IResource resource, string path, DateTime timeRequested)
         {
             var record = new AppRequestRecord
             {
-                SessionID = session.ID,
+                SessionID = session.ID.Value,
                 RequestKey = requestKey,
-                VersionID = version.ID,
+                VersionID = version.ID.Value,
+                ResourceID = resource.ID.Value,
                 Path = path ?? "",
                 TimeStarted = timeRequested
             };
@@ -43,7 +44,7 @@ namespace XTI_App
         internal async Task<IEnumerable<AppRequest>> RetrieveBySession(AppSession session)
         {
             var requests = await repo.Retrieve()
-                .Where(r => r.SessionID == session.ID)
+                .Where(r => r.SessionID == session.ID.Value)
                 .ToArrayAsync();
             return requests.Select(r => factory.Request(r));
         }

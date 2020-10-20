@@ -44,7 +44,7 @@ namespace XTI_App
             var record = new AppSessionRecord
             {
                 SessionKey = sessionKey,
-                UserID = user.ID,
+                UserID = user.ID.Value,
                 TimeStarted = timeStarted,
                 RequesterKey = requesterKey ?? "",
                 TimeEnded = Timestamp.MaxValue.Value,

@@ -18,12 +18,18 @@ namespace XTI_App
             this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppRecord();
+            ID = new EntityID(this.record.ID);
         }
 
-        public int ID { get => record.ID; }
+        public EntityID ID { get; }
         public AppKey Key() => new AppKey(record.Key);
         public string Title { get => record.Title; }
-        public bool Exists() => ID > 0;
+
+        public Task<ResourceGroup> AddGroup(ResourceGroupName name) => factory.Groups().Add(this, name);
+
+        public Task<ResourceGroup> Group(ResourceGroupName name) => factory.Groups().Group(this, name);
+
+        public Task<IEnumerable<ResourceGroup>> Groups() => factory.Groups().Groups(this);
 
         public Task<AppRole> AddRole(AppRoleName name) =>
             factory.Roles().Add(this, name);
@@ -120,6 +126,6 @@ namespace XTI_App
             });
         }
 
-        public override string ToString() => $"{nameof(App)} {ID}: {record.Key}";
+        public override string ToString() => $"{nameof(App)} {ID.Value}: {record.Key}";
     }
 }

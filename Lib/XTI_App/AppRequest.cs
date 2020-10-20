@@ -18,13 +18,14 @@ namespace XTI_App
             this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppRequestRecord();
+            ID = new EntityID(this.record.ID);
         }
 
         private readonly AppFactory factory;
         private readonly DataRepository<AppRequestRecord> repo;
         private readonly AppRequestRecord record;
 
-        public int ID { get => record.ID; }
+        public EntityID ID { get; }
         public XtiPath ResourceName() => XtiPath.Parse(record.Path);
         public bool HasEnded() => new Timestamp(record.TimeEnded).IsValid();
 
@@ -56,7 +57,7 @@ namespace XTI_App
             });
         }
 
-        public override string ToString() => $"{nameof(AppRequest)} {ID}";
+        public override string ToString() => $"{nameof(AppRequest)} {ID.Value}";
 
     }
 }

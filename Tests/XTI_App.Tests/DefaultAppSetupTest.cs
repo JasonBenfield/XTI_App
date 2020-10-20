@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Api;
 using XTI_App.TestFakes;
 using XTI_Core;
 using XTI_Core.Fakes;
@@ -17,18 +18,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
-            Assert.That(app.Exists(), Is.True, "Should add app");
+            Assert.That(app.Key(), Is.EqualTo(input.Options.AppKey), "Should add app");
             Assert.That(app.Title, Is.EqualTo(input.Options.Title), "Should set app title");
-        }
-
-        [Test]
-        public async Task ShouldAddPackage()
-        {
-            var input = setup();
-            input.Options.AppType = AppType.Values.Package;
-            await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
-            Assert.That(app.Exists(), Is.True, "Should add package");
         }
 
         [Test]
@@ -63,6 +54,67 @@ namespace XTI_App.Tests
             Assert.That(app.Title, Is.EqualTo(input.Options.Title), "Should set app title");
         }
 
+        [Test]
+        public async Task ShouldAddUnknownApp()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
+            Assert.That(app.ID.IsValid(), Is.True, "Should add unknown app");
+        }
+
+        [Test]
+        public async Task ShouldAddUnknownResourceGroup()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
+            var group = await app.Group(ResourceGroupName.Unknown);
+            Assert.That(group.ID.IsValid(), Is.True, "Should add unknown resource group");
+        }
+
+        [Test]
+        public async Task ShouldAddUnknownResource()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
+            var group = await app.Group(ResourceGroupName.Unknown);
+            var resource = await group.Resource(ResourceName.Unknown);
+            Assert.That(resource.ID.IsValid(), Is.True, "Should add unknown resource");
+        }
+
+        [Test]
+        public async Task ShouldAddResourceGroupsFromAppTemplateGroups()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
+            var groups = (await app.Groups()).ToArray();
+            Assert.That
+            (
+                groups.Select(g => g.Name()),
+                Is.EquivalentTo(new[] { new ResourceGroupName("employee"), new ResourceGroupName("product") }),
+                "Should add resource groups from template groups"
+            );
+        }
+
+        [Test]
+        public async Task ShouldAddResourcesFromAppTemplateActions()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
+            var group = await app.Group(new ResourceGroupName("employee"));
+            var resources = (await group.Resources()).ToArray();
+            Assert.That
+            (
+                resources.Select(r => r.Name()),
+                Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee") }),
+                "Should add resources from template actions"
+            );
+        }
+
         private async Task execute(TestInput input)
         {
             using var scope = input.Services.CreateScope();
@@ -75,19 +127,21 @@ namespace XTI_App.Tests
             var services = new ServiceCollection();
             services.AddServicesForTests();
             services.AddSingleton<FakeAppOptions>();
+            services.AddSingleton<IAppApiTemplateFactory, FakeAppApiTemplateFactory>();
             services.AddScoped<IAppSetup>(sp =>
             {
                 var factory = sp.GetService<AppFactory>();
                 var clock = sp.GetService<Clock>();
                 var options = sp.GetService<FakeAppOptions>();
+                var templateFactory = sp.GetService<IAppApiTemplateFactory>();
+                var template = templateFactory.Create();
                 return new DefaultAppSetup
                 (
                     factory,
                     clock,
-                    options.AppKey,
-                    options.AppType,
+                    template,
                     options.Title,
-                    FakeAppRoles.Instance.Values()
+                    options.RoleNames.Values()
                 );
             });
             return new TestInput(services.BuildServiceProvider());
@@ -95,10 +149,10 @@ namespace XTI_App.Tests
 
         private sealed class FakeAppOptions
         {
-            public AppKey AppKey { get; set; } = new AppKey("Fake");
-            public AppType AppType { get; set; } = AppType.Values.WebApp;
+            public AppKey AppKey { get; } = FakeAppKey.AppKey;
+            public AppType AppType { get; } = AppType.Values.Service;
             public string Title { get; set; } = "Fake Title";
-            public AppRoleNames RoleNames { get; set; } = FakeAppRoles.Instance;
+            public AppRoleNames RoleNames { get; } = FakeAppRoles.Instance;
         }
 
         private sealed class TestInput

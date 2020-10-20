@@ -5,7 +5,7 @@ namespace XTI_App
 {
     public interface IApp
     {
-        int ID { get; }
+        EntityID ID { get; }
         string Title { get; }
         Task<IAppVersion> CurrentVersion();
         Task<IAppVersion> Version(AppVersionKey versionKey);

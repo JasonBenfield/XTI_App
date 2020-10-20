@@ -54,7 +54,7 @@ namespace XTI_AppTool
                     var title = string.IsNullOrWhiteSpace(appToolOptions.AppTitle)
                         ? appToolOptions.AppKey
                         : appToolOptions.AppTitle;
-                    if (app.Exists())
+                    if (app.Key().Equals(appKey))
                     {
                         await app.SetTitle(title);
                     }

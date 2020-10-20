@@ -26,10 +26,16 @@ namespace XTI_App
 
         public async Task<AppUser> User(AppUserName userName)
         {
-            var userRecord = await repo.Retrieve()
-                .FirstOrDefaultAsync(u => u.UserName == userName.Value);
-            return factory.User(userRecord);
+            var record = await user(userName);
+            if (record == null)
+            {
+                record = await user(AppUserName.Anon);
+            }
+            return factory.User(record);
         }
+
+        private Task<AppUserRecord> user(AppUserName userName)
+            => repo.Retrieve().FirstOrDefaultAsync(u => u.UserName == userName.Value);
 
         public async Task<AppUser> Add(AppUserName userName, IHashedPassword password, DateTime timeAdded)
         {

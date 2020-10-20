@@ -16,6 +16,8 @@ namespace XTI_App.DB
             Versions = Set<AppVersionRecord>();
             Roles = Set<AppRoleRecord>();
             UserRoles = Set<AppUserRoleRecord>();
+            ResourceGroups = Set<ResourceGroupRecord>();
+            Resources = Set<ResourceRecord>();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,6 +30,8 @@ namespace XTI_App.DB
             modelBuilder.ApplyConfiguration(new AppVersionEntityConfiguration());
             modelBuilder.ApplyConfiguration(new AppRoleEntityConfiguration());
             modelBuilder.ApplyConfiguration(new AppUserRoleEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new ResourceGroupEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new ResourceEntityConfiguration());
             base.OnModelCreating(modelBuilder);
         }
 
@@ -39,5 +43,7 @@ namespace XTI_App.DB
         public DbSet<AppVersionRecord> Versions { get; }
         public DbSet<AppRoleRecord> Roles { get; }
         public DbSet<AppUserRoleRecord> UserRoles { get; }
+        public DbSet<ResourceGroupRecord> ResourceGroups { get; }
+        public DbSet<ResourceRecord> Resources { get; }
     }
 }

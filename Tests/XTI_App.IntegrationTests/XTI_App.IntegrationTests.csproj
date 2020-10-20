@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\Lib\XTI_Configuration.Extensions\XTI_Configuration.Extensions.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_Core.Fakes\XTI_Core.Fakes.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_Secrets.Extensions\XTI_Secrets.Extensions.csproj" />
+    <ProjectReference Include="..\XTI_App.TestFakes\XTI_App.TestFakes.csproj" />
   </ItemGroup>
 
 </Project>

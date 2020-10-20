@@ -5,7 +5,6 @@ namespace XTI_App
 {
     public sealed class AppUserName : SemanticType<string>, IEquatable<AppUserName>
     {
-        public static readonly AppUserName Unknown = new AppUserName("");
         public static readonly AppUserName Anon = new AppUserName("xti_anon");
 
         public AppUserName(string value)

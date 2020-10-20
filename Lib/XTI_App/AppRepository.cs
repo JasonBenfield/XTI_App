@@ -42,6 +42,11 @@ namespace XTI_App
         {
             var record = await repo.Retrieve()
                 .FirstOrDefaultAsync(a => a.Key == key.Value && a.Type == type.Value);
+            if (record == null)
+            {
+                record = await repo.Retrieve()
+                    .FirstOrDefaultAsync(a => a.Key == AppKey.Unknown.Value);
+            }
             return factory.App(record);
         }
     }

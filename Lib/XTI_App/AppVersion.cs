@@ -16,9 +16,10 @@ namespace XTI_App
             this.factory = factory;
             this.repo = repo;
             this.record = record ?? new AppVersionRecord();
+            ID = new EntityID(this.record.ID);
         }
 
-        public int ID { get => record.ID; }
+        public EntityID ID { get; }
         private int Major { get => record.Major; }
         private int Minor { get => record.Minor; }
         private int Patch { get => record.Patch; }
@@ -104,7 +105,7 @@ namespace XTI_App
             });
         }
 
-        public override string ToString() => $"{nameof(AppVersion)} {ID}: {Major}.{Minor}.{Patch}";
+        public override string ToString() => $"{nameof(AppVersion)} {ID.Value}: {Version()}";
 
     }
 }

@@ -10,14 +10,15 @@ namespace XTI_App
         internal AppEvent(AppEventRecord record)
         {
             this.record = record ?? new AppEventRecord();
+            ID = new EntityID(this.record.ID);
         }
 
-        public int ID { get => record.ID; }
+        public EntityID ID { get; }
         public string Caption { get => record.Caption; }
         public string Message { get => record.Message; }
         public string Detail { get => record.Detail; }
         public AppEventSeverity Severity() => AppEventSeverity.Values.Value(record.Severity);
 
-        public override string ToString() => $"{nameof(AppEvent)} {ID}";
+        public override string ToString() => $"{nameof(AppEvent)} {ID.Value}";
     }
 }
