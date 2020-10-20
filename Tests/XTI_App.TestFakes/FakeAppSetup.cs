@@ -4,7 +4,7 @@ using XTI_Core;
 
 namespace XTI_App.TestFakes
 {
-    public sealed class FakeAppSetup
+    public sealed class FakeAppSetup : IAppSetup
     {
         private readonly AppFactory appFactory;
         private readonly Clock clock;
@@ -21,19 +21,21 @@ namespace XTI_App.TestFakes
 
         public async Task Run()
         {
-            App = await appFactory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", clock.Now());
-            var version = await App.StartNewPatch(clock.Now());
-            await version.Publishing();
-            await version.Published();
-            CurrentVersion = await App.CurrentVersion();
+            var setup = new DefaultAppSetup
+            (
+                appFactory,
+                clock,
+                new AppKey("Fake"),
+                AppType.Values.WebApp,
+                "Fake Title",
+                FakeAppRoles.Instance.Values()
+            );
+            await setup.Run();
+            App = await appFactory.Apps().App(new AppKey("Fake"), AppType.Values.WebApp);
             User = await appFactory.Users().Add
             (
                 new AppUserName("xartogg"), new FakeHashedPassword("password"), clock.Now()
             );
-            foreach (var roleName in FakeAppRoles.Instance.Values())
-            {
-                await App.AddRole(roleName);
-            }
         }
     }
 }

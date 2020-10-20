@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.EF;
 using XTI_App.Fakes;
+using XTI_App.TestFakes;
 using XTI_Core;
 using XTI_Core.Fakes;
 
@@ -208,11 +209,10 @@ namespace XTI_App.Tests
             services.AddServicesForTests();
             var sp = services.BuildServiceProvider();
             var factory = sp.GetService<AppFactory>();
-            var setup = new AppSetup(factory);
-            await setup.Run();
             var clock = sp.GetService<FakeClock>();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", clock.Now());
-            return new TestInput(factory, clock, app);
+            var setup = new FakeAppSetup(factory, clock);
+            await setup.Run();
+            return new TestInput(factory, clock, setup.App);
         }
 
         private sealed class TestInput

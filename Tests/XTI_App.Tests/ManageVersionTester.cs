@@ -8,6 +8,7 @@ using XTI_App.Fakes;
 using XTI_Secrets.Fakes;
 using XTI_App.EF;
 using XTI_Core;
+using XTI_App.TestFakes;
 
 namespace XTI_App.Tests
 {
@@ -28,16 +29,17 @@ namespace XTI_App.Tests
             services.AddFakeSecretCredentials();
             sp = services.BuildServiceProvider();
             var factory = sp.GetService<AppFactory>();
-            await new AppSetup(factory).Run();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", DateTime.UtcNow);
+            var clock = sp.GetService<Clock>();
+            var setup = new FakeAppSetup(factory, clock);
+            await setup.Run();
             Factory = sp.GetService<AppFactory>();
-            App = app;
+            App = setup.App;
             Clock = sp.GetService<FakeClock>();
             Options = new ManageVersionOptions
             {
                 Command = "New",
                 BranchName = "",
-                AppKey = app.Key().Value,
+                AppKey = setup.App.Key().Value,
                 VersionType = AppVersionType.Values.Patch.DisplayText,
             };
         }
