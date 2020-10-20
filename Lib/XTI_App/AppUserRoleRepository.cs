@@ -22,8 +22,8 @@ namespace XTI_App
         {
             var record = new AppUserRoleRecord
             {
-                UserID = user.ID,
-                RoleID = role.ID,
+                UserID = user.ID.Value,
+                RoleID = role.ID.Value,
                 Modifier = modifier.Value
             };
             await repo.Create(record);
@@ -37,7 +37,7 @@ namespace XTI_App
                 .Where
                 (
                     ur =>
-                        ur.UserID == user.ID
+                        ur.UserID == user.ID.Value
                         && roleRepo.RoleIDsForApp(app).Any(id => id == ur.RoleID)
                 )
                 .ToArrayAsync();

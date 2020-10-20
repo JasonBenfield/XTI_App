@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using XTI_App.DB;
 using XTI_App.EF;
 using XTI_App.Extensions;
+using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
 using XTI_Core;
 using XTI_Core.Fakes;
@@ -59,11 +60,12 @@ namespace XTI_App.IntegrationTests
             services.AddScoped<AppDbReset>();
             var sp = services.BuildServiceProvider();
             var factory = sp.GetService<AppFactory>();
+            var clock = sp.GetService<Clock>();
             var appDbReset = sp.GetService<AppDbReset>();
             await appDbReset.Run();
-            await new DefaultAppSetup(factory).Run();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", DateTime.UtcNow);
-            var input = new TestInput(sp, app);
+            var setup = new FakeAppSetup(factory, clock);
+            await setup.Run();
+            var input = new TestInput(sp, setup.App);
             return input;
         }
 

@@ -4,7 +4,7 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class DefaultAppSetup : IAppSetup
+    public sealed class SingleAppSetup : IAppSetup
     {
         private readonly AppFactory appFactory;
         private readonly Clock clock;
@@ -13,7 +13,7 @@ namespace XTI_App
         private readonly string appTitle;
         private readonly IEnumerable<AppRoleName> roleNames;
 
-        public DefaultAppSetup(AppFactory appFactory, Clock clock, AppKey appKey, AppType appType, string appTitle, IEnumerable<AppRoleName> roleNames)
+        public SingleAppSetup(AppFactory appFactory, Clock clock, AppKey appKey, AppType appType, string appTitle, IEnumerable<AppRoleName> roleNames)
         {
             this.appFactory = appFactory;
             this.clock = clock;
@@ -25,19 +25,8 @@ namespace XTI_App
 
         public async Task Run()
         {
-            var userRepo = appFactory.Users();
-            var anonUser = await userRepo.User(AppUserName.Anon);
-            if (!anonUser.Exists())
-            {
-                await userRepo.Add
-                (
-                    AppUserName.Anon,
-                    new AnonHashedPassword(),
-                    new UtcClock().Now()
-                );
-            }
             var app = await appFactory.Apps().App(appKey, appType);
-            if (app.Exists())
+            if (app.Key().Equals(appKey))
             {
                 await app.SetTitle(appTitle);
             }
@@ -55,11 +44,5 @@ namespace XTI_App
             await app.SetRoles(roleNames);
         }
 
-        private class AnonHashedPassword : IHashedPassword
-        {
-            public bool Equals(string other) => false;
-
-            public string Value() => "ANON";
-        }
     }
 }

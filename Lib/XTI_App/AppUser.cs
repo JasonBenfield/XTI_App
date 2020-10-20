@@ -16,16 +16,15 @@ namespace XTI_App
             this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppUserRecord();
+            ID = new EntityID(this.record.ID);
         }
 
-        public int ID { get => record.ID; }
+        public EntityID ID { get; }
         public AppUserName UserName() => new AppUserName(record.UserName);
-        public bool Exists() => ID > 0;
+        public bool Exists() => ID.IsValid() && !UserName().Equals(AppUserName.Anon);
 
         public bool IsPasswordCorrect(IHashedPassword hashedPassword) =>
             hashedPassword.Equals(record.Password);
-
-        public override string ToString() => $"{nameof(AppUser)} {ID}";
 
         public Task<AppUserRole> AddRole(AppRole role) =>
             AddRole(role, AccessModifier.Default);
@@ -44,5 +43,8 @@ namespace XTI_App
         {
             return repo.Update(record, u => u.Password = password.Value());
         }
+
+        public override string ToString() => $"{nameof(AppUser)} {ID.Value}";
+
     }
 }

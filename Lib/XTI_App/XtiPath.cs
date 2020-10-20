@@ -6,8 +6,6 @@ namespace XTI_App
 {
     public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     {
-        public static readonly string CurrentVersion = "Current";
-
         public static XtiPath Parse(string str)
         {
             var parts = (str ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -38,7 +36,7 @@ namespace XTI_App
             if (string.IsNullOrWhiteSpace(appKey) && (!string.IsNullOrWhiteSpace(group) || !string.IsNullOrWhiteSpace(action))) { throw new ArgumentException($"{nameof(appKey)} is required"); }
             if (string.IsNullOrWhiteSpace(group) && !string.IsNullOrWhiteSpace(action)) { throw new ArgumentException($"{nameof(group)} is required when there is an action"); }
             App = appKey;
-            Version = string.IsNullOrWhiteSpace(version) ? CurrentVersion : version;
+            Version = string.IsNullOrWhiteSpace(version) ? AppVersionKey.Current.DisplayText : version;
             Group = group;
             Action = action;
             Modifier = modifier;
@@ -55,8 +53,7 @@ namespace XTI_App
         public string Action { get; }
         public AccessModifier Modifier { get; }
 
-        public bool IsCurrentVersion() => Version == CurrentVersion;
-        public int VersionID() => IsCurrentVersion() ? 0 : int.Parse(Version.Substring(1));
+        public bool IsCurrentVersion() => AppVersionKey.Current.Equals(Version);
 
         public void EnsureAppResource()
         {

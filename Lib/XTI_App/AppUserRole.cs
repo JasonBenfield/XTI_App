@@ -16,7 +16,7 @@ namespace XTI_App
         }
 
         public int RoleID { get => record.RoleID; }
-        public bool IsRole(IAppRole appRole) => appRole.ID == RoleID;
+        public bool IsRole(IAppRole appRole) => appRole.ID.Value == RoleID;
         public AccessModifier Modifier() => new AccessModifier(record.Modifier);
 
         internal Task Delete() => repo.Delete(record);

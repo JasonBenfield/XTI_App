@@ -5,6 +5,8 @@ namespace XTI_App
 {
     public sealed class AppKey : SemanticType<string>, IEquatable<AppKey>
     {
+        public static readonly AppKey Unknown = new AppKey("");
+
         public AppKey(string value)
             : base(value?.Trim().ToLower() ?? "", value)
         {

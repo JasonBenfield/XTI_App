@@ -6,7 +6,7 @@ namespace XTI_App
     {
         public sealed class AppTypes : NumericValues<AppType>
         {
-            public AppTypes() : base(new AppType(0, "Not Found"))
+            internal AppTypes() : base(new AppType(0, "Not Found"))
             {
                 NotFound = DefaultValue;
                 WebApp = Add(new AppType(10, "Web App"));

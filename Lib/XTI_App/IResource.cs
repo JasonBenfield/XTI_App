@@ -1,8 +1,9 @@
 ﻿namespace XTI_App
 {
-    public interface IAppRole
+    public interface IResource
     {
         EntityID ID { get; }
-        AppRoleName Name();
+
+        ResourceName Name();
     }
 }

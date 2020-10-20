@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Internal\XTI_Version\XTI_Version.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_App.Api\XTI_App.Api.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_App.DB.InMemory\XTI_App.DB.InMemory.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_App.EF\XTI_App.EF.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_Core.Fakes\XTI_Core.Fakes.csproj" />

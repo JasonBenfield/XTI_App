@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using XTI_App.Entities;
 using XTI_Core;
@@ -24,7 +23,7 @@ namespace XTI_App
         {
             var record = new AppEventRecord
             {
-                RequestID = request.ID,
+                RequestID = request.ID.Value,
                 EventKey = eventKey,
                 TimeOccurred = timeOccurred,
                 Severity = severity.Value,
@@ -40,7 +39,7 @@ namespace XTI_App
         {
             var eventRepo = factory.Events();
             var records = await repo.Retrieve()
-                .Where(e => e.RequestID == request.ID)
+                .Where(e => e.RequestID == request.ID.Value)
                 .ToArrayAsync();
             return records.Select(e => factory.Event(e));
         }

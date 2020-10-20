@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using XTI_App.Api;
 using XTI_App.Fakes;
 using XTI_Core;
 
@@ -21,17 +22,18 @@ namespace XTI_App.TestFakes
 
         public async Task Run()
         {
+            var fakeTemplateFactory = new FakeAppApiTemplateFactory();
+            var template = fakeTemplateFactory.Create();
             var setup = new DefaultAppSetup
             (
                 appFactory,
                 clock,
-                new AppKey("Fake"),
-                AppType.Values.WebApp,
+                template,
                 "Fake Title",
                 FakeAppRoles.Instance.Values()
             );
             await setup.Run();
-            App = await appFactory.Apps().App(new AppKey("Fake"), AppType.Values.WebApp);
+            App = await appFactory.Apps().App(new AppKey(template.Name), template.AppType);
             User = await appFactory.Users().Add
             (
                 new AppUserName("xartogg"), new FakeHashedPassword("password"), clock.Now()
