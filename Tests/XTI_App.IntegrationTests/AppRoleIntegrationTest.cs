@@ -83,7 +83,7 @@ namespace XTI_App.IntegrationTests
             var factory = sp.GetService<AppFactory>();
             var appDbReset = sp.GetService<AppDbReset>();
             await appDbReset.Run();
-            await new AppSetup(factory).Run();
+            await new DefaultAppSetup(factory).Run();
             var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", DateTime.UtcNow);
             var input = new TestInput(sp, app);
             return input;
