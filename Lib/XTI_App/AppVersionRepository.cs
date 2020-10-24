@@ -26,7 +26,7 @@ namespace XTI_App
             {
                 record = new AppVersionRecord
                 {
-                    VersionKey = key.Value,
+                    VersionKey = Guid.NewGuid().ToString("N"),
                     AppID = app.ID.Value,
                     Major = 0,
                     Minor = 0,

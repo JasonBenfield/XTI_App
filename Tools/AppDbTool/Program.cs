@@ -25,24 +25,7 @@ namespace AppDbApp
                     services.AddScoped<AppDbReset>();
                     services.AddScoped<AppDbBackup>();
                     services.AddScoped<AppDbRestore>();
-                    services.AddHostedService(sp =>
-                    {
-                        var scope = sp.CreateScope();
-                        var lifetime = scope.ServiceProvider.GetService<IHostApplicationLifetime>();
-                        var appDbReset = scope.ServiceProvider.GetService<AppDbReset>();
-                        var appDbBackup = scope.ServiceProvider.GetService<AppDbBackup>();
-                        var appDbRestore = scope.ServiceProvider.GetService<AppDbRestore>();
-                        var options = scope.ServiceProvider.GetService<IOptions<AppDbAppOptions>>();
-                        return new HostedService
-                        (
-                            lifetime,
-                            hostContext.HostingEnvironment,
-                            appDbReset,
-                            appDbBackup,
-                            appDbRestore,
-                            options
-                        );
-                    });
+                    services.AddHostedService<HostedService>();
                 })
                 .RunConsoleAsync();
         }

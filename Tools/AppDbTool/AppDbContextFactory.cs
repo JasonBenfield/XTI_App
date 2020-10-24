@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
-using System;
+﻿using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using XTI_App.DB;
-using XTI_App.EF;
+using XTI_App.Extensions;
 using XTI_Configuration.Extensions;
 
 namespace AppDbApp
@@ -12,24 +11,19 @@ namespace AppDbApp
     {
         public AppDbContext CreateDbContext(string[] args)
         {
-            var configBuilder = new ConfigurationBuilder();
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (string.IsNullOrWhiteSpace(environment))
-            {
-                environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-            }
-            configBuilder.UseXtiConfiguration(environment, args);
-            var config = configBuilder.Build();
-            var section = config.GetSection(DbOptions.DB);
-            var appDbOptions = section.Get<DbOptions>();
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>()
-                .UseSqlServer
-                (
-                    new AppConnectionString(appDbOptions, environment).Value(),
-                    b => b.MigrationsAssembly("AppDbTool")
-                )
-                .EnableSensitiveDataLogging();
-            return new AppDbContext(optionsBuilder.Options);
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.UseXtiConfiguration(hostingContext.HostingEnvironment.EnvironmentName, args);
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.Configure<AppDbAppOptions>(hostContext.Configuration);
+                    services.AddAppDbContextForSqlServer(hostContext.Configuration);
+                })
+                .Build();
+            var scope = host.Services.CreateScope();
+            return scope.ServiceProvider.GetService<AppDbContext>();
         }
     }
 }
