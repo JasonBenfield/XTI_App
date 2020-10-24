@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Lib\XTI_App.DB.SqlServer\XTI_App.DB.SqlServer.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_App.EF\XTI_App.EF.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_Configuration.Extensions\XTI_Configuration.Extensions.csproj" />
     <ProjectReference Include="..\..\Internal\XTI_Tool.Extensions\XTI_Tool.Extensions.csproj" />

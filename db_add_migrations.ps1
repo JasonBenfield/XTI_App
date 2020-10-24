@@ -1,8 +1,3 @@
-param ([Parameter(Mandatory)]$name)
+param ([Parameter(Mandatory)]$Name)
 $env:DOTNET_ENVIRONMENT="Development"
-dotnet ef migrations add $name --project ./Tools/AppDbTool
-
-$currentDir = (Get-Item .).FullName
-Set-Location Tools/AppDbTool
-dotnet publish /p:PublishProfile=Local
-Set-Location $currentDir
+dotnet ef --startup-project ./Tools/AppDbTool migrations add $Name --project ./Lib/XTI_App.DB.SqlServer

@@ -17,7 +17,9 @@ namespace XTI_App.Extensions
             {
                 var appDbOptions = sp.GetService<IOptions<DbOptions>>().Value;
                 var hostEnvironment = sp.GetService<IHostEnvironment>();
-                options.UseSqlServer(new AppConnectionString(appDbOptions, hostEnvironment.EnvironmentName).Value());
+                var connectionString = new AppConnectionString(appDbOptions, hostEnvironment.EnvironmentName).Value();
+                options
+                    .UseSqlServer(connectionString, b => b.MigrationsAssembly("XTI_App.DB.SqlServer"));
                 if (hostEnvironment.IsDevOrTest())
                 {
                     options.EnableSensitiveDataLogging();

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
@@ -11,33 +13,18 @@ namespace AppDbApp
 {
     public sealed class HostedService : IHostedService
     {
-        private readonly IHostApplicationLifetime lifetime;
-        private readonly IHostEnvironment hostEnvironment;
-        private readonly AppDbReset appDbReset;
-        private readonly AppDbBackup appDbBackup;
-        private readonly AppDbRestore appDbRestore;
-        private readonly AppDbAppOptions options;
+        private readonly IServiceProvider sp;
 
-        public HostedService
-        (
-            IHostApplicationLifetime lifetime,
-            IHostEnvironment hostEnvironment,
-            AppDbReset appDbReset,
-            AppDbBackup appDbBackup,
-            AppDbRestore appDbRestore,
-            IOptions<AppDbAppOptions> options
-        )
+        public HostedService(IServiceProvider sp)
         {
-            this.lifetime = lifetime;
-            this.hostEnvironment = hostEnvironment;
-            this.appDbReset = appDbReset;
-            this.appDbBackup = appDbBackup;
-            this.appDbRestore = appDbRestore;
-            this.options = options.Value;
+            this.sp = sp;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            using var scope = sp.CreateScope();
+            var options = scope.ServiceProvider.GetService<IOptions<AppDbAppOptions>>().Value;
+            var hostEnvironment = scope.ServiceProvider.GetService<IHostEnvironment>();
             try
             {
                 if (options.Command == "reset")
@@ -46,6 +33,7 @@ namespace AppDbApp
                     {
                         throw new ArgumentException("Database reset can only be run for the test environment");
                     }
+                    var appDbReset = scope.ServiceProvider.GetService<AppDbReset>();
                     await appDbReset.Run();
                 }
                 else if (options.Command == "backup")
@@ -54,6 +42,7 @@ namespace AppDbApp
                     {
                         throw new ArgumentException("Backup file path is required for backup");
                     }
+                    var appDbBackup = scope.ServiceProvider.GetService<AppDbBackup>();
                     await appDbBackup.Run(hostEnvironment.EnvironmentName, options.BackupFilePath);
                 }
                 else if (options.Command == "restore")
@@ -66,7 +55,13 @@ namespace AppDbApp
                     {
                         throw new ArgumentException("Backup file path is required for restore");
                     }
+                    var appDbRestore = scope.ServiceProvider.GetService<AppDbRestore>();
                     await appDbRestore.Run(hostEnvironment.EnvironmentName, options.BackupFilePath);
+                }
+                else if (options.Command == "update")
+                {
+                    var appDbContext = scope.ServiceProvider.GetService<AppDbContext>();
+                    await appDbContext.Database.MigrateAsync();
                 }
                 else
                 {
@@ -78,6 +73,7 @@ namespace AppDbApp
                 Console.WriteLine(ex);
                 Environment.ExitCode = 999;
             }
+            var lifetime = scope.ServiceProvider.GetService<IHostApplicationLifetime>();
             lifetime.StopApplication();
         }
 

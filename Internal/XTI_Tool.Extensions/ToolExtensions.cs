@@ -1,15 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using XTI_App;
-using XTI_App.EF;
-using Microsoft.EntityFrameworkCore;
 using System.IO;
-using Microsoft.AspNetCore.DataProtection;
-using XTI_Secrets;
-using XTI_Core;
+using XTI_App;
 using XTI_App.DB;
+using XTI_App.EF;
+using XTI_App.Extensions;
+using XTI_Core;
+using XTI_Secrets;
 
 namespace XTI_Tool.Extensions
 {
@@ -31,20 +30,7 @@ namespace XTI_Tool.Extensions
                 )
                 .PersistKeysToFileSystem(new DirectoryInfo(secretOptions.KeyDirectoryPath))
                 .SetApplicationName(secretOptions.ApplicationName);
-            services.AddDbContext<AppDbContext>((sp, options) =>
-            {
-                var appDbOptions = sp.GetService<IOptions<DbOptions>>().Value;
-                var hostEnvironment = sp.GetService<IHostEnvironment>();
-                options.UseSqlServer(new AppConnectionString(appDbOptions, hostEnvironment.EnvironmentName).Value());
-                if (hostEnvironment.IsDevOrTest())
-                {
-                    options.EnableSensitiveDataLogging();
-                }
-                else
-                {
-                    options.EnableSensitiveDataLogging(false);
-                }
-            });
+            services.AddAppDbContextForSqlServer(configuration);
             services.AddScoped<AppFactory, EfAppFactory>();
             services.AddScoped<Clock, UtcClock>();
         }
