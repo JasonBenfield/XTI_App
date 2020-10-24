@@ -10,8 +10,8 @@ namespace XTI_App.DB
         {
             builder.HasKey(a => a.ID);
             builder.Property(a => a.ID).ValueGeneratedOnAdd();
-            builder.Property(a => a.Key).HasMaxLength(50);
-            builder.HasIndex(a => a.Key).IsUnique();
+            builder.Property(a => a.Name).HasMaxLength(50);
+            builder.HasIndex(a => a.Name).IsUnique();
             builder.Property(a => a.Title)
                 .HasMaxLength(100)
                 .HasDefaultValue("");

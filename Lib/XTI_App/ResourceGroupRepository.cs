@@ -14,18 +14,19 @@ namespace XTI_App
         private readonly AppFactory factory;
         private readonly DataRepository<ResourceGroupRecord> repo;
 
-        public ResourceGroupRepository(AppFactory factory, DataRepository<ResourceGroupRecord> repo)
+        internal ResourceGroupRepository(AppFactory factory, DataRepository<ResourceGroupRecord> repo)
         {
             this.factory = factory;
             this.repo = repo;
         }
 
-        internal async Task<ResourceGroup> Add(App app, ResourceGroupName name)
+        internal async Task<ResourceGroup> Add(App app, ResourceGroupName name, ModifierCategory modCategory)
         {
             var record = new ResourceGroupRecord
             {
                 AppID = app.ID.Value,
-                Name = name.Value
+                Name = name.Value,
+                ModCategoryID = modCategory.ID.Value
             };
             await repo.Create(record);
             return factory.Group(record);

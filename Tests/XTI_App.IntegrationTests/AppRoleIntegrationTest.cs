@@ -23,10 +23,8 @@ namespace XTI_App.IntegrationTests
         {
             var input = await setup();
             var adminRoleName = new AppRoleName("Admin");
-            await input.App.AddRole(adminRoleName);
-            var roles = (await input.App.Roles()).ToArray();
-            Assert.That(roles.Length, Is.EqualTo(1), "Should add role to app");
-            Assert.That(roles[0].Name(), Is.EqualTo(adminRoleName), "Should add role to app");
+            var adminRole = await input.App.Role(adminRoleName);
+            Assert.That(adminRole.Name(), Is.EqualTo(adminRoleName), "Should add role to app");
         }
 
         [Test]
@@ -34,7 +32,7 @@ namespace XTI_App.IntegrationTests
         {
             var input = await setup();
             var adminRoleName = new AppRoleName("Admin");
-            var adminRole = await input.App.AddRole(adminRoleName);
+            var adminRole = await input.App.Role(adminRoleName);
             var user = await input.Factory.Users().Add
             (
                 new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
@@ -50,13 +48,13 @@ namespace XTI_App.IntegrationTests
         {
             var input = await setup();
             var adminRoleName = new AppRoleName("Admin");
-            var adminRole = await input.App.AddRole(adminRoleName);
+            var adminRole = await input.App.Role(adminRoleName);
             var user = await input.Factory.Users().Add
             (
                 new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
             );
             await user.AddRole(adminRole);
-            var app2 = await input.Factory.Apps().AddApp(new AppKey("app2"), AppType.Values.WebApp, "App 2", input.Clock.Now());
+            var app2 = await input.Factory.Apps().Add(new AppKey("app2", AppType.Values.WebApp), "App 2", input.Clock.Now());
             var role2 = await app2.AddRole(new AppRoleName("another role"));
             await user.AddRole(role2);
             var userRoles = (await user.RolesForApp(input.App)).ToArray();

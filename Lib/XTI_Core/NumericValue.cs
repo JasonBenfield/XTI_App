@@ -13,8 +13,6 @@ namespace XTI_Core
         protected bool _EqualsAny(params int[] values) => values.Any(v => Equals(v));
         protected bool _EqualsAny(params NumericValue[] values) => values.Any(v => _Equals(v));
 
-        public override bool Equals(object obj) => base.Equals(obj);
-        public override int GetHashCode() => base.GetHashCode();
         public override string ToString() => $"{GetType().Name} {Value}: {DisplayText}";
     }
 }

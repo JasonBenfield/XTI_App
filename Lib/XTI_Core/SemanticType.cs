@@ -77,7 +77,8 @@ namespace XTI_Core
 
         public override int GetHashCode() => hashCode;
 
-        public bool Equals(T other) => Equals(Value, other);
+        public bool Equals(T other) => _Equals(other);
+        protected virtual bool _Equals(T other) => Equals(Value, other);
 
         protected bool _Equals(SemanticType<T> other)
         {

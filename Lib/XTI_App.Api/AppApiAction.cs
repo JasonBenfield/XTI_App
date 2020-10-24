@@ -7,7 +7,7 @@ namespace XTI_App.Api
     {
         public AppApiAction
         (
-            XtiPath name,
+            XtiPath path,
             ResourceAccess access,
             IAppApiUser user,
             Func<AppActionValidation<TModel>> createValidation,
@@ -15,11 +15,11 @@ namespace XTI_App.Api
             string friendlyName
         )
         {
-            name.EnsureActionResource();
+            path.EnsureActionResource();
             Access = access;
-            Name = name;
+            Path = path;
             FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
-                ? new FriendlyNameFromActionName(name.Action).Value
+                ? new FriendlyNameFromActionName(path.Action).Value
                 : friendlyName;
             this.user = user;
             this.createValidation = createValidation;
@@ -30,22 +30,22 @@ namespace XTI_App.Api
         private readonly Func<AppActionValidation<TModel>> createValidation;
         private readonly Func<AppAction<TModel, TResult>> createExecution;
 
-        public XtiPath Name { get; }
+        public XtiPath Path { get; }
         public string FriendlyName { get; }
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess(AccessModifier modifier) =>
-            user.HasAccess(Access, modifier);
+        public Task<bool> HasAccess(ModifierKey modKey) =>
+            user.HasAccess(Path, Access, modKey);
 
-        public async Task<object> Execute(AccessModifier modifier, object model) =>
+        public async Task<object> Execute(ModifierKey modifier, object model) =>
             await Execute(modifier, (TModel)model);
 
         public Task<ResultContainer<TResult>> Execute(TModel model) =>
-            Execute(AccessModifier.Default, model);
+            Execute(ModifierKey.Default, model);
 
         public async Task<ResultContainer<TResult>> Execute
         (
-            AccessModifier modifier, TModel model
+            ModifierKey modifier, TModel model
         )
         {
             await EnsureUserHasAccess(modifier);
@@ -61,12 +61,12 @@ namespace XTI_App.Api
             return new ResultContainer<TResult>(actionResult);
         }
 
-        private async Task EnsureUserHasAccess(AccessModifier modifier)
+        private async Task EnsureUserHasAccess(ModifierKey modifier)
         {
             var hasAccess = await HasAccess(modifier);
             if (!hasAccess)
             {
-                throw new AccessDeniedException(Name);
+                throw new AccessDeniedException(Path);
             }
         }
 
@@ -74,7 +74,7 @@ namespace XTI_App.Api
         {
             var modelTemplate = new ValueTemplateFromType(typeof(TModel)).Template();
             var resultTemplate = new ValueTemplateFromType(typeof(TResult)).Template();
-            return new AppApiActionTemplate(Name.Action, FriendlyName, Access, modelTemplate, resultTemplate);
+            return new AppApiActionTemplate(Path.Action, FriendlyName, Access, modelTemplate, resultTemplate);
         }
     }
 }

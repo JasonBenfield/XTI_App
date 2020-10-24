@@ -18,6 +18,7 @@ namespace XTI_App.DB
             builder
                 .HasOne<AppUserRecord>()
                 .WithMany()
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasForeignKey(s => s.UserID);
         }
     }

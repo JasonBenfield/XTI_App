@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using XTI_App.Api;
 using XTI_App.Fakes;
 using XTI_Core;
@@ -9,11 +10,13 @@ namespace XTI_App.TestFakes
     {
         private readonly AppFactory appFactory;
         private readonly Clock clock;
+        private readonly FakeAppOptions options;
 
-        public FakeAppSetup(AppFactory appFactory, Clock clock)
+        public FakeAppSetup(AppFactory appFactory, Clock clock, FakeAppOptions options = null)
         {
             this.appFactory = appFactory;
             this.clock = clock;
+            this.options = options ?? new FakeAppOptions();
         }
 
         public App App { get; private set; }
@@ -29,11 +32,15 @@ namespace XTI_App.TestFakes
                 appFactory,
                 clock,
                 template,
-                "Fake Title",
-                FakeAppRoles.Instance.Values()
+                options.Title,
+                options.RoleNames.Values(),
+                new[] { new ModifierCategoryName("Department") }
             );
             await setup.Run();
-            App = await appFactory.Apps().App(new AppKey(template.Name), template.AppType);
+            App = await appFactory.Apps().App(template.AppKey);
+            var modCategory = await App.ModCategory(new ModifierCategoryName("Department"));
+            await modCategory.AddOrUpdateModifier(1, "IT");
+            await modCategory.AddOrUpdateModifier(2, "HR");
             User = await appFactory.Users().Add
             (
                 new AppUserName("xartogg"), new FakeHashedPassword("password"), clock.Now()

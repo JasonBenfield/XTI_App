@@ -6,7 +6,7 @@ namespace XTI_App.Entities
     public sealed class AppVersionRecord
     {
         public int ID { get; set; }
-        public string VersionKey { get; set; } = "";
+        public string VersionKey { get; set; } = "xti_notfound";
         public int AppID { get; set; }
         public int Major { get; set; }
         public int Minor { get; set; }

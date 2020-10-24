@@ -10,14 +10,15 @@ namespace XTI_App.DB
         {
             builder.HasKey(ur => ur.ID);
             builder.Property(ur => ur.ID).ValueGeneratedOnAdd();
-            builder.Property(u => u.Modifier).HasMaxLength(100);
             builder
                 .HasOne<AppUserRecord>()
                 .WithMany()
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasForeignKey(ur => ur.UserID);
             builder
                 .HasOne<AppRoleRecord>()
                 .WithMany()
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasForeignKey(ur => ur.RoleID);
         }
     }

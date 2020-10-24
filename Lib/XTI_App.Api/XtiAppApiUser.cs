@@ -14,7 +14,7 @@ namespace XTI_App.Api
             this.userContext = userContext;
         }
 
-        public async Task<bool> HasAccessToApp()
+        public async Task<bool> HasAccessToApp(XtiPath path)
         {
             var app = await appContext.App();
             var user = await userContext.User();
@@ -22,11 +22,12 @@ namespace XTI_App.Api
             return userRoles.Any();
         }
 
-        public async Task<bool> HasAccess(ResourceAccess resourceAccess, AccessModifier modifier)
+        public async Task<bool> HasAccess(XtiPath path, ResourceAccess resourceAccess, ModifierKey modKey)
         {
             var app = await appContext.App();
             var roles = await app.Roles();
-            var allowedRoles = resourceAccess.Allowed.Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)));
+            var allowedRoles = resourceAccess.Allowed
+                .Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)));
             var user = await userContext.User();
             bool hasAccess = false;
             if (user.UserName().Equals(AppUserName.Anon))
@@ -40,16 +41,7 @@ namespace XTI_App.Api
             else
             {
                 var userRoles = await user.RolesForApp(app);
-                var defaultUserRoles = userRoles
-                    .Where(ur => ur.Modifier().Equals(AccessModifier.Default));
-                var modifiedUserRoles = modifier.Equals(AccessModifier.Default)
-                    ? Enumerable.Empty<AppUserRole>()
-                    : userRoles.Where(ur => ur.Modifier().Equals(modifier));
-                if (defaultUserRoles.Any(ur => allowedRoles.Any(ar => ur.IsRole(ar))))
-                {
-                    hasAccess = true;
-                }
-                if (!hasAccess && modifiedUserRoles.Any(ur => allowedRoles.Any(ar => ur.IsRole(ar))))
+                if (userRoles.Any(ur => allowedRoles.Any(ar => ur.IsRole(ar))))
                 {
                     hasAccess = true;
                 }
@@ -57,13 +49,26 @@ namespace XTI_App.Api
                 (
                     dr => roles.FirstOrDefault(r => r.Name().Equals(dr))
                 );
-                if (defaultUserRoles.Any(ur => deniedRoles.Any(ar => ur.IsRole(ar))))
+                if (userRoles.Any(ur => deniedRoles.Any(ar => ur.IsRole(ar))))
                 {
                     hasAccess = false;
                 }
-                if (modifiedUserRoles.Any(ur => deniedRoles.Any(dr => ur.IsRole(dr))))
+            }
+            if (!modKey.Equals(ModifierKey.Default))
+            {
+                var group = await app.ResourceGroup(path.Group);
+                var modCategory = await group.ModCategory();
+                if (!modCategory.Name().Equals(ModifierCategoryName.Default))
                 {
-                    hasAccess = false;
+                    var userHasFullAccess = await user.IsModCategoryAdmin(modCategory);
+                    if (userHasFullAccess)
+                    {
+                        hasAccess = true;
+                    }
+                    else
+                    {
+                        hasAccess = await user.HasModifier(modKey);
+                    }
                 }
             }
             return hasAccess;

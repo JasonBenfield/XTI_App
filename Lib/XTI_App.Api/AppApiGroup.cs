@@ -11,20 +11,20 @@ namespace XTI_App.Api
         (
             AppApi api,
             string groupName,
-            bool hasModifier,
+            ModifierCategoryName modCategory,
             ResourceAccess access,
             IAppApiUser user,
             Func<XtiPath, ResourceAccess, IAppApiUser, IAppApiActionCollection> createActions
         )
         {
-            Name = api.Name.WithGroup(groupName);
-            this.hasModifier = hasModifier;
+            Path = api.Path.WithGroup(groupName);
+            this.modCategory = modCategory ?? ModifierCategoryName.Default;
             Access = access ?? ResourceAccess.AllowAuthenticated();
             this.user = user;
-            this.actions = createActions(Name, Access, user);
+            actions = createActions(Path, Access, user);
         }
 
-        private readonly bool hasModifier;
+        private readonly ModifierCategoryName modCategory;
         private readonly IAppApiUser user;
         private readonly IAppApiActionCollection actions;
 
@@ -35,11 +35,11 @@ namespace XTI_App.Api
             init((T)actions);
         }
 
-        public XtiPath Name { get; }
+        public XtiPath Path { get; }
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess() => HasAccess(AccessModifier.Default);
-        public Task<bool> HasAccess(AccessModifier modifier) => user.HasAccess(Access, modifier);
+        public Task<bool> HasAccess() => HasAccess(ModifierKey.Default);
+        public Task<bool> HasAccess(ModifierKey modifier) => user.HasAccess(Path, Access, modifier);
 
         public IEnumerable<IAppApiAction> Actions() => actions.Actions();
 
@@ -49,7 +49,7 @@ namespace XTI_App.Api
         public AppApiGroupTemplate Template()
         {
             var actionTemplates = Actions().Select(a => a.Template());
-            return new AppApiGroupTemplate(Name.Group, hasModifier, Access, actionTemplates);
+            return new AppApiGroupTemplate(Path.Group.DisplayText, modCategory, Access, actionTemplates);
         }
     }
 }

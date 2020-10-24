@@ -47,21 +47,10 @@ namespace XTI_AppTool
                 {
                     throw new ArgumentException($"App type '{appToolOptions.AppType}' is not valid");
                 }
-                var appKey = new AppKey(appToolOptions.AppKey);
-                var app = await appFactory.Apps().App(appKey, appType);
                 if (appToolOptions.Command == "add")
                 {
-                    var title = string.IsNullOrWhiteSpace(appToolOptions.AppTitle)
-                        ? appToolOptions.AppKey
-                        : appToolOptions.AppTitle;
-                    if (app.Key().Equals(appKey))
-                    {
-                        await app.SetTitle(title);
-                    }
-                    else
-                    {
-                        app = await appFactory.Apps().AddApp(appKey, appType, title, clock.Now());
-                    }
+                    var appKey = new AppKey(appToolOptions.AppKey, appType);
+                    var app = await appFactory.Apps().AddOrUpdate(appKey, appToolOptions.AppTitle, clock.Now());
                     var currentVersion = await app.CurrentVersion();
                     if (!currentVersion.IsCurrent())
                     {

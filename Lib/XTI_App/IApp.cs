@@ -7,8 +7,8 @@ namespace XTI_App
     {
         EntityID ID { get; }
         string Title { get; }
-        Task<IAppVersion> CurrentVersion();
         Task<IAppVersion> Version(AppVersionKey versionKey);
         Task<IEnumerable<IAppRole>> Roles();
+        Task<IResourceGroup> ResourceGroup(ResourceGroupName name);
     }
 }

@@ -73,7 +73,7 @@ namespace XTI_UserApp
                     var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
                         ? AppType.Values.WebApp
                         : AppType.Values.Value(userOptions.AppType);
-                    var app = await appFactory.Apps().App(new AppKey(userOptions.AppKey), appType);
+                    var app = await appFactory.Apps().App(new AppKey(userOptions.AppKey, appType));
                     if (!string.IsNullOrWhiteSpace(userOptions.RoleNames))
                     {
                         foreach (var roleName in userOptions.RoleNames.Split(","))

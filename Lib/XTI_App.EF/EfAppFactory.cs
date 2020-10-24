@@ -25,7 +25,11 @@ namespace XTI_App.EF
                 { typeof(AppRoleRecord), appDbContext.Roles },
                 { typeof(AppUserRoleRecord), appDbContext.UserRoles },
                 { typeof(ResourceGroupRecord), appDbContext.ResourceGroups },
-                { typeof(ResourceRecord), appDbContext.Resources }
+                { typeof(ResourceRecord), appDbContext.Resources },
+                { typeof(ModifierCategoryRecord), appDbContext.ModifierCategories },
+                { typeof(ModifierCategoryAdminRecord), appDbContext.ModifierCategoryAdmins },
+                { typeof(ModifierRecord), appDbContext.Modifiers },
+                { typeof(AppUserModifierRecord), appDbContext.UserModifiers }
             };
         }
 

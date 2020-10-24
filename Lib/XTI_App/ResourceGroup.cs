@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using XTI_App.Entities;
+using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class ResourceGroup
+    public sealed class ResourceGroup : IResourceGroup
     {
+        private readonly DataRepository<ResourceGroupRecord> repo;
         private readonly AppFactory factory;
         private readonly ResourceGroupRecord record;
 
-        internal ResourceGroup(AppFactory factory, ResourceGroupRecord record)
+        internal ResourceGroup(DataRepository<ResourceGroupRecord> repo, AppFactory factory, ResourceGroupRecord record)
         {
+            this.repo = repo;
             this.factory = factory;
             this.record = record ?? new ResourceGroupRecord();
             ID = new EntityID(this.record.ID);
@@ -20,12 +22,46 @@ namespace XTI_App
         public EntityID ID { get; }
         public ResourceGroupName Name() => new ResourceGroupName(record.Name);
 
-        public Task<Resource> AddResource(ResourceName name) => factory.Resources().Add(this, name);
+        public async Task<Resource> TryAddResource(ResourceName name)
+        {
+            var resource = await Resource(name);
+            if (!resource.Name().Equals(name))
+            {
+                resource = await AddResource(name);
+            }
+            return resource;
+        }
+
+        private Task<Resource> AddResource(ResourceName name) => factory.Resources().Add(this, name);
 
         public Task<Resource> Resource(ResourceName name) => factory.Resources().Resource(this, name);
 
         public Task<IEnumerable<Resource>> Resources() => factory.Resources().Resources(this);
 
+        public async Task<IEnumerable<Modifier>> Modifiers()
+        {
+            var modCategory = await factory.ModCategories().Category(record.ModCategoryID);
+            var modifiers = await modCategory.Modifiers();
+            return modifiers;
+        }
+
+        public async Task<Modifier> Modifier(ModifierKey modKey)
+        {
+            var modCategory = await factory.ModCategories().Category(record.ModCategoryID);
+            var modifier = await modCategory.Modifier(modKey);
+            return modifier;
+        }
+
+        public Task SetModCategory(ModifierCategory category)
+            => repo.Update(record, r =>
+            {
+                r.ModCategoryID = category.ID.Value;
+            });
+
+        public Task<ModifierCategory> ModCategory()
+            => factory.ModCategories().Category(record.ModCategoryID);
+
         public override string ToString() => $"{nameof(ResourceGroup)} {ID.Value}";
+
     }
 }

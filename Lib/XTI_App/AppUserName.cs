@@ -3,7 +3,7 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class AppUserName : SemanticType<string>, IEquatable<AppUserName>
+    public sealed class AppUserName : TextValue, IEquatable<AppUserName>
     {
         public static readonly AppUserName Anon = new AppUserName("xti_anon");
 

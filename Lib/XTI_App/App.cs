@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using XTI_App.Entities;
 using XTI_Core;
@@ -22,14 +23,47 @@ namespace XTI_App
         }
 
         public EntityID ID { get; }
-        public AppKey Key() => new AppKey(record.Key);
+        public AppKey Key() => new AppKey(record.Name, AppType.Values.Value(record.Type));
         public string Title { get => record.Title; }
 
-        public Task<ResourceGroup> AddGroup(ResourceGroupName name) => factory.Groups().Add(this, name);
+        public async Task<ModifierCategory> TryAddModCategory(ModifierCategoryName name)
+        {
+            var modCategory = await factory.ModCategories().Category(this, name);
+            if (modCategory.ID.IsNotValid() || !modCategory.Name().Equals(name))
+            {
+                modCategory = await factory.ModCategories().Add(this, name);
+            }
+            return modCategory;
+        }
 
-        public Task<ResourceGroup> Group(ResourceGroupName name) => factory.Groups().Group(this, name);
+        public Task<IEnumerable<ModifierCategory>> ModCategories()
+            => factory.ModCategories().Categories(this);
 
-        public Task<IEnumerable<ResourceGroup>> Groups() => factory.Groups().Groups(this);
+        public Task<ModifierCategory> ModCategory(ModifierCategoryName name)
+            => factory.ModCategories().Category(this, name);
+
+        public async Task<ResourceGroup> AddOrUpdateResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
+        {
+            var resourceGroup = await ResourceGroup(name);
+            if (resourceGroup.Name().Equals(name))
+            {
+                await resourceGroup.SetModCategory(modCategory);
+            }
+            else
+            {
+                resourceGroup = await AddResourceGroup(name, modCategory);
+            }
+            return resourceGroup;
+        }
+
+        public Task<ResourceGroup> AddResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
+            => factory.Groups().Add(this, name, modCategory);
+
+        public Task<ResourceGroup> ResourceGroup(ResourceGroupName name) => factory.Groups().Group(this, name);
+
+        public Task<IEnumerable<ResourceGroup>> ResourceGroups() => factory.Groups().Groups(this);
+
+        async Task<IResourceGroup> IApp.ResourceGroup(ResourceGroupName name) => await ResourceGroup(name);
 
         public Task<AppRole> AddRole(AppRoleName name) =>
             factory.Roles().Add(this, name);
@@ -92,9 +126,6 @@ namespace XTI_App
             }
         }
 
-        async Task<IAppVersion> IApp.CurrentVersion() =>
-            await factory.Versions().CurrentVersion(this);
-
         public async Task<AppVersion> Version(AppVersionKey versionKey) =>
             (AppVersion)await version(versionKey);
 
@@ -126,6 +157,7 @@ namespace XTI_App
             });
         }
 
-        public override string ToString() => $"{nameof(App)} {ID.Value}: {record.Key}";
+        public override string ToString() => $"{nameof(App)} {ID.Value}: {record.Name}";
+
     }
 }

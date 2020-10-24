@@ -11,48 +11,53 @@ namespace XTI_App.Api
         private readonly AppApiTemplate appTemplate;
         private readonly string appTitle;
         private readonly IEnumerable<AppRoleName> roleNames;
+        private readonly IEnumerable<ModifierCategoryName> modCategoryNames;
 
-        public DefaultAppSetup(AppFactory appFactory, Clock clock, AppApiTemplate appTemplate, string appTitle, IEnumerable<AppRoleName> roleNames)
+        public DefaultAppSetup
+        (
+            AppFactory appFactory,
+            Clock clock,
+            AppApiTemplate appTemplate,
+            string appTitle,
+            IEnumerable<AppRoleName> roleNames,
+            IEnumerable<ModifierCategoryName> modCategoryNames
+        )
         {
             this.appFactory = appFactory;
             this.clock = clock;
             this.appTemplate = appTemplate;
             this.appTitle = appTitle;
             this.roleNames = roleNames;
+            this.modCategoryNames = modCategoryNames;
         }
 
         public async Task Run()
         {
-            var unknownAppSetup = new UnknownAppSetup(appFactory, clock);
-            await unknownAppSetup.Run();
-            var appKey = new AppKey(appTemplate.Name);
+            var allAppSetup = new AllAppSetup(appFactory, clock);
+            await allAppSetup.Run();
             var appSetup = new SingleAppSetup
             (
                 appFactory,
                 clock,
-                appKey,
-                appTemplate.AppType,
+                appTemplate.AppKey,
                 appTitle,
                 roleNames
             );
             await appSetup.Run();
-            var app = await appFactory.Apps().App(appKey, appTemplate.AppType);
+            var app = await appFactory.Apps().App(appTemplate.AppKey);
+            foreach (var modCategoryName in modCategoryNames)
+            {
+                await app.TryAddModCategory(modCategoryName);
+            }
             foreach (var groupTemplate in appTemplate.GroupTemplates)
             {
+                var modCategory = await app.ModCategory(groupTemplate.ModCategory);
                 var groupName = new ResourceGroupName(groupTemplate.Name);
-                var resourceGroup = await app.Group(groupName);
-                if (!resourceGroup.Name().Equals(groupName))
-                {
-                    resourceGroup = await app.AddGroup(groupName);
-                }
+                var resourceGroup = await app.AddOrUpdateResourceGroup(groupName, modCategory);
                 foreach (var actionTemplate in groupTemplate.ActionTemplates)
                 {
                     var resourceName = new ResourceName(actionTemplate.Name);
-                    var resource = await resourceGroup.Resource(resourceName);
-                    if (!resource.Name().Equals(resourceName))
-                    {
-                        await resourceGroup.AddResource(resourceName);
-                    }
+                    await resourceGroup.TryAddResource(resourceName);
                 }
             }
         }

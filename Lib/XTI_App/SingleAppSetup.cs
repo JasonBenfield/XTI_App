@@ -9,31 +9,21 @@ namespace XTI_App
         private readonly AppFactory appFactory;
         private readonly Clock clock;
         private readonly AppKey appKey;
-        private readonly AppType appType;
         private readonly string appTitle;
         private readonly IEnumerable<AppRoleName> roleNames;
 
-        public SingleAppSetup(AppFactory appFactory, Clock clock, AppKey appKey, AppType appType, string appTitle, IEnumerable<AppRoleName> roleNames)
+        public SingleAppSetup(AppFactory appFactory, Clock clock, AppKey appKey, string appTitle, IEnumerable<AppRoleName> roleNames)
         {
             this.appFactory = appFactory;
             this.clock = clock;
             this.appKey = appKey;
-            this.appType = appType;
             this.appTitle = appTitle;
             this.roleNames = roleNames;
         }
 
         public async Task Run()
         {
-            var app = await appFactory.Apps().App(appKey, appType);
-            if (app.Key().Equals(appKey))
-            {
-                await app.SetTitle(appTitle);
-            }
-            else
-            {
-                app = await appFactory.Apps().AddApp(appKey, appType, appTitle, clock.Now());
-            }
+            var app = await appFactory.Apps().AddOrUpdate(appKey, appTitle, clock.Now());
             var currentVersion = await app.CurrentVersion();
             if (!currentVersion.IsCurrent())
             {
@@ -42,6 +32,7 @@ namespace XTI_App
                 await currentVersion.Published();
             }
             await app.SetRoles(roleNames);
+            await app.TryAddModCategory(ModifierCategoryName.Default);
         }
 
     }

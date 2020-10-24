@@ -12,19 +12,27 @@ namespace XTI_App.DB
             builder.Property(r => r.ID).ValueGeneratedOnAdd();
             builder.Property(r => r.Path).HasMaxLength(100);
             builder.Property(r => r.RequestKey).HasMaxLength(100);
-            builder.HasIndex(s => s.RequestKey).IsUnique();
+            builder.HasIndex(r => r.RequestKey).IsUnique();
             builder
                 .HasOne<AppSessionRecord>()
                 .WithMany()
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasForeignKey(r => r.SessionID);
             builder
                 .HasOne<AppVersionRecord>()
                 .WithMany()
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasForeignKey(r => r.VersionID);
             builder
                 .HasOne<ResourceRecord>()
                 .WithMany()
-                .HasForeignKey(s => s.ResourceID);
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasForeignKey(r => r.ResourceID);
+            builder
+                .HasOne<ModifierRecord>()
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasForeignKey(r => r.ModifierID);
         }
     }
 }
