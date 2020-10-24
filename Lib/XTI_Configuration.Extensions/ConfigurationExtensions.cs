@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.IO;
+using XTI_Core;
 
 namespace XTI_Configuration.Extensions
 {
@@ -9,20 +9,28 @@ namespace XTI_Configuration.Extensions
         public static void UseXtiConfiguration(this IConfigurationBuilder config, string envName, string[] args)
         {
             config.Sources.Clear();
-            var sharedDir = Path.Combine
-            (
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "XTI",
-                "Shared"
-            );
+            var appDataFolder = new AppDataFolder().WithSubFolder("Shared");
             config
-                .AddJsonFile(Path.Combine(sharedDir, "appsettings.json"), optional: true, reloadOnChange: true)
-                .AddJsonFile(Path.Combine(sharedDir, $"appsettings.{envName}.json"),
-                                 optional: true, reloadOnChange: true)
+                .AddJsonFile
+                (
+                    appDataFolder.FilePath("appsettings.json"),
+                    optional: true,
+                    reloadOnChange: true
+                )
+                .AddJsonFile
+                (
+                    appDataFolder.FilePath($"appsettings.{envName}.json"),
+                    optional: true,
+                    reloadOnChange: true
+                )
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{envName}.json",
-                                 optional: true, reloadOnChange: true)
+                .AddJsonFile
+                (
+                    $"appsettings.{envName}.json",
+                    optional: true,
+                    reloadOnChange: true
+                )
                 .AddEnvironmentVariables();
             if (args != null)
             {
