@@ -26,7 +26,7 @@ namespace XTI_Secrets.Extensions
             {
                 var hostEnv = sp.GetService<IHostEnvironment>();
                 var dataProtector = sp.GetDataProtector(new[] { "XTI_Secrets" });
-                return new FileSecretCredentialsFactory(hostEnv.EnvironmentName, dataProtector);
+                return new FileSecretCredentialsFactory(hostEnv, dataProtector);
             });
         }
     }

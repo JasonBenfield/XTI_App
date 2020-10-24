@@ -1,24 +1,21 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
-using System;
+using Microsoft.Extensions.Hosting;
 using System.IO;
 using System.Threading.Tasks;
+using XTI_Core;
 
 namespace XTI_Secrets
 {
     public sealed class FileSecretCredentials : SecretCredentials
     {
-        private readonly string directoryPath;
+        private readonly AppDataFolder appDataFolder;
 
-        public FileSecretCredentials(string environmentName, string key, IDataProtector dataProtector)
+        public FileSecretCredentials(IHostEnvironment hostEnv, string key, IDataProtector dataProtector)
             : base(key, dataProtector)
         {
-            directoryPath = Path.Combine
-            (
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "XTI",
-                "Secrets",
-                environmentName
-            );
+            appDataFolder = new AppDataFolder()
+                .WithHostEnvironment(hostEnv)
+                .WithSubFolder("Secrets");
         }
 
         protected override async Task<string> Load(string key)
@@ -41,16 +38,13 @@ namespace XTI_Secrets
 
         protected override async Task Persist(string key, string encryptedText)
         {
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
+            appDataFolder.TryCreate();
             using (var writer = new StreamWriter(getFilePath(key), false))
             {
                 await writer.WriteAsync(encryptedText);
             }
         }
 
-        private string getFilePath(string key) => Path.Combine(directoryPath, $"{key}.secret");
+        private string getFilePath(string key) => appDataFolder.FilePath($"{key}.secret");
     }
 }
