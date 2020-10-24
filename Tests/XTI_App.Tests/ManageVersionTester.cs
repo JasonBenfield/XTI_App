@@ -35,11 +35,13 @@ namespace XTI_App.Tests
             Factory = sp.GetService<AppFactory>();
             App = setup.App;
             Clock = sp.GetService<FakeClock>();
+            var appKey = setup.App.Key();
             Options = new ManageVersionOptions
             {
                 Command = "New",
                 BranchName = "",
-                AppKey = setup.App.Key().Value,
+                AppName = appKey.Name.Value,
+                AppType = appKey.Type.DisplayText,
                 VersionType = AppVersionType.Values.Patch.DisplayText,
             };
         }

@@ -69,7 +69,7 @@ namespace EfMigrationsApp.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Key")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50);
 
@@ -87,9 +87,9 @@ namespace EfMigrationsApp.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("Key")
+                    b.HasIndex("Name")
                         .IsUnique()
-                        .HasFilter("[Key] IS NOT NULL");
+                        .HasFilter("[Name] IS NOT NULL");
 
                     b.ToTable("Apps");
                 });
@@ -100,6 +100,9 @@ namespace EfMigrationsApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ModifierID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Path")
                         .HasColumnType("nvarchar(100)")
@@ -125,6 +128,8 @@ namespace EfMigrationsApp.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("ModifierID");
 
                     b.HasIndex("RequestKey")
                         .IsUnique()
@@ -205,6 +210,28 @@ namespace EfMigrationsApp.Migrations
                     b.ToTable("Sessions");
                 });
 
+            modelBuilder.Entity("XTI_App.Entities.AppUserModifierRecord", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ModifierID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ModifierID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("UserModifiers");
+                });
+
             modelBuilder.Entity("XTI_App.Entities.AppUserRecord", b =>
                 {
                     b.Property<int>("ID")
@@ -238,10 +265,6 @@ namespace EfMigrationsApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Modifier")
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
 
                     b.Property<int>("RoleID")
                         .HasColumnType("int");
@@ -304,7 +327,30 @@ namespace EfMigrationsApp.Migrations
                     b.ToTable("Versions");
                 });
 
-            modelBuilder.Entity("XTI_App.Entities.ResourceGroupRecord", b =>
+            modelBuilder.Entity("XTI_App.Entities.ModifierCategoryAdminRecord", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ModCategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.HasIndex("ModCategoryID", "UserID")
+                        .IsUnique();
+
+                    b.ToTable("ModifierCategoryAdmins");
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.ModifierCategoryRecord", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -315,10 +361,75 @@ namespace EfMigrationsApp.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("AppID", "Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
+                    b.ToTable("ModifierCategories");
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.ModifierRecord", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DisplayText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GroupID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModKey")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
+                    b.Property<string>("TargetKey")
                         .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.HasKey("ID");
+
+                    b.HasIndex("ModKey")
+                        .IsUnique()
+                        .HasFilter("[ModKey] IS NOT NULL");
+
+                    b.HasIndex("CategoryID", "TargetKey")
+                        .IsUnique()
+                        .HasFilter("[TargetKey] IS NOT NULL");
+
+                    b.ToTable("Modifiers");
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.ResourceGroupRecord", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("AppID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ModCategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ModCategoryID");
 
                     b.HasIndex("AppID", "Name")
                         .IsUnique()
@@ -355,28 +466,34 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.AppRequestRecord", null)
                         .WithMany()
                         .HasForeignKey("RequestID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("XTI_App.Entities.AppRequestRecord", b =>
                 {
+                    b.HasOne("XTI_App.Entities.ModifierRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ModifierID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("XTI_App.Entities.ResourceRecord", null)
                         .WithMany()
                         .HasForeignKey("ResourceID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("XTI_App.Entities.AppSessionRecord", null)
                         .WithMany()
                         .HasForeignKey("SessionID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("XTI_App.Entities.AppVersionRecord", null)
                         .WithMany()
                         .HasForeignKey("VersionID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -385,7 +502,7 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.AppRecord", null)
                         .WithMany()
                         .HasForeignKey("AppID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -394,7 +511,22 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.AppUserRecord", null)
                         .WithMany()
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.AppUserModifierRecord", b =>
+                {
+                    b.HasOne("XTI_App.Entities.ModifierRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ModifierID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("XTI_App.Entities.AppUserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -403,13 +535,13 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.AppRoleRecord", null)
                         .WithMany()
                         .HasForeignKey("RoleID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("XTI_App.Entities.AppUserRecord", null)
                         .WithMany()
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -418,7 +550,40 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.AppRecord", null)
                         .WithMany()
                         .HasForeignKey("AppID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.ModifierCategoryAdminRecord", b =>
+                {
+                    b.HasOne("XTI_App.Entities.ModifierCategoryRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ModCategoryID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("XTI_App.Entities.AppUserRecord", null)
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.ModifierCategoryRecord", b =>
+                {
+                    b.HasOne("XTI_App.Entities.AppRecord", null)
+                        .WithMany()
+                        .HasForeignKey("AppID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("XTI_App.Entities.ModifierRecord", b =>
+                {
+                    b.HasOne("XTI_App.Entities.ModifierCategoryRecord", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -427,7 +592,13 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.AppRecord", null)
                         .WithMany()
                         .HasForeignKey("AppID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("XTI_App.Entities.ModifierCategoryRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ModCategoryID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -436,7 +607,7 @@ namespace EfMigrationsApp.Migrations
                     b.HasOne("XTI_App.Entities.ResourceGroupRecord", null)
                         .WithMany()
                         .HasForeignKey("GroupID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

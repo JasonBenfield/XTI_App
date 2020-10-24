@@ -14,14 +14,22 @@ namespace XTI_App.DB
 
         public async Task Run()
         {
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Events");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Requests");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Versions");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Sessions");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Roles");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from UserRoles");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Users");
-            await appDbContext.Database.ExecuteSqlRawAsync("delete from Apps");
+            await appDbContext.Database.ExecuteSqlRawAsync
+            (
+                @"
+exec sp_MSForEachTable 'IF OBJECT_ID(''?'') <> ISNULL(OBJECT_ID(''[dbo].[__EFMigrationsHistory]''),0) ALTER TABLE ? NOCHECK CONSTRAINT all';
+
+exec sp_MSForEachTable '
+    set rowcount 0; 
+    SET QUOTED_IDENTIFIER ON; 
+    IF OBJECT_ID(''?'') <> ISNULL(OBJECT_ID(''[dbo].[__EFMigrationsHistory]''),0) 
+        DELETE FROM ?;';
+
+exec sp_MSForEachTable 'IF OBJECT_ID(''?'') <> ISNULL(OBJECT_ID(''[dbo].[__EFMigrationsHistory]''),0) ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all';
+
+exec sp_MSForEachTable 'IF OBJECT_ID(''?'') <> ISNULL(OBJECT_ID(''[dbo].[__EFMigrationsHistory]''),0) DBCC CHECKIDENT(''?'', RESEED, 0)';
+"
+            );
         }
     }
 }

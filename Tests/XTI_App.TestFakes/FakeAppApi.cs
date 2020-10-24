@@ -7,22 +7,71 @@ namespace XTI_App.TestFakes
     public sealed class FakeAppApi : AppApi
     {
 
-        public FakeAppApi(IAppApiUser user, AppVersionKey versionKey)
+        public FakeAppApi(AppKey appKey, IAppApiUser user, AppVersionKey versionKey)
             : base
             (
-                FakeAppKey.AppKey,
-                AppType.Values.Service,
+                appKey,
                 versionKey,
                 user,
                 ResourceAccess.AllowAuthenticated()
                     .WithAllowed(FakeAppRoles.Instance.Admin)
             )
         {
+            Home = AddGroup(u => new HomeGroup(this, u));
+            Login = AddGroup(u => new LoginGroup(this, u));
             Employee = AddGroup(u => new EmployeeGroup(this, u));
             Product = AddGroup(u => new ProductGroup(this, u));
         }
+        public HomeGroup Home { get; }
+        public LoginGroup Login { get; }
         public EmployeeGroup Employee { get; }
         public ProductGroup Product { get; }
+    }
+
+    public sealed class LoginGroup : AppApiGroup
+    {
+        public LoginGroup(AppApi api, IAppApiUser user)
+            : base
+            (
+                  api,
+                  new NameFromGroupClassName(nameof(LoginGroup)).Value,
+                  ModifierCategoryName.Default,
+                  ResourceAccess.AllowAnonymous(),
+                  user,
+                  (p, a, u) => new AppApiActionCollection(p, a, u)
+            )
+        {
+            var actions = Actions<AppApiActionCollection>();
+            Authenticate = actions.Add
+            (
+                nameof(Authenticate),
+                () => new EmptyAppAction<EmptyRequest, EmptyActionResult>()
+            );
+        }
+        public AppApiAction<EmptyRequest, EmptyActionResult> Authenticate { get; }
+    }
+
+    public sealed class HomeGroup : AppApiGroup
+    {
+        public HomeGroup(AppApi api, IAppApiUser user)
+            : base
+            (
+                  api,
+                  new NameFromGroupClassName(nameof(HomeGroup)).Value,
+                  ModifierCategoryName.Default,
+                  ResourceAccess.AllowAuthenticated(),
+                  user,
+                  (n, a, u) => new AppApiActionCollection(n, a, u)
+            )
+        {
+            var actions = Actions<AppApiActionCollection>();
+            DoSomething = actions.Add
+            (
+                nameof(DoSomething),
+                () => new EmptyAppAction<EmptyRequest, EmptyActionResult>()
+            );
+        }
+        public AppApiAction<EmptyRequest, EmptyActionResult> DoSomething { get; }
     }
 
     public sealed class EmployeeGroup : AppApiGroup
@@ -32,8 +81,8 @@ namespace XTI_App.TestFakes
             (
                   api,
                   new NameFromGroupClassName(nameof(EmployeeGroup)).Value,
-                  false,
-                  ResourceAccess.AllowAuthenticated(),
+                  new ModifierCategoryName("Department"),
+                  api.Access,
                   user,
                   (n, a, u) => new AppApiActionCollection(n, a, u)
             )
@@ -104,8 +153,9 @@ namespace XTI_App.TestFakes
             (
                 api,
                 new NameFromGroupClassName(nameof(ProductGroup)).Value,
-                false,
-                api.Access,
+                ModifierCategoryName.Default,
+                api.Access
+                  .WithDenied(FakeAppRoles.Instance.Viewer),
                 user,
                 (n, a, u) => new AppApiActionCollection(n, a, u)
             )

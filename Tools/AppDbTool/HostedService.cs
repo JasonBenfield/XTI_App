@@ -42,7 +42,7 @@ namespace AppDbApp
             {
                 if (options.Command == "reset")
                 {
-                    if (!hostEnvironment.IsTest())
+                    if (!hostEnvironment.IsTest() && !options.Force)
                     {
                         throw new ArgumentException("Database reset can only be run for the test environment");
                     }

@@ -18,6 +18,10 @@ namespace XTI_App.DB
             UserRoles = Set<AppUserRoleRecord>();
             ResourceGroups = Set<ResourceGroupRecord>();
             Resources = Set<ResourceRecord>();
+            ModifierCategories = Set<ModifierCategoryRecord>();
+            ModifierCategoryAdmins = Set<ModifierCategoryAdminRecord>();
+            Modifiers = Set<ModifierRecord>();
+            UserModifiers = Set<AppUserModifierRecord>();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,6 +36,10 @@ namespace XTI_App.DB
             modelBuilder.ApplyConfiguration(new AppUserRoleEntityConfiguration());
             modelBuilder.ApplyConfiguration(new ResourceGroupEntityConfiguration());
             modelBuilder.ApplyConfiguration(new ResourceEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new ModifierCategoryEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new ModifierCategoryAdminEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new ModifierEntityConfiguration());
+            modelBuilder.ApplyConfiguration(new AppUserModifierEntityConfiguration());
             base.OnModelCreating(modelBuilder);
         }
 
@@ -45,5 +53,9 @@ namespace XTI_App.DB
         public DbSet<AppUserRoleRecord> UserRoles { get; }
         public DbSet<ResourceGroupRecord> ResourceGroups { get; }
         public DbSet<ResourceRecord> Resources { get; }
+        public DbSet<ModifierCategoryRecord> ModifierCategories { get; }
+        public DbSet<ModifierCategoryAdminRecord> ModifierCategoryAdmins { get; }
+        public DbSet<ModifierRecord> Modifiers { get; }
+        public DbSet<AppUserModifierRecord> UserModifiers { get; }
     }
 }

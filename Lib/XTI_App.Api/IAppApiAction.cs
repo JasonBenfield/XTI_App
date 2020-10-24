@@ -4,13 +4,13 @@ namespace XTI_App.Api
 {
     public interface IAppApiAction
     {
-        XtiPath Name { get; }
+        XtiPath Path { get; }
         string FriendlyName { get; }
         ResourceAccess Access { get; }
 
-        Task<bool> HasAccess(AccessModifier modifier);
+        Task<bool> HasAccess(ModifierKey modifier);
 
-        Task<object> Execute(AccessModifier modifier, object model);
+        Task<object> Execute(ModifierKey modifier, object model);
 
         AppApiActionTemplate Template();
     }

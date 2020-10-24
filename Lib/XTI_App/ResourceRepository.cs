@@ -12,7 +12,7 @@ namespace XTI_App
         private readonly AppFactory factory;
         private readonly DataRepository<ResourceRecord> repo;
 
-        public ResourceRepository(AppFactory factory, DataRepository<ResourceRecord> repo)
+        internal ResourceRepository(AppFactory factory, DataRepository<ResourceRecord> repo)
         {
             this.factory = factory;
             this.repo = repo;

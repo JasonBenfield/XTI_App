@@ -6,14 +6,14 @@ namespace XTI_App.Api
 {
     public sealed class AppApiActionCollection : IAppApiActionCollection
     {
-        private readonly XtiPath name;
+        private readonly XtiPath path;
         private readonly ResourceAccess access;
         private readonly IAppApiUser user;
         private readonly Dictionary<string, IAppApiAction> actions = new Dictionary<string, IAppApiAction>();
 
-        public AppApiActionCollection(XtiPath name, ResourceAccess access, IAppApiUser user)
+        public AppApiActionCollection(XtiPath path, ResourceAccess access, IAppApiUser user)
         {
-            this.name = name;
+            this.path = path;
             this.access = access;
             this.user = user;
         }
@@ -75,14 +75,14 @@ namespace XTI_App.Api
             if (string.IsNullOrWhiteSpace(actionName)) { throw new ArgumentException($"{nameof(actionName)} is required"); }
             var action = new AppApiAction<TModel, TResult>
             (
-                name.WithAction(actionName),
+                path.WithAction(actionName),
                 access,
                 user,
                 createValidation ?? defaultCreateValidation<TModel>(),
                 createExecution ?? defaultCreateAction<TModel, TResult>(),
                 friendlyName
             );
-            actions.Add(action.Name.Action.ToLower(), action);
+            actions.Add(action.Path.Action.Value, action);
             return action;
         }
 
@@ -94,7 +94,7 @@ namespace XTI_App.Api
 
         public AppApiAction<TModel, TResult> Add<TModel, TResult>(AppApiAction<TModel, TResult> action)
         {
-            actions.Add(action.Name.Action.ToLower(), action);
+            actions.Add(action.Path.Action.Value, action);
             return action;
         }
     }

@@ -84,10 +84,12 @@ namespace XTI_App.IntegrationTests
                 this.sp = sp;
                 Factory = sp.GetService<AppFactory>();
                 App = app;
+                var appKey = app.Key();
                 Options = new ManageVersionOptions
                 {
                     Command = "New",
-                    AppKey = app.Key().Value,
+                    AppName = appKey.Name.Value,
+                    AppType = appKey.Type.DisplayText,
                     VersionType = AppVersionType.Values.Patch.DisplayText
                 };
             }

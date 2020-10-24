@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using System.Threading;
 using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class AppVersionKey : SemanticType<string>, IEquatable<AppVersionKey>
+    public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
     {
         private static readonly Regex keyRegex = new Regex("V?(\\d+)");
 

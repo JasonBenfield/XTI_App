@@ -3,9 +3,9 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class ResourceGroupName : SemanticType<string>, IEquatable<ResourceGroupName>
+    public sealed class ResourceGroupName : TextValue, IEquatable<ResourceGroupName>
     {
-        public static readonly ResourceGroupName Unknown = new ResourceGroupName("");
+        public static readonly ResourceGroupName Unknown = new ResourceGroupName("Unknown");
 
         public ResourceGroupName(string value) : base(value?.Trim().ToLower() ?? "")
         {

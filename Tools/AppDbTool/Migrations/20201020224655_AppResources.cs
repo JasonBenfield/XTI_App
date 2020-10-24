@@ -29,7 +29,7 @@ namespace EfMigrationsApp.Migrations
                         column: x => x.AppID,
                         principalTable: "Apps",
                         principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -49,7 +49,7 @@ namespace EfMigrationsApp.Migrations
                         column: x => x.GroupID,
                         principalTable: "ResourceGroups",
                         principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -77,7 +77,7 @@ namespace EfMigrationsApp.Migrations
                 column: "ResourceID",
                 principalTable: "Resources",
                 principalColumn: "ID",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

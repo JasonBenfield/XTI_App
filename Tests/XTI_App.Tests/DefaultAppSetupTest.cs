@@ -17,7 +17,7 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
             Assert.That(app.Key(), Is.EqualTo(input.Options.AppKey), "Should add app");
             Assert.That(app.Title, Is.EqualTo(input.Options.Title), "Should set app title");
         }
@@ -27,7 +27,7 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
             var currentVersion = await app.CurrentVersion();
             Assert.That(currentVersion.IsCurrent(), Is.True, "Should add current version");
         }
@@ -37,7 +37,7 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
             var roleNames = FakeAppRoles.Instance.Values();
             var appRoles = await app.Roles();
             Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
@@ -50,7 +50,7 @@ namespace XTI_App.Tests
             await execute(input);
             input.Options.Title = "New Title";
             await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
             Assert.That(app.Title, Is.EqualTo(input.Options.Title), "Should set app title");
         }
 
@@ -59,7 +59,7 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
+            var app = await input.Factory.Apps().App(AppKey.Unknown);
             Assert.That(app.ID.IsValid(), Is.True, "Should add unknown app");
         }
 
@@ -68,8 +68,8 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
-            var group = await app.Group(ResourceGroupName.Unknown);
+            var app = await input.Factory.Apps().App(AppKey.Unknown);
+            var group = await app.ResourceGroup(ResourceGroupName.Unknown);
             Assert.That(group.ID.IsValid(), Is.True, "Should add unknown resource group");
         }
 
@@ -78,8 +78,8 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
-            var group = await app.Group(ResourceGroupName.Unknown);
+            var app = await input.Factory.Apps().App(AppKey.Unknown);
+            var group = await app.ResourceGroup(ResourceGroupName.Unknown);
             var resource = await group.Resource(ResourceName.Unknown);
             Assert.That(resource.ID.IsValid(), Is.True, "Should add unknown resource");
         }
@@ -89,12 +89,12 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
-            var groups = (await app.Groups()).ToArray();
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var groups = (await app.ResourceGroups()).ToArray();
             Assert.That
             (
                 groups.Select(g => g.Name()),
-                Is.EquivalentTo(new[] { new ResourceGroupName("employee"), new ResourceGroupName("product") }),
+                Is.EquivalentTo(new[] { new ResourceGroupName("employee"), new ResourceGroupName("product"), new ResourceGroupName("login"), new ResourceGroupName("home") }),
                 "Should add resource groups from template groups"
             );
         }
@@ -104,14 +104,55 @@ namespace XTI_App.Tests
         {
             var input = setup();
             await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey, input.Options.AppType);
-            var group = await app.Group(new ResourceGroupName("employee"));
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var group = await app.ResourceGroup(new ResourceGroupName("employee"));
             var resources = (await group.Resources()).ToArray();
             Assert.That
             (
                 resources.Select(r => r.Name()),
                 Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee") }),
                 "Should add resources from template actions"
+            );
+        }
+
+        [Test]
+        public async Task ShouldAddDefaultModifierCategory()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var modCategory = await app.ModCategory(ModifierCategoryName.Default);
+            Assert.That
+            (
+                modCategory.Name().Equals(ModifierCategoryName.Default),
+                Is.True,
+                "Should add default modifier category"
+            );
+        }
+
+        [Test]
+        public async Task ShouldAddDefaultModifierCategoryToApp()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var category = await app.ModCategory(ModifierCategoryName.Default);
+            Assert.That(category.ID.IsValid(), Is.True, "Should add default modifier to app");
+        }
+
+        [Test]
+        public async Task ShouldSetModifierCategoryForGroup()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var modifiers = (await employeeGroup.Modifiers()).ToArray();
+            Assert.That
+            (
+                modifiers.Select(m => m.DisplayText),
+                Is.EquivalentTo(new[] { "IT", "HR" }),
+                "Should add modifiers from group"
             );
         }
 
@@ -133,26 +174,14 @@ namespace XTI_App.Tests
                 var factory = sp.GetService<AppFactory>();
                 var clock = sp.GetService<Clock>();
                 var options = sp.GetService<FakeAppOptions>();
-                var templateFactory = sp.GetService<IAppApiTemplateFactory>();
-                var template = templateFactory.Create();
-                return new DefaultAppSetup
+                return new FakeAppSetup
                 (
                     factory,
                     clock,
-                    template,
-                    options.Title,
-                    options.RoleNames.Values()
+                    options
                 );
             });
             return new TestInput(services.BuildServiceProvider());
-        }
-
-        private sealed class FakeAppOptions
-        {
-            public AppKey AppKey { get; } = FakeAppKey.AppKey;
-            public AppType AppType { get; } = AppType.Values.Service;
-            public string Title { get; set; } = "Fake Title";
-            public AppRoleNames RoleNames { get; } = FakeAppRoles.Instance;
         }
 
         private sealed class TestInput

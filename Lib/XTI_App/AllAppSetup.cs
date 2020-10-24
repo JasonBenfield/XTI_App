@@ -3,12 +3,12 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class UnknownAppSetup : IAppSetup
+    public sealed class AllAppSetup : IAppSetup
     {
         private readonly AppFactory appFactory;
         private readonly Clock clock;
 
-        public UnknownAppSetup(AppFactory appFactory, Clock clock)
+        public AllAppSetup(AppFactory appFactory, Clock clock)
         {
             this.appFactory = appFactory;
             this.clock = clock;
@@ -31,22 +31,15 @@ namespace XTI_App
                 appFactory,
                 clock,
                 AppKey.Unknown,
-                AppType.Values.NotFound,
                 "",
                 new AppRoleName[] { }
             );
             await setup.Run();
-            var app = await appFactory.Apps().App(AppKey.Unknown, AppType.Values.NotFound);
-            var group = await app.Group(ResourceGroupName.Unknown);
-            if (group.ID.IsNotValid())
-            {
-                group = await app.AddGroup(ResourceGroupName.Unknown);
-            }
-            var resource = await group.Resource(ResourceName.Unknown);
-            if (resource.ID.IsNotValid())
-            {
-                await group.AddResource(ResourceName.Unknown);
-            }
+            var app = await appFactory.Apps().App(AppKey.Unknown);
+            var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
+            await defaultModCategory.TryAddDefaultModifier();
+            var group = await app.AddOrUpdateResourceGroup(ResourceGroupName.Unknown, defaultModCategory);
+            await group.TryAddResource(ResourceName.Unknown);
         }
 
         private class AnonHashedPassword : IHashedPassword
