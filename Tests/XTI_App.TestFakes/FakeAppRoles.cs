@@ -4,7 +4,7 @@
     {
         public static readonly FakeAppRoles Instance = new FakeAppRoles();
 
-        public FakeAppRoles() : base(new AppKey("Fake"))
+        public FakeAppRoles()
         {
             Admin = Add("Admin");
             Viewer = Add("Viewer");

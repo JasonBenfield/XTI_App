@@ -2,6 +2,6 @@
 {
     public interface IAppVersion
     {
-        int ID { get; }
+        EntityID ID { get; }
     }
 }

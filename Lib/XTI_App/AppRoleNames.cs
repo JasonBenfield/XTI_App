@@ -5,16 +5,15 @@ namespace XTI_App
 {
     public class AppRoleNames
     {
-        protected AppRoleNames(AppKey appKey)
-        {
-            AppKey = appKey;
-        }
+        public static readonly AppRoleNames Empty = new AppRoleNames();
 
-        public AppKey AppKey { get; }
+        protected AppRoleNames()
+        {
+        }
 
         private readonly List<AppRoleName> roleNames = new List<AppRoleName>();
 
-        public AppRoleName Add(string value)
+        protected AppRoleName Add(string value)
         {
             var roleName = new AppRoleName(value);
             roleNames.Add(roleName);

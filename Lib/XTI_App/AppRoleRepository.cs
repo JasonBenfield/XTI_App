@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -22,7 +22,7 @@ namespace XTI_App
         {
             var record = new AppRoleRecord
             {
-                AppID = app.ID,
+                AppID = app.ID.Value,
                 Name = name.Value
             };
             await repo.Create(record);
@@ -32,7 +32,7 @@ namespace XTI_App
         internal async Task<IEnumerable<AppRole>> RolesForApp(App app)
         {
             var records = await repo.Retrieve()
-                .Where(r => r.AppID == app.ID)
+                .Where(r => r.AppID == app.ID.Value)
                 .ToArrayAsync();
             return records.Select(r => factory.Role(r));
         }
@@ -40,7 +40,7 @@ namespace XTI_App
         internal async Task<AppRole> Role(App app, AppRoleName roleName)
         {
             var record = await repo.Retrieve()
-                .Where(r => r.AppID == app.ID && r.Name == roleName.Value)
+                .Where(r => r.AppID == app.ID.Value && r.Name == roleName.Value)
                 .FirstOrDefaultAsync();
             return factory.Role(record);
         }
@@ -48,7 +48,7 @@ namespace XTI_App
         internal IQueryable<int> RoleIDsForApp(IApp app)
         {
             return repo.Retrieve()
-                .Where(r => r.AppID == app.ID)
+                .Where(r => r.AppID == app.ID.Value)
                 .Select(r => r.ID);
         }
     }

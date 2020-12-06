@@ -1,5 +1,5 @@
 ﻿using System;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -60,6 +60,61 @@ namespace XTI_App
             );
         internal AppUserRole UserRole(AppUserRoleRecord record) =>
             new AppUserRole(CreateDataRepository<AppUserRoleRecord>(), record);
+
+        private ResourceGroupRepository groups;
+        internal ResourceGroupRepository Groups() =>
+            fetchRepo<ResourceGroupRecord, ResourceGroupRepository>
+            (
+                ref groups,
+                dataRepo => new ResourceGroupRepository(this, dataRepo)
+            );
+        internal ResourceGroup Group(ResourceGroupRecord record)
+            => new ResourceGroup(CreateDataRepository<ResourceGroupRecord>(), this, record);
+
+        private ResourceRepository resources;
+        internal ResourceRepository Resources() =>
+            fetchRepo<ResourceRecord, ResourceRepository>
+            (
+                ref resources,
+                dataRepo => new ResourceRepository(this, dataRepo)
+            );
+        internal Resource Resource(ResourceRecord record) => new Resource(record);
+
+        private ModifierCategoryRepository modCategories;
+        public ModifierCategoryRepository ModCategories() =>
+            fetchRepo<ModifierCategoryRecord, ModifierCategoryRepository>
+            (
+                ref modCategories,
+                dataRepo => new ModifierCategoryRepository(this, dataRepo)
+            );
+        internal ModifierCategory ModCategory(ModifierCategoryRecord record) => new ModifierCategory(this, record);
+
+        private ModifierRepository modifiers;
+        internal ModifierRepository Modifiers() =>
+            fetchRepo<ModifierRecord, ModifierRepository>
+            (
+                ref modifiers,
+                dataRepo => new ModifierRepository(this, dataRepo)
+            );
+        internal Modifier Modifier(ModifierRecord record)
+            => new Modifier(CreateDataRepository<ModifierRecord>(), record);
+
+        private ModifierCategoryAdminRepository modCategoryAdmins;
+        internal ModifierCategoryAdminRepository ModCategoryAdmins() =>
+            fetchRepo<ModifierCategoryAdminRecord, ModifierCategoryAdminRepository>
+            (
+                ref modCategoryAdmins,
+                dataRepo => new ModifierCategoryAdminRepository(this, dataRepo)
+            );
+
+        private AppUserModifierRepository userModifiers;
+        internal AppUserModifierRepository UserModifiers() =>
+            fetchRepo<AppUserModifierRecord, AppUserModifierRepository>
+            (
+                ref userModifiers,
+                dataRepo => new AppUserModifierRepository(this, dataRepo)
+            );
+        internal AppUserModifier UserModifier(AppUserModifierRecord record) => new AppUserModifier(record);
 
         private TRepo fetchRepo<TRecord, TRepo>
         (

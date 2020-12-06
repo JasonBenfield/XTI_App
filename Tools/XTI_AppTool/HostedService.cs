@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using XTI_App;
@@ -34,9 +33,9 @@ namespace XTI_AppTool
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(appToolOptions.AppKey))
+                if (string.IsNullOrWhiteSpace(appToolOptions.AppName))
                 {
-                    throw new ArgumentException("App key is required");
+                    throw new ArgumentException("App name is required");
                 }
                 if (string.IsNullOrWhiteSpace(appToolOptions.AppType))
                 {
@@ -47,28 +46,19 @@ namespace XTI_AppTool
                 {
                     throw new ArgumentException($"App type '{appToolOptions.AppType}' is not valid");
                 }
-                var appKey = new AppKey(appToolOptions.AppKey);
-                var app = await appFactory.Apps().App(appKey, appType);
                 if (appToolOptions.Command == "add")
                 {
-                    var title = string.IsNullOrWhiteSpace(appToolOptions.AppTitle)
-                        ? appToolOptions.AppKey
-                        : appToolOptions.AppTitle;
-                    if (app.Exists())
-                    {
-                        await app.SetTitle(title);
-                    }
-                    else
-                    {
-                        app = await appFactory.Apps().AddApp(appKey, appType, title, clock.Now());
-                    }
-                    var currentVersion = await app.CurrentVersion();
-                    if (!currentVersion.IsCurrent())
-                    {
-                        var version = await app.StartNewMajorVersion(clock.Now());
-                        await version.Publishing();
-                        await version.Published();
-                    }
+                    await new AllAppSetup(appFactory, clock).Run();
+                    var appKey = new AppKey(appToolOptions.AppName, appType);
+                    var defaultAppSetup = new SingleAppSetup
+                    (
+                        appFactory,
+                        clock,
+                        appKey,
+                        appToolOptions.AppTitle,
+                        new AppRoleName[] { }
+                    );
+                    await defaultAppSetup.Run();
                 }
                 else
                 {

@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MainDB.EF;
+using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using XTI_App.DB;
-using XTI_App.Entities;
 using XTI_Core;
 using XTI_Core.EF;
 
@@ -10,7 +10,7 @@ namespace XTI_App.EF
 {
     public sealed class EfAppFactory : AppFactory
     {
-        public EfAppFactory(AppDbContext appDbContext)
+        public EfAppFactory(MainDbContext appDbContext)
         {
             this.appDbContext = appDbContext;
             unitOfWork = new UnitOfWork(appDbContext);
@@ -23,11 +23,17 @@ namespace XTI_App.EF
                 { typeof(AppRecord), appDbContext.Apps },
                 { typeof(AppVersionRecord), appDbContext.Versions },
                 { typeof(AppRoleRecord), appDbContext.Roles },
-                { typeof(AppUserRoleRecord), appDbContext.UserRoles }
+                { typeof(AppUserRoleRecord), appDbContext.UserRoles },
+                { typeof(ResourceGroupRecord), appDbContext.ResourceGroups },
+                { typeof(ResourceRecord), appDbContext.Resources },
+                { typeof(ModifierCategoryRecord), appDbContext.ModifierCategories },
+                { typeof(ModifierCategoryAdminRecord), appDbContext.ModifierCategoryAdmins },
+                { typeof(ModifierRecord), appDbContext.Modifiers },
+                { typeof(AppUserModifierRecord), appDbContext.UserModifiers }
             };
         }
 
-        private readonly AppDbContext appDbContext;
+        private readonly MainDbContext appDbContext;
         private readonly UnitOfWork unitOfWork;
 
         private readonly Dictionary<Type, object> dbSetLookup;

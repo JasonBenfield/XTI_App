@@ -1,1 +1,0 @@
-& "$($env:XTI_Tools)\app_db_update.ps1" -env Staging

@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XTI_App\XTI_App.csproj" />
+    <ProjectReference Include="..\XTI_App.Api\XTI_App.Api.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,11 +8,12 @@ namespace XTI_App.Api
     {
         public AppApiTemplate(AppApi api)
         {
-            Name = api.Name.App;
+            AppKey = api.AppKey;
             GroupTemplates = api.Groups().Select(g => g.Template());
         }
 
-        public string Name { get; }
+        public AppKey AppKey { get; }
+        public string Name { get => AppKey.Name.DisplayText; }
         public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
 
         public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>

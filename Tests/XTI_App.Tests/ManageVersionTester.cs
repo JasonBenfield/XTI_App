@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
-using XTI_App;
-using XTI_Core.Fakes;
-using XTI_Version;
-using XTI_App.Fakes;
-using XTI_Secrets.Fakes;
-using XTI_App.EF;
+using XTI_App.TestFakes;
 using XTI_Core;
+using XTI_Core.Fakes;
+using XTI_Secrets.Fakes;
+using XTI_Version;
 
 namespace XTI_App.Tests
 {
@@ -28,16 +26,19 @@ namespace XTI_App.Tests
             services.AddFakeSecretCredentials();
             sp = services.BuildServiceProvider();
             var factory = sp.GetService<AppFactory>();
-            await new AppSetup(factory).Run();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", DateTime.UtcNow);
+            var clock = sp.GetService<Clock>();
+            var setup = new FakeAppSetup(factory, clock);
+            await setup.Run();
             Factory = sp.GetService<AppFactory>();
-            App = app;
+            App = setup.App;
             Clock = sp.GetService<FakeClock>();
+            var appKey = setup.App.Key();
             Options = new ManageVersionOptions
             {
                 Command = "New",
                 BranchName = "",
-                AppKey = app.Key().Value,
+                AppName = appKey.Name.Value,
+                AppType = appKey.Type.DisplayText,
                 VersionType = AppVersionType.Values.Patch.DisplayText,
             };
         }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -17,12 +17,30 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        public async Task<App> AddApp(AppKey key, AppType type, string title, DateTime timeAdded)
+        public async Task<App> AddOrUpdate(AppKey appKey, string title, DateTime timeAdded)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                title = appKey.Name.DisplayText;
+            }
+            var app = await App(appKey);
+            if (app.ID.IsValid() && app.Key().Equals(appKey))
+            {
+                await app.SetTitle(title);
+            }
+            else
+            {
+                app = await Add(appKey, title, timeAdded);
+            }
+            return app;
+        }
+
+        public async Task<App> Add(AppKey appKey, string title, DateTime timeAdded)
         {
             var record = new AppRecord
             {
-                Key = key.Value,
-                Type = type.Value,
+                Name = appKey.Name.Value,
+                Type = appKey.Type.Value,
                 Title = title?.Trim() ?? "",
                 TimeAdded = timeAdded
             };
@@ -36,12 +54,15 @@ namespace XTI_App
             return factory.App(record);
         }
 
-        public Task<App> WebApp(AppKey key) => App(key, AppType.Values.WebApp);
-
-        public async Task<App> App(AppKey key, AppType type)
+        public async Task<App> App(AppKey appKey)
         {
             var record = await repo.Retrieve()
-                .FirstOrDefaultAsync(a => a.Key == key.Value && a.Type == type.Value);
+                .FirstOrDefaultAsync(a => a.Name == appKey.Name.Value && a.Type == appKey.Type.Value);
+            if (record == null)
+            {
+                record = await repo.Retrieve()
+                    .FirstOrDefaultAsync(a => a.Name == AppName.Unknown.Value);
+            }
             return factory.App(record);
         }
     }

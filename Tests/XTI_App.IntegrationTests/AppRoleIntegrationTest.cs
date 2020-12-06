@@ -1,14 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MainDB.EF;
+using MainDB.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.DB;
 using XTI_App.EF;
-using XTI_App.Extensions;
 using XTI_App.Fakes;
+using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
 using XTI_Core;
 using XTI_Core.Fakes;
@@ -22,10 +22,8 @@ namespace XTI_App.IntegrationTests
         {
             var input = await setup();
             var adminRoleName = new AppRoleName("Admin");
-            await input.App.AddRole(adminRoleName);
-            var roles = (await input.App.Roles()).ToArray();
-            Assert.That(roles.Length, Is.EqualTo(1), "Should add role to app");
-            Assert.That(roles[0].Name(), Is.EqualTo(adminRoleName), "Should add role to app");
+            var adminRole = await input.App.Role(adminRoleName);
+            Assert.That(adminRole.Name(), Is.EqualTo(adminRoleName), "Should add role to app");
         }
 
         [Test]
@@ -33,7 +31,7 @@ namespace XTI_App.IntegrationTests
         {
             var input = await setup();
             var adminRoleName = new AppRoleName("Admin");
-            var adminRole = await input.App.AddRole(adminRoleName);
+            var adminRole = await input.App.Role(adminRoleName);
             var user = await input.Factory.Users().Add
             (
                 new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
@@ -49,13 +47,13 @@ namespace XTI_App.IntegrationTests
         {
             var input = await setup();
             var adminRoleName = new AppRoleName("Admin");
-            var adminRole = await input.App.AddRole(adminRoleName);
+            var adminRole = await input.App.Role(adminRoleName);
             var user = await input.Factory.Users().Add
             (
                 new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
             );
             await user.AddRole(adminRole);
-            var app2 = await input.Factory.Apps().AddApp(new AppKey("app2"), AppType.Values.WebApp, "App 2", input.Clock.Now());
+            var app2 = await input.Factory.Apps().Add(new AppKey("app2", AppType.Values.WebApp), "App 2", input.Clock.Now());
             var role2 = await app2.AddRole(new AppRoleName("another role"));
             await user.AddRole(role2);
             var userRoles = (await user.RolesForApp(input.App)).ToArray();
@@ -68,30 +66,37 @@ namespace XTI_App.IntegrationTests
 
         private async Task<TestInput> setup()
         {
-            var hostEnv = new FakeHostEnvironment { EnvironmentName = "Test" };
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", hostEnv.EnvironmentName);
-            var services = new ServiceCollection();
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.UseXtiConfiguration("Test", new string[] { });
-            var configuration = configurationBuilder.Build();
-            services.AddScoped<IHostEnvironment>(sp => hostEnv);
-            services.AddAppDbContextForSqlServer(configuration);
-            services.AddScoped<Clock, FakeClock>();
-            services.AddScoped<AppFactory, EfAppFactory>();
-            services.AddScoped<AppDbReset>();
-            var sp = services.BuildServiceProvider();
-            var factory = sp.GetService<AppFactory>();
-            var appDbReset = sp.GetService<AppDbReset>();
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration
+                (
+                    (hostContext, builder) => builder.UseXtiConfiguration(hostContext.HostingEnvironment, new string[] { })
+                )
+                .ConfigureServices
+                (
+                    (hostContext, services) =>
+                    {
+                        services.AddAppDbContextForSqlServer(hostContext.Configuration);
+                        services.AddScoped<Clock, FakeClock>();
+                        services.AddScoped<AppFactory, EfAppFactory>();
+                        services.AddScoped<MainDbReset>();
+                    }
+                )
+                .Build();
+            var scope = host.Services.CreateScope();
+            var factory = scope.ServiceProvider.GetService<AppFactory>();
+            var appDbReset = scope.ServiceProvider.GetService<MainDbReset>();
             await appDbReset.Run();
-            await new AppSetup(factory).Run();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", DateTime.UtcNow);
-            var input = new TestInput(sp, app);
+            var clock = scope.ServiceProvider.GetService<Clock>();
+            var setup = new FakeAppSetup(factory, clock);
+            await setup.Run();
+            var input = new TestInput(scope.ServiceProvider, setup.App);
             return input;
         }
 
         private sealed class TestInput
         {
-            public TestInput(ServiceProvider sp, App app)
+            public TestInput(IServiceProvider sp, App app)
             {
                 Factory = sp.GetService<AppFactory>();
                 App = app;

@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MainDB.EF;
+using MainDB.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
-using XTI_App.DB;
 using XTI_App.EF;
-using XTI_App.Extensions;
+using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
 using XTI_Core;
 using XTI_Core.Fakes;
@@ -43,27 +43,55 @@ namespace XTI_App.IntegrationTests
             Assert.That(newVersion?.IsMajor(), Is.True, "Should start new major version");
         }
 
-        private async Task<TestInput> setup()
+        [Test]
+        public async Task Configure()
         {
-            var hostEnv = new FakeHostEnvironment { EnvironmentName = "Test" };
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", hostEnv.EnvironmentName);
-            var services = new ServiceCollection();
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.UseXtiConfiguration("Test", new string[] { });
-            var configuration = configurationBuilder.Build();
-            services.AddScoped<IHostEnvironment>(sp => hostEnv);
-            services.AddAppDbContextForSqlServer(configuration);
-            services.AddScoped<Clock, FakeClock>();
-            services.AddScoped<AppFactory, EfAppFactory>();
-            services.AddScoped<ManageVersionCommand>();
-            services.AddScoped<AppDbReset>();
-            var sp = services.BuildServiceProvider();
+            var input = await setup("Production");
+            input.Options.AppName = "TempLog";
+            input.Options.AppType = AppType.Values.Service.DisplayText;
+            input.Options.VersionType = AppVersionType.Values.Minor.DisplayText;
+            var appSetup = new SingleAppSetup
+            (
+                input.Services.GetService<AppFactory>(),
+                input.Services.GetService<Clock>(),
+                new AppKey(input.Options.AppName, AppType.Values.Value(input.Options.AppType)),
+                "",
+                new AppRoleName[] { }
+            );
+            await appSetup.Run();
+            var newVersion = await execute(input);
+            //Assert.That(newVersion?.IsMajor(), Is.True, "Should start new major version");
+        }
+
+        private async Task<TestInput> setup(string envName = "Test")
+        {
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", envName);
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.UseXtiConfiguration(hostingContext.HostingEnvironment, new string[] { });
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddAppDbContextForSqlServer(hostContext.Configuration);
+                    services.AddScoped<Clock, FakeClock>();
+                    services.AddScoped<AppFactory, EfAppFactory>();
+                    services.AddScoped<ManageVersionCommand>();
+                    services.AddScoped<MainDbReset>();
+                })
+                .Build();
+            var scope = host.Services.CreateScope();
+            var sp = scope.ServiceProvider;
             var factory = sp.GetService<AppFactory>();
-            var appDbReset = sp.GetService<AppDbReset>();
-            await appDbReset.Run();
-            await new AppSetup(factory).Run();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", DateTime.UtcNow);
-            var input = new TestInput(sp, app);
+            var clock = sp.GetService<Clock>();
+            if (envName == "Test")
+            {
+                var appDbReset = sp.GetService<MainDbReset>();
+                await appDbReset.Run();
+                var setup = new FakeAppSetup(factory, clock);
+                await setup.Run();
+            }
+            var input = new TestInput(sp);
             return input;
         }
 
@@ -75,26 +103,24 @@ namespace XTI_App.IntegrationTests
 
         private sealed class TestInput
         {
-            private readonly ServiceProvider sp;
-
-            public TestInput(ServiceProvider sp, App app)
+            public TestInput(IServiceProvider sp)
             {
-                this.sp = sp;
+                Services = sp;
                 Factory = sp.GetService<AppFactory>();
-                App = app;
                 Options = new ManageVersionOptions
                 {
                     Command = "New",
-                    AppKey = app.Key().Value,
+                    AppName = FakeAppKey.AppName.Value,
+                    AppType = FakeAppKey.AppKey.Type.DisplayText,
                     VersionType = AppVersionType.Values.Patch.DisplayText
                 };
             }
 
             public AppFactory Factory { get; }
-            public App App { get; }
             public ManageVersionOptions Options { get; }
+            public IServiceProvider Services { get; }
 
-            public ManageVersionCommand Command() => sp.GetService<ManageVersionCommand>();
+            public ManageVersionCommand Command() => Services.GetService<ManageVersionCommand>();
         }
     }
 }

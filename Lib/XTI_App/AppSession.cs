@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -17,26 +17,38 @@ namespace XTI_App
             this.factory = factory;
             this.repo = repo;
             this.record = record ?? new AppSessionRecord();
+            ID = new EntityID(this.record.ID);
         }
 
-        public int ID { get => record.ID; }
+        public EntityID ID { get; }
 
         public bool HasStarted() => new Timestamp(record.TimeStarted).IsValid();
         public bool HasEnded() => new Timestamp(record.TimeEnded).IsValid();
 
         public Task<AppUser> User() => factory.Users().User(record.UserID);
 
-        public Task<AppRequest> LogRequest(string requestKey, IAppVersion version, string path, DateTime timeRequested)
+        public Task<AppRequest> LogRequest
+        (
+            string requestKey,
+            IAppVersion version,
+            IResource resource,
+            Modifier modifier,
+            string path,
+            DateTime timeRequested
+        )
         {
             var requestRepo = factory.Requests();
-            return requestRepo.Add(this, requestKey, version, path, timeRequested);
+            return requestRepo.Add(this, requestKey, version, resource, modifier, path, timeRequested);
         }
+
+        public Task<AppRequest> LogDefaultRequest(DateTime timeRequested)
+            => factory.Requests().AddDefaultRequest(this, timeRequested);
 
         public Task Authenticate(IAppUser user)
         {
             return repo.Update(record, r =>
             {
-                r.UserID = user.ID;
+                r.UserID = user.ID.Value;
             });
         }
 
@@ -54,6 +66,6 @@ namespace XTI_App
             return requestRepo.RetrieveBySession(this);
         }
 
-        public override string ToString() => $"{nameof(AppSession)} {ID}";
+        public override string ToString() => $"{nameof(AppSession)} {ID.Value}";
     }
 }

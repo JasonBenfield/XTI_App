@@ -2,10 +2,8 @@
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.EF;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
-using XTI_Core;
 using XTI_Core.Fakes;
 
 namespace XTI_App.Tests
@@ -40,16 +38,6 @@ namespace XTI_App.Tests
         }
 
         [Test]
-        public async Task ShouldAddRolesFromAppRoleNames()
-        {
-            var input = await setup();
-            var roleNames = FakeAppRoles.Instance.Values();
-            await input.App.SetRoles(roleNames);
-            var appRoles = await input.App.Roles();
-            Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
-        }
-
-        [Test]
         public async Task ShouldNotAddRoleFromAppRoleNames_WhenTheRoleAlreadyExists()
         {
             var input = await setup();
@@ -78,10 +66,10 @@ namespace XTI_App.Tests
             services.AddServicesForTests();
             var sp = services.BuildServiceProvider();
             var factory = sp.GetService<AppFactory>();
-            var setup = new AppSetup(factory);
-            await setup.Run();
             var clock = sp.GetService<FakeClock>();
-            var app = await factory.Apps().AddApp(new AppKey("Fake"), AppType.Values.WebApp, "Fake", clock.Now());
+            var setup = new FakeAppSetup(factory, clock);
+            await setup.Run();
+            var app = await factory.Apps().Add(new AppKey("Fake", AppType.Values.WebApp), "Fake", clock.Now());
             return new TestInput(sp, app);
         }
 

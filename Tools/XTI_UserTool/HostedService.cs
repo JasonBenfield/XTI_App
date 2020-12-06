@@ -41,27 +41,43 @@ namespace XTI_UserApp
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
             try
             {
-                string password;
-                if (string.IsNullOrWhiteSpace(userOptions.Password))
+                if (userOptions.Command.Equals("user", StringComparison.OrdinalIgnoreCase))
                 {
-                    password = Guid.NewGuid().ToString("N") + "!?";
-                }
-                else
-                {
-                    password = userOptions.Password;
-                }
-                if (!string.IsNullOrWhiteSpace(userOptions.AppKey))
-                {
-                    var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
-                        ? AppType.Values.WebApp
-                        : AppType.Values.Value(userOptions.AppType);
-                    var app = await appFactory.Apps().App(new AppKey(userOptions.AppKey), appType);
+                    if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+                    string password;
+                    if (string.IsNullOrWhiteSpace(userOptions.Password))
+                    {
+                        password = Guid.NewGuid().ToString("N") + "!?";
+                    }
+                    else
+                    {
+                        password = userOptions.Password;
+                    }
                     var userName = new AppUserName(userOptions.UserName);
                     var hashedPassword = hashedPasswordFactory.Create(password);
                     var user = await appFactory.Users().User(userName);
+                    if (user.Exists())
+                    {
+                        await user.ChangePassword(hashedPassword);
+                    }
+                    else
+                    {
+                        user = await appFactory.Users().Add(userName, hashedPassword, clock.Now());
+                    }
+                }
+                else if (userOptions.Command.Equals("userroles", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+                    if (string.IsNullOrWhiteSpace(userOptions.AppName)) { throw new ArgumentException("App name is required"); }
+                    if (string.IsNullOrWhiteSpace(userOptions.AppType)) { throw new ArgumentException("App type is required"); }
+                    var userName = new AppUserName(userOptions.UserName);
+                    var user = await appFactory.Users().User(userName);
+                    var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
+                        ? AppType.Values.WebApp
+                        : AppType.Values.Value(userOptions.AppType);
+                    var app = await appFactory.Apps().App(new AppKey(userOptions.AppName, appType));
                     var roles = new List<AppRole>();
                     if (!string.IsNullOrWhiteSpace(userOptions.RoleNames))
                     {
@@ -77,34 +93,29 @@ namespace XTI_UserApp
                             }
                         }
                     }
-                    if (user.Exists())
+                    var userRoles = (await user.RolesForApp(app)).ToArray();
+                    foreach (var role in roles)
                     {
-                        await user.ChangePassword(hashedPassword);
-                        var userRoles = (await user.RolesForApp(app)).ToArray();
-                        foreach (var role in roles)
-                        {
-                            if (!userRoles.Any(ur => ur.IsRole(role)))
-                            {
-                                await user.AddRole(role);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        user = await appFactory.Users().Add(userName, hashedPassword, clock.Now());
-                        foreach (var role in roles)
+                        if (!userRoles.Any(ur => ur.IsRole(role)))
                         {
                             await user.AddRole(role);
                         }
                     }
                 }
-                if (!string.IsNullOrWhiteSpace(userOptions.CredentialKey))
+                else if (userOptions.Command.Equals("credentials", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (string.IsNullOrWhiteSpace(userOptions.CredentialKey)) { throw new ArgumentException("Credential Key is required"); }
+                    if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+                    if (string.IsNullOrWhiteSpace(userOptions.Password)) { throw new ArgumentException("Password is required"); }
                     var secretCredentials = secretCredentialsFactory.Create(userOptions.CredentialKey);
                     await secretCredentials.Update
                     (
-                        new CredentialValue(userOptions.UserName, password)
+                        new CredentialValue(userOptions.UserName, userOptions.Password)
                     );
+                }
+                else
+                {
+                    throw new NotSupportedException($"Command {userOptions.Command} is not supported");
                 }
             }
             catch (Exception ex)

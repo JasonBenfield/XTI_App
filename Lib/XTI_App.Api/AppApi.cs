@@ -9,13 +9,14 @@ namespace XTI_App.Api
     {
         protected AppApi
         (
-            string appKey,
-            string version,
+            AppKey appKey,
+            AppVersionKey versionKey,
             IAppApiUser user,
             ResourceAccess access
         )
         {
-            Name = new XtiPath(appKey, version);
+            AppKey = appKey;
+            Path = new XtiPath(appKey.Name.DisplayText, versionKey.DisplayText);
             this.user = user;
             Access = access ?? ResourceAccess.AllowAuthenticated();
         }
@@ -23,17 +24,19 @@ namespace XTI_App.Api
         private readonly IAppApiUser user;
         private readonly Dictionary<string, AppApiGroup> groups = new Dictionary<string, AppApiGroup>();
 
-        public XtiPath Name { get; }
+        public XtiPath Path { get; }
+
+        public AppKey AppKey { get; }
 
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess() => user.HasAccessToApp();
+        public Task<bool> HasAccess() => user.HasAccessToApp(Path);
 
         protected TGroup AddGroup<TGroup>(Func<IAppApiUser, TGroup> createGroup)
             where TGroup : AppApiGroup
         {
             var group = createGroup(user);
-            groups.Add(group.Name.Group.ToLower(), group);
+            groups.Add(group.Path.Group.Value, group);
             return group;
         }
 

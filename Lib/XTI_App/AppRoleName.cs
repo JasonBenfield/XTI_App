@@ -4,7 +4,7 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class AppRoleName : SemanticType<string>, IEquatable<AppRoleName>
+    public sealed class AppRoleName : TextValue, IEquatable<AppRoleName>
     {
         public AppRoleName(string displayText)
             : base(whitespaceRegex.Replace(displayText?.Trim().ToLower() ?? "", "_"), displayText?.Trim() ?? "")

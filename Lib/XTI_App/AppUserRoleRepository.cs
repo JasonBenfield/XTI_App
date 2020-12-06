@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -18,13 +18,12 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        internal async Task<AppUserRole> Add(AppUser user, AppRole role, AccessModifier modifier)
+        internal async Task<AppUserRole> Add(AppUser user, AppRole role)
         {
             var record = new AppUserRoleRecord
             {
-                UserID = user.ID,
-                RoleID = role.ID,
-                Modifier = modifier.Value
+                UserID = user.ID.Value,
+                RoleID = role.ID.Value
             };
             await repo.Create(record);
             return factory.UserRole(record);
@@ -37,7 +36,7 @@ namespace XTI_App
                 .Where
                 (
                     ur =>
-                        ur.UserID == user.ID
+                        ur.UserID == user.ID.Value
                         && roleRepo.RoleIDsForApp(app).Any(id => id == ur.RoleID)
                 )
                 .ToArrayAsync();

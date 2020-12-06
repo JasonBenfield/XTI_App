@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -26,8 +26,8 @@ namespace XTI_App
             {
                 record = new AppVersionRecord
                 {
-                    VersionKey = key.Value,
-                    AppID = app.ID,
+                    VersionKey = new GeneratedKey().Value(),
+                    AppID = app.ID.Value,
                     Major = 0,
                     Minor = 0,
                     Patch = 0,
@@ -65,14 +65,14 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppVersion>> VersionsByApp(App app)
         {
-            var records = await repo.Retrieve().Where(v => v.AppID == app.ID).ToArrayAsync();
+            var records = await repo.Retrieve().Where(v => v.AppID == app.ID.Value).ToArrayAsync();
             return records.Select(v => factory.Version(v));
         }
 
         internal async Task<AppVersion> CurrentVersion(App app)
         {
             var record = await repo.Retrieve()
-                .Where(v => v.AppID == app.ID && v.Status == AppVersionStatus.Values.Current.Value)
+                .Where(v => v.AppID == app.ID.Value && v.Status == AppVersionStatus.Values.Current.Value)
                 .FirstOrDefaultAsync();
             return factory.Version(record);
         }

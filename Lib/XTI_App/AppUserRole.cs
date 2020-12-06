@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -16,8 +16,7 @@ namespace XTI_App
         }
 
         public int RoleID { get => record.RoleID; }
-        public bool IsRole(IAppRole appRole) => appRole.ID == RoleID;
-        public AccessModifier Modifier() => new AccessModifier(record.Modifier);
+        public bool IsRole(IAppRole appRole) => appRole.ID.Value == RoleID;
 
         internal Task Delete() => repo.Delete(record);
 

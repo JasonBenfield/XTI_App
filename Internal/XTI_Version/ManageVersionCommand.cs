@@ -80,7 +80,7 @@ namespace XTI_Version
             var appType = string.IsNullOrWhiteSpace(options.AppType)
                 ? AppType.Values.WebApp
                 : AppType.Values.Value(options.AppType);
-            var app = await factory.Apps().App(new AppKey(options.AppKey), appType);
+            var app = await factory.Apps().App(new AppKey(options.AppName, appType));
             AppVersion version;
             var versionType = AppVersionType.Values.Value(options.VersionType);
             if (versionType.Equals(AppVersionType.Values.Major))
