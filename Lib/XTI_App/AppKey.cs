@@ -6,6 +6,12 @@ namespace XTI_App
     {
         public static readonly AppKey Unknown = new AppKey(AppName.Unknown, AppType.Values.NotFound);
 
+        public static AppKey Parse(string value)
+        {
+            var split = value.Split('/');
+            return new AppKey(split[0], AppType.Values.Value(int.Parse(split[1])));
+        }
+
         public AppKey(string name, AppType appType)
             : this(new AppName(name), appType)
         {
@@ -22,6 +28,8 @@ namespace XTI_App
 
         public AppName Name { get; }
         public AppType Type { get; }
+
+        public string Serialize() => value;
 
         public bool Equals(AppKey other) => value == other?.value;
         public override bool Equals(object obj)

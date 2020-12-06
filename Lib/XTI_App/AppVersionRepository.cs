@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -26,7 +26,7 @@ namespace XTI_App
             {
                 record = new AppVersionRecord
                 {
-                    VersionKey = Guid.NewGuid().ToString("N"),
+                    VersionKey = new GeneratedKey().Value(),
                     AppID = app.ID.Value,
                     Major = 0,
                     Minor = 0,

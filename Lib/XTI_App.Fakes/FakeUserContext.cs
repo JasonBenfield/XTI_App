@@ -9,8 +9,6 @@ namespace XTI_App.Fakes
 
         public Task<IAppUser> User() => Task.FromResult(user);
 
-        public Task<IAppUser> User(int id) => Task.FromResult<IAppUser>(null);
-
         public void SetUser(IAppUser user) => this.user = user;
 
         public void RefreshUser(IAppUser user)

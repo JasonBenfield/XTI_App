@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using XTI_App;
@@ -34,9 +33,9 @@ namespace XTI_AppTool
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(appToolOptions.AppKey))
+                if (string.IsNullOrWhiteSpace(appToolOptions.AppName))
                 {
-                    throw new ArgumentException("App key is required");
+                    throw new ArgumentException("App name is required");
                 }
                 if (string.IsNullOrWhiteSpace(appToolOptions.AppType))
                 {
@@ -49,15 +48,17 @@ namespace XTI_AppTool
                 }
                 if (appToolOptions.Command == "add")
                 {
-                    var appKey = new AppKey(appToolOptions.AppKey, appType);
-                    var app = await appFactory.Apps().AddOrUpdate(appKey, appToolOptions.AppTitle, clock.Now());
-                    var currentVersion = await app.CurrentVersion();
-                    if (!currentVersion.IsCurrent())
-                    {
-                        var version = await app.StartNewMajorVersion(clock.Now());
-                        await version.Publishing();
-                        await version.Published();
-                    }
+                    await new AllAppSetup(appFactory, clock).Run();
+                    var appKey = new AppKey(appToolOptions.AppName, appType);
+                    var defaultAppSetup = new SingleAppSetup
+                    (
+                        appFactory,
+                        clock,
+                        appKey,
+                        appToolOptions.AppTitle,
+                        new AppRoleName[] { }
+                    );
+                    await defaultAppSetup.Run();
                 }
                 else
                 {

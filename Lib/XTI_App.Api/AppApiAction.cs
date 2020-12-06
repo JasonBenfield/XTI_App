@@ -19,7 +19,7 @@ namespace XTI_App.Api
             Access = access;
             Path = path;
             FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
-                ? new FriendlyNameFromActionName(path.Action).Value
+                ? new FriendlyNameFromActionName(path.Action.DisplayText).Value
                 : friendlyName;
             this.user = user;
             this.createValidation = createValidation;
@@ -74,7 +74,7 @@ namespace XTI_App.Api
         {
             var modelTemplate = new ValueTemplateFromType(typeof(TModel)).Template();
             var resultTemplate = new ValueTemplateFromType(typeof(TResult)).Template();
-            return new AppApiActionTemplate(Path.Action, FriendlyName, Access, modelTemplate, resultTemplate);
+            return new AppApiActionTemplate(Path.Action.DisplayText, FriendlyName, Access, modelTemplate, resultTemplate);
         }
     }
 }

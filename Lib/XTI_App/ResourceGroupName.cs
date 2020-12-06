@@ -7,7 +7,7 @@ namespace XTI_App
     {
         public static readonly ResourceGroupName Unknown = new ResourceGroupName("Unknown");
 
-        public ResourceGroupName(string value) : base(value?.Trim().ToLower() ?? "")
+        public ResourceGroupName(string value) : base(value?.Trim().ToLower() ?? "", value)
         {
         }
 

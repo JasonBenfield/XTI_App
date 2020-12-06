@@ -16,11 +16,11 @@ namespace XTI_AppTool
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    config.UseXtiConfiguration(hostingContext.HostingEnvironment.EnvironmentName, args);
+                    config.UseXtiConfiguration(hostingContext.HostingEnvironment, args);
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddConsoleAppServices(hostContext.Configuration);
+                    services.AddConsoleAppServices(hostContext.HostingEnvironment, hostContext.Configuration);
                     services.Configure<AppToolOptions>(hostContext.Configuration);
                     services.AddHostedService(sp =>
                     {

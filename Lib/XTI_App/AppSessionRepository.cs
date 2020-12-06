@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -29,6 +29,28 @@ namespace XTI_App
         {
             var record = await repo.Retrieve().FirstOrDefaultAsync(s => s.SessionKey == sessionKey);
             return factory.Session(record);
+        }
+
+        public async Task<AppSession> DefaultSession(DateTime minTimeStarted)
+        {
+            var sessionRecord = await repo.Retrieve()
+                .FirstOrDefaultAsync(r => r.RequesterKey == "default" && r.TimeStarted >= minTimeStarted.Date);
+            return factory.Session(sessionRecord);
+        }
+
+        public async Task<AppSession> CreateDefaultSession(DateTime timeStarted)
+        {
+            var user = await factory.Users().User(AppUserName.Anon);
+            var session = await Create
+            (
+                new GeneratedKey().Value(),
+                user,
+                timeStarted,
+                "default",
+                "",
+                ""
+            );
+            return session;
         }
 
         public async Task<IEnumerable<AppSession>> SessionsByTimeRange(DateTime startDate, DateTime endDate)

@@ -2,10 +2,8 @@
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.EF;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
-using XTI_Core;
 using XTI_Core.Fakes;
 
 namespace XTI_App.Tests

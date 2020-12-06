@@ -7,7 +7,7 @@ namespace XTI_App
     {
         public static readonly ResourceName Unknown = new ResourceName("Unknown");
 
-        public ResourceName(string value) : base(value?.Trim().ToLower() ?? "")
+        public ResourceName(string value) : base(value?.Trim().ToLower() ?? "", value)
         {
         }
 

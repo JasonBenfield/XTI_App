@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 
 namespace XTI_App
 {
-    public sealed class ModifierCategory
+    public sealed class ModifierCategory : IModifierCategory
     {
         private readonly AppFactory factory;
         private readonly ModifierCategoryRecord record;

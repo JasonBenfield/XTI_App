@@ -2,12 +2,12 @@
 
 namespace XTI_App.Api
 {
-    public sealed class AppContext : IAppContext
+    public sealed class DefaultAppContext : IAppContext
     {
         private readonly AppFactory appFactory;
         private readonly AppKey appKey;
 
-        public AppContext(AppFactory appFactory, AppKey appKey)
+        public DefaultAppContext(AppFactory appFactory, AppKey appKey)
         {
             this.appFactory = appFactory;
             this.appKey = appKey;

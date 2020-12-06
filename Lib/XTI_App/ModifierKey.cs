@@ -10,7 +10,7 @@ namespace XTI_App
 
         public static readonly ModifierKey Default = new ModifierKey("");
 
-        public static ModifierKey Generate() => new ModifierKey(Guid.NewGuid().ToString("N"));
+        public static ModifierKey Generate() => new ModifierKey(new GeneratedKey().Value());
 
         public static ModifierKey FromValue(string value) =>
             string.IsNullOrWhiteSpace(value) ? Default : new ModifierKey(value);

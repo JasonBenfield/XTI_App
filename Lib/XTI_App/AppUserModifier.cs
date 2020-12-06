@@ -1,4 +1,4 @@
-﻿using XTI_App.Entities;
+﻿using MainDB.Entities;
 
 namespace XTI_App
 {

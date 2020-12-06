@@ -2,7 +2,8 @@
 {
     public sealed class UserOptions
     {
-        public string AppKey { get; set; }
+        public string Command { get; set; }
+        public string AppName { get; set; }
         public string AppType { get; set; }
         public string CredentialKey { get; set; }
         public string UserName { get; set; }

@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MainDB.EF;
+using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using XTI_App.DB;
-using XTI_App.Entities;
 using XTI_Core;
 using XTI_Core.EF;
 
@@ -10,7 +10,7 @@ namespace XTI_App.EF
 {
     public sealed class EfAppFactory : AppFactory
     {
-        public EfAppFactory(AppDbContext appDbContext)
+        public EfAppFactory(MainDbContext appDbContext)
         {
             this.appDbContext = appDbContext;
             unitOfWork = new UnitOfWork(appDbContext);
@@ -33,7 +33,7 @@ namespace XTI_App.EF
             };
         }
 
-        private readonly AppDbContext appDbContext;
+        private readonly MainDbContext appDbContext;
         private readonly UnitOfWork unitOfWork;
 
         private readonly Dictionary<Type, object> dbSetLookup;

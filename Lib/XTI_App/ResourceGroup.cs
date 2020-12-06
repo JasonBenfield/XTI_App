@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -34,6 +34,8 @@ namespace XTI_App
 
         private Task<Resource> AddResource(ResourceName name) => factory.Resources().Add(this, name);
 
+        async Task<IResource> IResourceGroup.Resource(ResourceName name) => await Resource(name);
+
         public Task<Resource> Resource(ResourceName name) => factory.Resources().Resource(this, name);
 
         public Task<IEnumerable<Resource>> Resources() => factory.Resources().Resources(this);
@@ -58,10 +60,11 @@ namespace XTI_App
                 r.ModCategoryID = category.ID.Value;
             });
 
+        async Task<IModifierCategory> IResourceGroup.ModCategory() => await ModCategory();
+
         public Task<ModifierCategory> ModCategory()
             => factory.ModCategories().Category(record.ModCategoryID);
 
         public override string ToString() => $"{nameof(ResourceGroup)} {ID.Value}";
-
     }
 }

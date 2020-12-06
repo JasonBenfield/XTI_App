@@ -2,7 +2,7 @@
   "profiles": {
     "XTI_UserApp": {
       "commandName": "Project",
-      "commandLineArgs": "--CredentialKey=Test --UserName=Test.user",
+      "commandLineArgs": "--Command=user --UserName=jb",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

@@ -13,7 +13,7 @@ namespace XTI_App.Api
         }
 
         public AppKey AppKey { get; }
-        public string Name { get => AppKey.Name; }
+        public string Name { get => AppKey.Name.DisplayText; }
         public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
 
         public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>

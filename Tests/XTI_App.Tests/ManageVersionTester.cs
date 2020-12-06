@@ -1,14 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
-using XTI_App;
-using XTI_Core.Fakes;
-using XTI_Version;
-using XTI_App.Fakes;
-using XTI_Secrets.Fakes;
-using XTI_App.EF;
-using XTI_Core;
 using XTI_App.TestFakes;
+using XTI_Core;
+using XTI_Core.Fakes;
+using XTI_Secrets.Fakes;
+using XTI_Version;
 
 namespace XTI_App.Tests
 {

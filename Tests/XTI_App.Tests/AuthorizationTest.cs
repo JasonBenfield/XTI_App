@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MainDB.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using System;
 using System.Threading.Tasks;
 using XTI_App.Api;
 using XTI_App.EF;
@@ -178,23 +181,30 @@ namespace XTI_App.Tests
 
         private async Task<TestInput> setup()
         {
-            var services = new ServiceCollection();
-            services.AddAppDbContextForInMemory();
-            services.AddScoped<AppFactory, EfAppFactory>();
-            services.AddScoped<AppEnvironment>();
-            services.AddSingleton(sp => FakeAppKey.AppKey);
-            services.AddScoped<IAppContext, AppContext>();
-            services.AddScoped<IUserContext, FakeUserContext>();
-            services.AddScoped<IAppApiUser, XtiAppApiUser>();
-            services.AddSingleton<Clock, FakeClock>();
-            services.AddSingleton(sp => FakeAppKey.AppKey);
-            services.AddScoped(sp =>
-            {
-                var appKey = sp.GetService<AppKey>();
-                var apiUser = sp.GetService<IAppApiUser>();
-                return new FakeAppApi(appKey, apiUser, AppVersionKey.Current);
-            });
-            var sp = services.BuildServiceProvider();
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureServices
+                (
+                    services =>
+                    {
+                        services.AddAppDbContextForInMemory();
+                        services.AddScoped<AppFactory, EfAppFactory>();
+                        services.AddSingleton(sp => FakeAppKey.AppKey);
+                        services.AddScoped<IAppContext, DefaultAppContext>();
+                        services.AddScoped<IUserContext, FakeUserContext>();
+                        services.AddScoped<IAppApiUser, XtiAppApiUser>();
+                        services.AddSingleton<Clock, FakeClock>();
+                        services.AddSingleton(sp => FakeAppKey.AppKey);
+                        services.AddScoped(sp =>
+                        {
+                            var appKey = sp.GetService<AppKey>();
+                            var apiUser = sp.GetService<IAppApiUser>();
+                            return new FakeAppApi(appKey, apiUser, AppVersionKey.Current);
+                        });
+                    }
+                )
+                .Build();
+            var scope = host.Services.CreateScope();
+            var sp = scope.ServiceProvider;
             var factory = sp.GetService<AppFactory>();
             var clock = (FakeClock)sp.GetService<Clock>();
             var appSetup = new FakeAppSetup(factory, clock);
@@ -205,20 +215,18 @@ namespace XTI_App.Tests
             );
             var input = new TestInput(sp, appSetup.App);
             input.UserContext.SetUser(user);
-            input.AppEnvironment.Path = XtiPath.Parse("/Fake/Current/Login/Authenticate");
             return input;
         }
 
         private sealed class TestInput
         {
-            public TestInput(ServiceProvider sp, App app)
+            public TestInput(IServiceProvider sp, App app)
             {
                 Factory = sp.GetService<AppFactory>();
                 Clock = sp.GetService<FakeClock>();
                 UserContext = (FakeUserContext)sp.GetService<IUserContext>();
                 App = app;
                 Api = sp.GetService<FakeAppApi>();
-                AppEnvironment = sp.GetService<AppEnvironment>();
             }
 
             public AppFactory Factory { get; }
@@ -226,7 +234,6 @@ namespace XTI_App.Tests
             public App App { get; }
             public FakeUserContext UserContext { get; }
             public FakeAppApi Api { get; }
-            public AppEnvironment AppEnvironment { get; set; }
 
             public async Task<AppUser> User() => (AppUser)await UserContext.User();
         }

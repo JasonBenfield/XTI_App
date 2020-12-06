@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -40,7 +40,7 @@ namespace XTI_App
         public Task ChangePassword(IHashedPassword password)
             => repo.Update(record, u => u.Password = password.Value());
 
-        public Task<bool> IsModCategoryAdmin(ModifierCategory modCategory)
+        public Task<bool> IsModCategoryAdmin(IModifierCategory modCategory)
             => factory.ModCategoryAdmins().IsAdmin(modCategory, this);
 
         public Task GrantFullAccessToModCategory(ModifierCategory modCategory)

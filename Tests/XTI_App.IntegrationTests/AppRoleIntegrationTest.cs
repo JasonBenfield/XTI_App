@@ -1,13 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MainDB.EF;
+using MainDB.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.DB;
 using XTI_App.EF;
-using XTI_App.Extensions;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
@@ -67,31 +66,37 @@ namespace XTI_App.IntegrationTests
 
         private async Task<TestInput> setup()
         {
-            var hostEnv = new FakeHostEnvironment { EnvironmentName = "Test" };
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", hostEnv.EnvironmentName);
-            var services = new ServiceCollection();
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.UseXtiConfiguration("Test", new string[] { });
-            var configuration = configurationBuilder.Build();
-            services.AddScoped<IHostEnvironment>(sp => hostEnv);
-            services.AddAppDbContextForSqlServer(configuration);
-            services.AddScoped<Clock, FakeClock>();
-            services.AddScoped<AppFactory, EfAppFactory>();
-            services.AddScoped<AppDbReset>();
-            var sp = services.BuildServiceProvider();
-            var factory = sp.GetService<AppFactory>();
-            var appDbReset = sp.GetService<AppDbReset>();
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration
+                (
+                    (hostContext, builder) => builder.UseXtiConfiguration(hostContext.HostingEnvironment, new string[] { })
+                )
+                .ConfigureServices
+                (
+                    (hostContext, services) =>
+                    {
+                        services.AddAppDbContextForSqlServer(hostContext.Configuration);
+                        services.AddScoped<Clock, FakeClock>();
+                        services.AddScoped<AppFactory, EfAppFactory>();
+                        services.AddScoped<MainDbReset>();
+                    }
+                )
+                .Build();
+            var scope = host.Services.CreateScope();
+            var factory = scope.ServiceProvider.GetService<AppFactory>();
+            var appDbReset = scope.ServiceProvider.GetService<MainDbReset>();
             await appDbReset.Run();
-            var clock = sp.GetService<Clock>();
+            var clock = scope.ServiceProvider.GetService<Clock>();
             var setup = new FakeAppSetup(factory, clock);
             await setup.Run();
-            var input = new TestInput(sp, setup.App);
+            var input = new TestInput(scope.ServiceProvider, setup.App);
             return input;
         }
 
         private sealed class TestInput
         {
-            public TestInput(ServiceProvider sp, App app)
+            public TestInput(IServiceProvider sp, App app)
             {
                 Factory = sp.GetService<AppFactory>();
                 App = app;

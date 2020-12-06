@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -27,11 +27,22 @@ namespace XTI_App
 
         public Task<AppUser> User() => factory.Users().User(record.UserID);
 
-        public Task<AppRequest> LogRequest(string requestKey, IAppVersion version, IResource resource, string path, DateTime timeRequested)
+        public Task<AppRequest> LogRequest
+        (
+            string requestKey,
+            IAppVersion version,
+            IResource resource,
+            Modifier modifier,
+            string path,
+            DateTime timeRequested
+        )
         {
             var requestRepo = factory.Requests();
-            return requestRepo.Add(this, requestKey, version, resource, path, timeRequested);
+            return requestRepo.Add(this, requestKey, version, resource, modifier, path, timeRequested);
         }
+
+        public Task<AppRequest> LogDefaultRequest(DateTime timeRequested)
+            => factory.Requests().AddDefaultRequest(this, timeRequested);
 
         public Task Authenticate(IAppUser user)
         {

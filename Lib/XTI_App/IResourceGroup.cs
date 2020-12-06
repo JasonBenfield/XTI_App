@@ -5,6 +5,8 @@ namespace XTI_App
     public interface IResourceGroup
     {
         EntityID ID { get; }
-        Task<ModifierCategory> ModCategory();
+        ResourceGroupName Name();
+        Task<IResource> Resource(ResourceName name);
+        Task<IModifierCategory> ModCategory();
     }
 }

@@ -3,9 +3,9 @@ Import-Module PowershellForXti -Force
 $script:appConfig = [PSCustomObject]@{
     RepoOwner = "JasonBenfield"
     RepoName = "XTI_App"
-    AppKey = "XTI_App"
+    AppName = "XTI_App"
     AppType = "Package"
-    ProjectDir = "C:\XTI\src\XTI_App\Apps\XTI_App"
+    ProjectDir = ""
 }
 
 function App-New-XtiIssue {

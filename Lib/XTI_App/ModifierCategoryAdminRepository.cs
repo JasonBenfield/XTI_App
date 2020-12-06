@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using XTI_App.Entities;
+using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -26,7 +26,7 @@ namespace XTI_App
             return repo.Create(record);
         }
 
-        internal Task<bool> IsAdmin(ModifierCategory modCategory, AppUser user)
+        internal Task<bool> IsAdmin(IModifierCategory modCategory, IAppUser user)
             => repo.Retrieve()
                 .AnyAsync(a => a.ModCategoryID == modCategory.ID.Value && a.UserID == user.ID.Value);
 
