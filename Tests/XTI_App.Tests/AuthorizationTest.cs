@@ -5,7 +5,6 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using XTI_App.Api;
-using XTI_App.EF;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
 using XTI_Core;
@@ -187,7 +186,7 @@ namespace XTI_App.Tests
                     services =>
                     {
                         services.AddAppDbContextForInMemory();
-                        services.AddScoped<AppFactory, EfAppFactory>();
+                        services.AddScoped<AppFactory>();
                         services.AddSingleton(sp => FakeAppKey.AppKey);
                         services.AddScoped<IAppContext, DefaultAppContext>();
                         services.AddScoped<IUserContext, FakeUserContext>();

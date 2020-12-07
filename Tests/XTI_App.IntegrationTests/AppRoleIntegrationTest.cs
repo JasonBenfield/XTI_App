@@ -6,7 +6,6 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_App.EF;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
@@ -78,7 +77,7 @@ namespace XTI_App.IntegrationTests
                     {
                         services.AddAppDbContextForSqlServer(hostContext.Configuration);
                         services.AddScoped<Clock, FakeClock>();
-                        services.AddScoped<AppFactory, EfAppFactory>();
+                        services.AddScoped<AppFactory>();
                         services.AddScoped<MainDbReset>();
                     }
                 )
