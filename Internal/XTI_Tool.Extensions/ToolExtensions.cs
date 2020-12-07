@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using XTI_App;
-using XTI_App.EF;
 using XTI_Core;
 using XTI_DB;
 using XTI_Secrets.Extensions;
@@ -18,7 +17,7 @@ namespace XTI_Tool.Extensions
             services.Configure<DbOptions>(configuration.GetSection(DbOptions.DB));
             services.AddXtiDataProtection();
             services.AddAppDbContextForSqlServer(configuration);
-            services.AddScoped<AppFactory, EfAppFactory>();
+            services.AddScoped<AppFactory>();
             services.AddScoped<Clock, UtcClock>();
         }
     }
