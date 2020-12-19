@@ -1,9 +1,8 @@
-﻿using System;
+﻿using MainDB.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -155,6 +154,18 @@ namespace XTI_App
             {
                 r.Title = title?.Trim() ?? "";
             });
+        }
+
+        public AppModel ToAppModel()
+        {
+            var key = Key();
+            return new AppModel
+            {
+                ID = ID.Value,
+                AppKey = key.Name.DisplayText,
+                Title = record.Title,
+                Type = key.Type
+            };
         }
 
         public override string ToString() => $"{nameof(App)} {ID.Value}: {record.Name}";

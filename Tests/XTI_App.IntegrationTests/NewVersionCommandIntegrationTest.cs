@@ -109,7 +109,7 @@ namespace XTI_App.IntegrationTests
                 Options = new ManageVersionOptions
                 {
                     Command = "New",
-                    AppName = FakeAppKey.AppName.Value,
+                    AppName = FakeAppKey.AppKey.Name.Value,
                     AppType = FakeAppKey.AppKey.Type.DisplayText,
                     VersionType = AppVersionType.Values.Patch.DisplayText
                 };

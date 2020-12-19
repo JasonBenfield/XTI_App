@@ -12,8 +12,8 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="MainDB.EF.SqlServer" Version="1.7.6" />
-    <PackageReference Include="XTI_Configuration.Extensions" Version="1.8.2" />
-    <PackageReference Include="XTI_Core.Fakes" Version="1.8.2" />
+    <PackageReference Include="XTI_Configuration.Extensions" Version="1.8.3-dev201219094947885" />
+    <PackageReference Include="XTI_Core.Fakes" Version="1.8.3-dev201219094947885" />
   </ItemGroup>
 
   <ItemGroup>
