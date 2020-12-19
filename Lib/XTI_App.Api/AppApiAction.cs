@@ -76,5 +76,7 @@ namespace XTI_App.Api
             var resultTemplate = new ValueTemplateFromType(typeof(TResult)).Template();
             return new AppApiActionTemplate(Path.Action.DisplayText, FriendlyName, Access, modelTemplate, resultTemplate);
         }
+
+        public override string ToString() => $"{GetType().Name} {FriendlyName}";
     }
 }

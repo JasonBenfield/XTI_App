@@ -51,5 +51,7 @@ namespace XTI_App.Api
             var actionTemplates = Actions().Select(a => a.Template());
             return new AppApiGroupTemplate(Path.Group.DisplayText, modCategory, Access, actionTemplates);
         }
+
+        public override string ToString() => $"{GetType().Name} {Path.Group}";
     }
 }

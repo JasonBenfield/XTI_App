@@ -38,5 +38,24 @@ namespace XTI_App.Api
                     ResultTemplate.ObjectTemplates()
                 )
                 .Distinct();
+
+        public IEnumerable<NumericValueTemplate> NumericValueTemplates()
+        {
+            var numericTemplates = new List<NumericValueTemplate>();
+            if (ModelTemplate is NumericValueTemplate modelNumTempl)
+            {
+                numericTemplates.Add(modelNumTempl);
+            }
+            if (ResultTemplate is NumericValueTemplate resultNumTempl)
+            {
+                numericTemplates.Add(resultNumTempl);
+            }
+            foreach (var objTempl in ObjectTemplates())
+            {
+                var propNumTempls = objTempl.PropertyTemplates.Select(pt => pt.ValueTemplate).OfType<NumericValueTemplate>();
+                numericTemplates.AddRange(propNumTempls);
+            }
+            return numericTemplates.Distinct();
+        }
     }
 }
