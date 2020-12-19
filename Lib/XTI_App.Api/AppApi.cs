@@ -45,5 +45,7 @@ namespace XTI_App.Api
         public AppApiGroup Group(string groupName) => groups[groupName.ToLower()];
 
         public AppApiTemplate Template() => new AppApiTemplate(this);
+
+        public override string ToString() => $"{GetType().Name} {Path.App}";
     }
 }

@@ -44,6 +44,10 @@ namespace XTI_App.Api
             {
                 valueTemplate = new ArrayValueTemplate(source);
             }
+            else if (isDerivedFromNumericValue(source))
+            {
+                valueTemplate = new NumericValueTemplate(source);
+            }
             else
             {
                 valueTemplate = new ObjectValueTemplate(source);
@@ -71,8 +75,17 @@ namespace XTI_App.Api
             return targetType.IsGenericType && (typeof(IEnumerable<>)).IsAssignableFrom(targetType.GetGenericTypeDefinition());
         }
 
+        private static bool isDerivedFromNumericValue(Type objectType)
+        {
+            return typeof(NumericValue).IsAssignableFrom(objectType);
+        }
+
         private static bool isDerivedFromSemanticType(Type objectType)
         {
+            if (isDerivedFromNumericValue(objectType))
+            {
+                return false;
+            }
             if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(SemanticType<>))
             {
                 return true;

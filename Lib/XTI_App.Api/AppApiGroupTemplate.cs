@@ -25,6 +25,11 @@ namespace XTI_App.Api
                 .SelectMany(a => a.ObjectTemplates())
                 .Distinct();
 
+        public IEnumerable<NumericValueTemplate> NumericValueTemplates() =>
+            ActionTemplates
+                .SelectMany(a => a.NumericValueTemplates())
+                .Distinct();
+
         public bool IsUser() => Name.Equals("User", StringComparison.OrdinalIgnoreCase);
     }
 }

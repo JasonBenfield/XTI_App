@@ -21,6 +21,11 @@ namespace XTI_App.Api
                 .SelectMany(g => g.ObjectTemplates())
                 .Distinct();
 
+        public IEnumerable<NumericValueTemplate> NumericValueTemplates() =>
+            GroupTemplates
+                .SelectMany(g => g.NumericValueTemplates())
+                .Distinct();
+
         public bool IsAuthenticator() => Name.Equals("Authenticator", StringComparison.OrdinalIgnoreCase);
     }
 }
