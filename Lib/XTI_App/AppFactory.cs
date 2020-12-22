@@ -70,6 +70,6 @@ namespace XTI_App
         internal AppUserModifierRepository UserModifiers()
             => userModifiers
                 ?? (userModifiers = new AppUserModifierRepository(this, repos.CreateUserModifiers()));
-        internal AppUserModifier UserModifier(AppUserModifierRecord record) => new AppUserModifier(record);
+        internal AppUserModifier UserModifier(AppUserModifierRecord record) => new AppUserModifier(this, record);
     }
 }

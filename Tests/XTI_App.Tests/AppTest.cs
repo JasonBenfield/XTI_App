@@ -16,7 +16,7 @@ namespace XTI_App.Tests
             var input = await setup();
             var appModel = input.App.ToAppModel();
             Assert.That(appModel.ID, Is.EqualTo(input.App.ID.Value));
-            Assert.That(appModel.AppKey, Is.EqualTo("fake"));
+            Assert.That(appModel.AppName, Is.EqualTo("fake"));
             Assert.That(appModel.Title, Is.EqualTo("Fake Title"));
             Assert.That(appModel.Type, Is.EqualTo(FakeAppKey.AppKey.Type));
         }

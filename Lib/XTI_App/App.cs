@@ -162,7 +162,7 @@ namespace XTI_App
             return new AppModel
             {
                 ID = ID.Value,
-                AppKey = key.Name.DisplayText,
+                AppName = key.Name.DisplayText,
                 Title = record.Title,
                 Type = key.Type
             };

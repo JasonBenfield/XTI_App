@@ -60,6 +60,11 @@ namespace XTI_App
             return hasModifier;
         }
 
+        public Task<IEnumerable<Modifier>> Modifiers(ModifierCategory modCategory)
+            => factory.UserModifiers().Modifiers(this, modCategory);
+
+        public Task<AppUser> Refresh() => factory.Users().User(ID.Value);
+
         public override string ToString() => $"{nameof(AppUser)} {ID.Value}";
 
     }

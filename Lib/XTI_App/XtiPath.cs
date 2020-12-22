@@ -94,6 +94,12 @@ namespace XTI_App
             return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, actionName, Modifier);
         }
 
+        public XtiPath WithModifier(ModifierKey modKey)
+        {
+            EnsureActionResource();
+            return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, modKey);
+        }
+
         public string Format()
         {
             var parts = new string[]
@@ -101,7 +107,8 @@ namespace XTI_App
                 App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, Modifier.DisplayText
             }
             .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
-            return string.Join("/", parts);
+            var joined = string.Join("/", parts);
+            return $"/{joined}";
         }
 
         public string Value() => Format().ToLower();

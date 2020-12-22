@@ -3,6 +3,8 @@ using System;
 using System.Threading.Tasks;
 using MainDB.Entities;
 using XTI_Core;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace XTI_App
 {
@@ -41,6 +43,24 @@ namespace XTI_App
         {
             return repo.Retrieve()
                 .AnyAsync(um => um.UserID == appUser.ID.Value && um.ModifierID == modifier.ID.Value);
+        }
+
+        internal async Task<IEnumerable<Modifier>> Modifiers(AppUser appUser, ModifierCategory modCategory)
+        {
+            var records = await repo.Retrieve()
+                .Where(um => um.UserID == appUser.ID.Value)
+                .ToArrayAsync();
+            var userModifiers = records.Select(r => factory.UserModifier(r));
+            var modifiers = new List<Modifier>();
+            foreach (var userModifier in userModifiers)
+            {
+                var modifier = await userModifier.Modifier();
+                if (modifier.IsForCategory(modCategory))
+                {
+                    modifiers.Add(modifier);
+                }
+            }
+            return modifiers;
         }
     }
 }

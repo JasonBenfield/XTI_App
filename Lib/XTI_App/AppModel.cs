@@ -4,7 +4,7 @@
     {
         public int ID { get; set; }
         public AppType Type { get; set; }
-        public string AppKey { get; set; }
+        public string AppName { get; set; }
         public string Title { get; set; }
     }
 }
