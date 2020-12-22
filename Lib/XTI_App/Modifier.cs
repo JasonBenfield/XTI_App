@@ -22,6 +22,8 @@ namespace XTI_App
         public string DisplayText { get => record.DisplayText; }
         public int TargetID() => int.Parse(TargetKey);
 
+        public bool IsForCategory(ModifierCategory modCategory) => modCategory.ID.Value == record.CategoryID;
+
         public Task SetDisplayText(string displayText)
         {
             return repo.Update(record, r =>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -14,104 +15,40 @@ namespace XTI_UserApp
 {
     public sealed class HostedService : IHostedService
     {
-        private readonly IHostApplicationLifetime lifetime;
-        private readonly AppFactory appFactory;
-        private readonly IHashedPasswordFactory hashedPasswordFactory;
-        private readonly SecretCredentialsFactory secretCredentialsFactory;
-        private readonly Clock clock;
-        private readonly UserOptions userOptions;
+        private readonly IServiceProvider services;
 
-        public HostedService
-        (
-            IHostApplicationLifetime lifetime,
-            AppFactory appFactory,
-            IHashedPasswordFactory hashedPasswordFactory,
-            SecretCredentialsFactory secretCredentialsFactory,
-            Clock clock,
-            IOptions<UserOptions> userOptions
-        )
+        public HostedService(IServiceProvider services)
         {
-            this.lifetime = lifetime;
-            this.appFactory = appFactory;
-            this.hashedPasswordFactory = hashedPasswordFactory;
-            this.secretCredentialsFactory = secretCredentialsFactory;
-            this.clock = clock;
-            this.userOptions = userOptions.Value;
+            this.services = services;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            using var scope = services.CreateScope();
             try
             {
+                var userOptions = scope.ServiceProvider.GetService<IOptions<UserOptions>>().Value;
                 if (userOptions.Command.Equals("user", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
-                    string password;
-                    if (string.IsNullOrWhiteSpace(userOptions.Password))
-                    {
-                        password = Guid.NewGuid().ToString("N") + "!?";
-                    }
-                    else
-                    {
-                        password = userOptions.Password;
-                    }
-                    var userName = new AppUserName(userOptions.UserName);
-                    var hashedPassword = hashedPasswordFactory.Create(password);
-                    var user = await appFactory.Users().User(userName);
-                    if (user.Exists())
-                    {
-                        await user.ChangePassword(hashedPassword);
-                    }
-                    else
-                    {
-                        user = await appFactory.Users().Add(userName, hashedPassword, clock.Now());
-                    }
+                    await addUser(scope.ServiceProvider, userOptions);
                 }
                 else if (userOptions.Command.Equals("userroles", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
-                    if (string.IsNullOrWhiteSpace(userOptions.AppName)) { throw new ArgumentException("App name is required"); }
-                    if (string.IsNullOrWhiteSpace(userOptions.AppType)) { throw new ArgumentException("App type is required"); }
-                    var userName = new AppUserName(userOptions.UserName);
-                    var user = await appFactory.Users().User(userName);
-                    var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
-                        ? AppType.Values.WebApp
-                        : AppType.Values.Value(userOptions.AppType);
-                    var app = await appFactory.Apps().App(new AppKey(userOptions.AppName, appType));
-                    var roles = new List<AppRole>();
-                    if (!string.IsNullOrWhiteSpace(userOptions.RoleNames))
-                    {
-                        foreach (var roleName in userOptions.RoleNames.Split(","))
-                        {
-                            if (!string.IsNullOrWhiteSpace(roleName))
-                            {
-                                var role = await app.Role(new AppRoleName(roleName));
-                                if (role.Exists())
-                                {
-                                    roles.Add(role);
-                                }
-                            }
-                        }
-                    }
-                    var userRoles = (await user.RolesForApp(app)).ToArray();
-                    foreach (var role in roles)
-                    {
-                        if (!userRoles.Any(ur => ur.IsRole(role)))
-                        {
-                            await user.AddRole(role);
-                        }
-                    }
+                    await addUserRoles(scope.ServiceProvider, userOptions);
                 }
                 else if (userOptions.Command.Equals("credentials", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(userOptions.CredentialKey)) { throw new ArgumentException("Credential Key is required"); }
-                    if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
-                    if (string.IsNullOrWhiteSpace(userOptions.Password)) { throw new ArgumentException("Password is required"); }
-                    var secretCredentials = secretCredentialsFactory.Create(userOptions.CredentialKey);
-                    await secretCredentials.Update
-                    (
-                        new CredentialValue(userOptions.UserName, userOptions.Password)
-                    );
+                    await storeCredentials(scope.ServiceProvider, userOptions);
+                }
+                else if (userOptions.Command.Equals("grant-modcategoryadmin", StringComparison.OrdinalIgnoreCase))
+                {
+                    var sp = scope.ServiceProvider;
+                    await grantModCategoryAdmin(sp, userOptions);
+                }
+                else if (userOptions.Command.Equals("modifiers", StringComparison.OrdinalIgnoreCase))
+                {
+                    var sp = scope.ServiceProvider;
+                    await addModifiers(sp, userOptions);
                 }
                 else
                 {
@@ -123,7 +60,132 @@ namespace XTI_UserApp
                 Console.WriteLine(ex.ToString());
                 Environment.ExitCode = 999;
             }
+            var lifetime = scope.ServiceProvider.GetService<IHostApplicationLifetime>();
             lifetime.StopApplication();
+        }
+
+        private static async Task addUser(IServiceProvider sp, UserOptions userOptions)
+        {
+            if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+            var appFactory = sp.GetService<AppFactory>();
+            var clock = sp.GetService<Clock>();
+            var hashedPasswordFactory = sp.GetService<IHashedPasswordFactory>();
+            string password;
+            if (string.IsNullOrWhiteSpace(userOptions.Password))
+            {
+                password = Guid.NewGuid().ToString("N") + "!?";
+            }
+            else
+            {
+                password = userOptions.Password;
+            }
+            var userName = new AppUserName(userOptions.UserName);
+            var hashedPassword = hashedPasswordFactory.Create(password);
+            var user = await appFactory.Users().User(userName);
+            if (user.Exists())
+            {
+                await user.ChangePassword(hashedPassword);
+            }
+            else
+            {
+                await appFactory.Users().Add(userName, hashedPassword, clock.Now());
+            }
+        }
+
+        private static async Task addUserRoles(IServiceProvider sp, UserOptions userOptions)
+        {
+            if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppName)) { throw new ArgumentException("App name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppType)) { throw new ArgumentException("App type is required"); }
+            var appFactory = sp.GetService<AppFactory>();
+            var userName = new AppUserName(userOptions.UserName);
+            var user = await appFactory.Users().User(userName);
+            var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
+                ? AppType.Values.WebApp
+                : AppType.Values.Value(userOptions.AppType);
+            var app = await appFactory.Apps().App(new AppKey(userOptions.AppName, appType));
+            var roles = new List<AppRole>();
+            if (!string.IsNullOrWhiteSpace(userOptions.RoleNames))
+            {
+                foreach (var roleName in userOptions.RoleNames.Split(","))
+                {
+                    if (!string.IsNullOrWhiteSpace(roleName))
+                    {
+                        var role = await app.Role(new AppRoleName(roleName));
+                        if (role.Exists())
+                        {
+                            roles.Add(role);
+                        }
+                    }
+                }
+            }
+            var userRoles = (await user.RolesForApp(app)).ToArray();
+            foreach (var role in roles)
+            {
+                if (!userRoles.Any(ur => ur.IsRole(role)))
+                {
+                    await user.AddRole(role);
+                }
+            }
+        }
+
+        private static async Task storeCredentials(IServiceProvider sp, UserOptions userOptions)
+        {
+            if (string.IsNullOrWhiteSpace(userOptions.CredentialKey)) { throw new ArgumentException("Credential Key is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.Password)) { throw new ArgumentException("Password is required"); }
+            var secretCredentialsFactory = sp.GetService<SecretCredentialsFactory>();
+            var secretCredentials = secretCredentialsFactory.Create(userOptions.CredentialKey);
+            await secretCredentials.Update
+            (
+                new CredentialValue(userOptions.UserName, userOptions.Password)
+            );
+        }
+
+        private static async Task grantModCategoryAdmin(IServiceProvider sp, UserOptions userOptions)
+        {
+            if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppName)) { throw new ArgumentException("App name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppType)) { throw new ArgumentException("App type is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.ModCategoryName)) { throw new ArgumentException("Mod category name is required"); }
+            var appFactory = sp.GetService<AppFactory>();
+            var userName = new AppUserName(userOptions.UserName);
+            var user = await appFactory.Users().User(userName);
+            var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
+                ? AppType.Values.WebApp
+                : AppType.Values.Value(userOptions.AppType);
+            var app = await appFactory.Apps().App(new AppKey(userOptions.AppName, appType));
+            var modCategory = await app.ModCategory(new ModifierCategoryName(userOptions.ModCategoryName));
+            await user.GrantFullAccessToModCategory(modCategory);
+        }
+
+        private static async Task addModifiers(IServiceProvider sp, UserOptions userOptions)
+        {
+            if (string.IsNullOrWhiteSpace(userOptions.UserName)) { throw new ArgumentException("User name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppName)) { throw new ArgumentException("App name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppType)) { throw new ArgumentException("App type is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.ModCategoryName)) { throw new ArgumentException("Mod category name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.ModKeys)) { throw new ArgumentException("Mod keys is required"); }
+            var appFactory = sp.GetService<AppFactory>();
+            var userName = new AppUserName(userOptions.UserName);
+            var user = await appFactory.Users().User(userName);
+            var appType = string.IsNullOrWhiteSpace(userOptions.AppType)
+                ? AppType.Values.WebApp
+                : AppType.Values.Value(userOptions.AppType);
+            var app = await appFactory.Apps().App(new AppKey(userOptions.AppName, appType));
+            var modCategory = await app.ModCategory(new ModifierCategoryName("Apps"));
+            var modKeys = userOptions.ModKeys
+                .Split(',')
+                .Select(m => new ModifierKey(m));
+            var userModifiers = await user.Modifiers(modCategory);
+            foreach (var modKey in modKeys)
+            {
+                if (!userModifiers.Any(um => um.ModKey().Equals(modKey)))
+                {
+                    var modifier = await modCategory.Modifier(modKey);
+                    await user.AddModifier(modifier);
+                }
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
