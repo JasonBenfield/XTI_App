@@ -156,7 +156,11 @@ namespace XTI_UserApp
                 : AppType.Values.Value(userOptions.AppType);
             var app = await appFactory.Apps().App(new AppKey(userOptions.AppName, appType));
             var modCategory = await app.ModCategory(new ModifierCategoryName(userOptions.ModCategoryName));
-            await user.GrantFullAccessToModCategory(modCategory);
+            var isModCategoryAdmin = await user.IsModCategoryAdmin(modCategory);
+            if (!isModCategoryAdmin)
+            {
+                await user.GrantFullAccessToModCategory(modCategory);
+            }
         }
 
         private static async Task addModifiers(IServiceProvider sp, UserOptions userOptions)

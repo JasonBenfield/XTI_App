@@ -6,12 +6,10 @@ namespace XTI_App.TestFakes
 {
     public sealed class FakeAppApi : AppApi
     {
-
-        public FakeAppApi(AppKey appKey, IAppApiUser user, AppVersionKey versionKey)
+        public FakeAppApi(IAppApiUser user)
             : base
             (
-                appKey,
-                versionKey,
+                FakeAppKey.AppKey,
                 user,
                 ResourceAccess.AllowAuthenticated()
                     .WithAllowed(FakeAppRoles.Instance.Admin)

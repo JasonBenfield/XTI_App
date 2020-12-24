@@ -31,24 +31,17 @@ namespace XTI_App.Api
         private readonly Func<AppAction<TModel, TResult>> createExecution;
 
         public XtiPath Path { get; }
+        public string ActionName { get => Path.Action.DisplayText; }
         public string FriendlyName { get; }
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess(ModifierKey modKey) =>
-            user.HasAccess(Path, Access, modKey);
+        public Task<bool> HasAccess() => user.HasAccess(Access);
 
-        public async Task<object> Execute(ModifierKey modifier, object model) =>
-            await Execute(modifier, (TModel)model);
+        public async Task<object> Execute(object model) => await Execute((TModel)model);
 
-        public Task<ResultContainer<TResult>> Execute(TModel model) =>
-            Execute(ModifierKey.Default, model);
-
-        public async Task<ResultContainer<TResult>> Execute
-        (
-            ModifierKey modifier, TModel model
-        )
+        public async Task<ResultContainer<TResult>> Execute(TModel model)
         {
-            await EnsureUserHasAccess(modifier);
+            await EnsureUserHasAccess();
             var errors = new ErrorList();
             var validation = createValidation();
             await validation.Validate(errors, model);
@@ -61,9 +54,9 @@ namespace XTI_App.Api
             return new ResultContainer<TResult>(actionResult);
         }
 
-        private async Task EnsureUserHasAccess(ModifierKey modifier)
+        private async Task EnsureUserHasAccess()
         {
-            var hasAccess = await HasAccess(modifier);
+            var hasAccess = await HasAccess();
             if (!hasAccess)
             {
                 throw new AccessDeniedException(Path);

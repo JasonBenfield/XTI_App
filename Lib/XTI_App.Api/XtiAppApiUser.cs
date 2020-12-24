@@ -7,14 +7,16 @@ namespace XTI_App.Api
     {
         private readonly IAppContext appContext;
         private readonly IUserContext userContext;
+        private readonly XtiPath path;
 
-        public XtiAppApiUser(IAppContext appContext, IUserContext userContext)
+        public XtiAppApiUser(IAppContext appContext, IUserContext userContext, XtiPath path)
         {
             this.appContext = appContext;
             this.userContext = userContext;
+            this.path = path;
         }
 
-        public async Task<bool> HasAccessToApp(XtiPath path)
+        public async Task<bool> HasAccessToApp()
         {
             var app = await appContext.App();
             var user = await userContext.User();
@@ -22,7 +24,7 @@ namespace XTI_App.Api
             return userRoles.Any();
         }
 
-        public async Task<bool> HasAccess(XtiPath path, ResourceAccess resourceAccess, ModifierKey modKey)
+        public async Task<bool> HasAccess(ResourceAccess resourceAccess)
         {
             var app = await appContext.App();
             var roles = await app.Roles();
@@ -54,7 +56,7 @@ namespace XTI_App.Api
                     hasAccess = false;
                 }
             }
-            if (!modKey.Equals(ModifierKey.Default))
+            if (!path.Modifier.Equals(ModifierKey.Default))
             {
                 var group = await app.ResourceGroup(path.Group);
                 var modCategory = await group.ModCategory();
@@ -67,7 +69,7 @@ namespace XTI_App.Api
                     }
                     else
                     {
-                        hasAccess = await user.HasModifier(modKey);
+                        hasAccess = await user.HasModifier(path.Modifier);
                     }
                 }
             }

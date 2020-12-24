@@ -39,8 +39,8 @@ namespace XTI_App.TestFakes
             await setup.Run();
             App = await appFactory.Apps().App(template.AppKey);
             var modCategory = await App.ModCategory(new ModifierCategoryName("Department"));
-            await modCategory.AddOrUpdateModifier(1, "IT");
-            await modCategory.AddOrUpdateModifier(2, "HR");
+            await modCategory.AddOrUpdateModifier("IT", "IT");
+            await modCategory.AddOrUpdateModifier("HR", "HR");
             User = await appFactory.Users().Add
             (
                 new AppUserName("xartogg"), new FakeHashedPassword("password"), clock.Now()

@@ -16,18 +16,8 @@ namespace XTI_App
             );
         }
 
-        public XtiPath(string appKey, string version)
-            : this(appKey, version, "", "")
-        {
-        }
-
-        public XtiPath(string appKey, string version, string group)
-            : this(appKey, version, group, "")
-        {
-        }
-
-        public XtiPath(string appKey, string version, string group, string action)
-            : this(appKey, version, group, action, ModifierKey.Default)
+        public XtiPath(string appKey)
+            : this(appKey, AppVersionKey.Current.DisplayText, "", "", ModifierKey.Default)
         {
         }
 
@@ -98,6 +88,11 @@ namespace XTI_App
         {
             EnsureActionResource();
             return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, modKey);
+        }
+
+        public XtiPath WithVersion(AppVersionKey versionKey)
+        {
+            return new XtiPath(App.DisplayText, versionKey.DisplayText, Group.DisplayText, Action.DisplayText, Modifier);
         }
 
         public string Format()
