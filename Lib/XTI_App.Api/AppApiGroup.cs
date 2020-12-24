@@ -52,6 +52,18 @@ namespace XTI_App.Api
             return new AppApiGroupTemplate(Path.Group.DisplayText, modCategory, Access, actionTemplates);
         }
 
+        internal IEnumerable<AppRoleName> RoleNames()
+        {
+            var roleNames = new List<AppRoleName>();
+            roleNames.AddRange(Access.Allowed);
+            roleNames.AddRange(Access.Denied);
+            var actionRoleNames = Actions()
+                .SelectMany(a => a.Access.Allowed.Union(a.Access.Denied))
+                .Distinct();
+            roleNames.AddRange(actionRoleNames);
+            return roleNames.Distinct();
+        }
+
         public override string ToString() => $"{GetType().Name} {Path.Group}";
     }
 }

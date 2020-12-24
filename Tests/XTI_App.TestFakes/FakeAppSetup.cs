@@ -32,9 +32,7 @@ namespace XTI_App.TestFakes
                 appFactory,
                 clock,
                 template,
-                options.Title,
-                options.RoleNames.Values(),
-                new[] { new ModifierCategoryName("Department") }
+                options.Title
             );
             await setup.Run();
             App = await appFactory.Apps().App(template.AppKey);
