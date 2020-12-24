@@ -10,10 +10,12 @@ namespace XTI_App.Api
         {
             AppKey = api.AppKey;
             GroupTemplates = api.Groups().Select(g => g.Template());
+            RoleNames = api.RoleNames();
         }
 
         public AppKey AppKey { get; }
         public string Name { get => AppKey.Name.DisplayText; }
+        public IEnumerable<AppRoleName> RoleNames { get; }
         public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
 
         public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>

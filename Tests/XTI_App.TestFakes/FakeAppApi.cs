@@ -89,6 +89,7 @@ namespace XTI_App.TestFakes
             AddEmployee = actions.Add
             (
                 nameof(AddEmployee),
+                api.Access.WithAllowed(FakeAppRoles.Instance.Manager),
                 () => new AddEmployeeValidation(),
                 () => new AddEmployeeAction()
             );

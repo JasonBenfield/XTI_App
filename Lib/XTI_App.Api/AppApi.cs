@@ -45,6 +45,19 @@ namespace XTI_App.Api
 
         public AppApiTemplate Template() => new AppApiTemplate(this);
 
+        internal IEnumerable<AppRoleName> RoleNames()
+        {
+            var roleNames = new List<AppRoleName>();
+            roleNames.AddRange(Access.Allowed);
+            roleNames.AddRange(Access.Denied);
+            var groupRoleNames = groups
+                .Values
+                .SelectMany(g => g.RoleNames())
+                .Distinct();
+            roleNames.AddRange(groupRoleNames);
+            return roleNames.Distinct();
+        }
+
         public override string ToString() => $"{GetType().Name} {Path.App}";
     }
 }
