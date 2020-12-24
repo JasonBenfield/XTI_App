@@ -52,6 +52,10 @@ namespace XTI_App.Api
             foreach (var groupTemplate in appTemplate.GroupTemplates)
             {
                 var modCategory = await app.ModCategory(groupTemplate.ModCategory);
+                if (!modCategory.Name().Equals(groupTemplate.ModCategory))
+                {
+                    await app.TryAddModCategory(groupTemplate.ModCategory);
+                }
                 var groupName = new ResourceGroupName(groupTemplate.Name);
                 var resourceGroup = await app.AddOrUpdateResourceGroup(groupName, modCategory);
                 foreach (var actionTemplate in groupTemplate.ActionTemplates)

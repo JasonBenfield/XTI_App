@@ -36,10 +36,10 @@ namespace XTI_App.Api
         }
 
         public XtiPath Path { get; }
+        public string GroupName { get => Path.Group.DisplayText; }
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess() => HasAccess(ModifierKey.Default);
-        public Task<bool> HasAccess(ModifierKey modifier) => user.HasAccess(Path, Access, modifier);
+        public Task<bool> HasAccess() => user.HasAccess(Access);
 
         public IEnumerable<IAppApiAction> Actions() => actions.Actions();
 

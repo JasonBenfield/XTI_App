@@ -10,6 +10,5 @@ namespace XTI_App
         Task<IEnumerable<IAppUserRole>> RolesForApp(IApp app);
         Task<bool> IsModCategoryAdmin(IModifierCategory modCategory);
         Task<bool> HasModifier(ModifierKey modKey);
-        Task<AppUser> Refresh();
     }
 }

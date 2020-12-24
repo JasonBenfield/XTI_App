@@ -6,5 +6,6 @@ namespace XTI_App.Api
     {
         void RefreshUser(IAppUser user);
         Task<IAppUser> User();
+        Task<AppUser> UncachedUser();
     }
 }

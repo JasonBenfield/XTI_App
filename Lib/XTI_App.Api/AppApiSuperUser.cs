@@ -4,12 +4,12 @@ namespace XTI_App.Api
 {
     public sealed class AppApiSuperUser : IAppApiUser
     {
-        public Task<bool> HasAccessToApp(XtiPath path)
+        public Task<bool> HasAccessToApp()
         {
             return Task.FromResult(true);
         }
 
-        public Task<bool> HasAccess(XtiPath path, ResourceAccess resourceAccess, ModifierKey modKey)
+        public Task<bool> HasAccess(ResourceAccess resourceAccess)
         {
             return Task.FromResult(true);
         }
