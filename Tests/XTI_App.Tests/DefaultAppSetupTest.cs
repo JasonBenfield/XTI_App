@@ -173,7 +173,7 @@ namespace XTI_App.Tests
                     {
                         services.AddServicesForTests();
                         services.AddSingleton<FakeAppOptions>();
-                        services.AddSingleton<IAppApiTemplateFactory, FakeAppApiTemplateFactory>();
+                        services.AddSingleton<AppApiFactory, FakeAppApiFactory>();
                         services.AddScoped<IAppSetup>(sp =>
                         {
                             var factory = sp.GetService<AppFactory>();

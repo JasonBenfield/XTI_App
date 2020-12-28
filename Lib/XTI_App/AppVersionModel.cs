@@ -11,6 +11,6 @@ namespace XTI_App
         public int Patch { get; set; }
         public AppVersionType VersionType { get; set; }
         public AppVersionStatus Status { get; set; }
-        public DateTime TimeAdded { get; set; }
+        public DateTimeOffset TimeAdded { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        public async Task<App> AddOrUpdate(AppKey appKey, string title, DateTime timeAdded)
+        public async Task<App> AddOrUpdate(AppKey appKey, string title, DateTimeOffset timeAdded)
         {
             if (string.IsNullOrWhiteSpace(title))
             {
@@ -37,7 +37,7 @@ namespace XTI_App
             return app;
         }
 
-        public async Task<App> Add(AppKey appKey, string title, DateTime timeAdded)
+        public async Task<App> Add(AppKey appKey, string title, DateTimeOffset timeAdded)
         {
             var record = new AppRecord
             {
