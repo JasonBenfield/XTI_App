@@ -6,6 +6,7 @@ namespace XTI_App
     public sealed class AppUserName : TextValue, IEquatable<AppUserName>
     {
         public static readonly AppUserName Anon = new AppUserName("xti_anon");
+        public static readonly AppUserName SuperUser = new AppUserName("xti_superuser");
 
         public AppUserName(string value)
             : base(value?.Trim().ToLower() ?? "", value)
