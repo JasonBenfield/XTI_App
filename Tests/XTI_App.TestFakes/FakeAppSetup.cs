@@ -25,8 +25,8 @@ namespace XTI_App.TestFakes
 
         public async Task Run()
         {
-            var fakeTemplateFactory = new FakeAppApiTemplateFactory();
-            var template = fakeTemplateFactory.Create();
+            var fakeApiFactory = new FakeAppApiFactory();
+            var template = fakeApiFactory.CreateTemplate();
             var setup = new DefaultAppSetup
             (
                 appFactory,

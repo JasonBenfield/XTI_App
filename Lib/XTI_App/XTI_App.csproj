@@ -6,8 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.1" />
-    <PackageReference Include="XTI_Core" Version="1.8.3-dev201219094947885" />
-    <PackageReference Include="MainDB.Entities" Version="1.7.6" />
+    <PackageReference Include="XTI_Core" Version="1.8.4" />
+    <PackageReference Include="MainDB.Entities" Version="1.9.0" />
   </ItemGroup>
 
 </Project>

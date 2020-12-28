@@ -12,7 +12,7 @@ namespace XTI_App.Api
             ResourceAccess access,
             IAppApiUser user,
             Func<AppActionValidation<TModel>> createValidation,
-            Func<AppAction<TModel, TResult>> createExecution,
+            Func<AppAction<TModel, TResult>> createAction,
             string friendlyName
         )
         {
@@ -24,12 +24,12 @@ namespace XTI_App.Api
                 : friendlyName;
             this.user = user;
             this.createValidation = createValidation;
-            this.createExecution = createExecution;
+            this.createAction = createAction;
         }
 
         private readonly IAppApiUser user;
         private readonly Func<AppActionValidation<TModel>> createValidation;
-        private readonly Func<AppAction<TModel, TResult>> createExecution;
+        private readonly Func<AppAction<TModel, TResult>> createAction;
 
         public XtiPath Path { get; }
         public string ActionName { get => Path.Action.DisplayText; }
@@ -37,6 +37,16 @@ namespace XTI_App.Api
         public ResourceAccess Access { get; }
 
         public Task<bool> HasAccess() => user.HasAccess(Access);
+
+        public Task<bool> IsOptional()
+        {
+            var action = createAction();
+            if (action is OptionalAction<TModel, TResult> optional)
+            {
+                return optional.IsOptional();
+            }
+            return Task.FromResult(false);
+        }
 
         public async Task<object> Execute(object model) => await Execute((TModel)model);
 
@@ -50,7 +60,7 @@ namespace XTI_App.Api
             {
                 throw new ValidationFailedException(errors.Errors());
             }
-            var action = createExecution();
+            var action = createAction();
             var actionResult = await action.Execute(model);
             return new ResultContainer<TResult>(actionResult);
         }

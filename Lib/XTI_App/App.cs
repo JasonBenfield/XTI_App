@@ -76,16 +76,16 @@ namespace XTI_App
         public Task<AppRole> Role(AppRoleName roleName) =>
             factory.Roles().Role(this, roleName);
 
-        public Task<AppVersion> StartNewPatch(DateTime timeAdded) =>
+        public Task<AppVersion> StartNewPatch(DateTimeOffset timeAdded) =>
             startNewVersion(timeAdded, AppVersionType.Values.Patch);
 
-        public Task<AppVersion> StartNewMinorVersion(DateTime timeAdded) =>
+        public Task<AppVersion> StartNewMinorVersion(DateTimeOffset timeAdded) =>
             startNewVersion(timeAdded, AppVersionType.Values.Minor);
 
-        public Task<AppVersion> StartNewMajorVersion(DateTime timeAdded) =>
+        public Task<AppVersion> StartNewMajorVersion(DateTimeOffset timeAdded) =>
             startNewVersion(timeAdded, AppVersionType.Values.Major);
 
-        private Task<AppVersion> startNewVersion(DateTime timeAdded, AppVersionType type)
+        private Task<AppVersion> startNewVersion(DateTimeOffset timeAdded, AppVersionType type)
         {
             return factory.Versions().StartNewVersion(AppVersionKey.None, this, timeAdded, type);
         }

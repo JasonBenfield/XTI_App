@@ -14,8 +14,8 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldIncludeNumericValueTemplate()
         {
-            var templateFactory = new FakeAppApiTemplateFactory();
-            var template = templateFactory.Create();
+            var apiFactory = new FakeAppApiFactory();
+            var template = apiFactory.CreateTemplate();
             var numericValueTemplates = template.NumericValueTemplates();
             Assert.That(numericValueTemplates.Any(), Is.True, "Should include numeric value template");
         }
@@ -23,8 +23,8 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldIncludeNumericValuesWithTemplate()
         {
-            var templateFactory = new FakeAppApiTemplateFactory();
-            var template = templateFactory.Create();
+            var apiFactory = new FakeAppApiFactory();
+            var template = apiFactory.CreateTemplate();
             var numericValueTemplate = template.NumericValueTemplates()
                 .First(templ => templ.DataType.Equals(typeof(EmployeeType)));
             var employeeTypes = EmployeeType.Values.All();

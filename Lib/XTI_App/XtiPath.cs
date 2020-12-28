@@ -30,7 +30,7 @@ namespace XTI_App
             Group = new ResourceGroupName(group);
             Action = new ResourceName(action);
             Modifier = modifier;
-            value = $"{App.Value}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
+            value = $"/{App.Value}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
             hashCode = value.GetHashCode();
         }
 
@@ -117,9 +117,9 @@ namespace XTI_App
             return Equals(obj as XtiPath);
         }
 
-        public bool Equals(XtiPath other) => value == other?.value;
+        public bool Equals(string other) => Equals(Parse(other));
 
-        public bool Equals(string other) => value == other;
+        public bool Equals(XtiPath other) => value == other?.value;
 
         public override int GetHashCode() => hashCode;
 
