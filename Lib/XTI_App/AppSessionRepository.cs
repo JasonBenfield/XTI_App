@@ -32,10 +32,18 @@ namespace XTI_App
             return factory.Session(sessionRecord);
         }
 
-        public async Task<IEnumerable<AppSession>> SessionsByTimeRange(DateTimeOffset startDate, DateTimeOffset endDate)
+        public async Task<IEnumerable<AppSession>> ActiveSessions(TimeRange timeRange)
         {
             var records = await repo.Retrieve()
-                .Where(s => s.TimeStarted >= startDate && s.TimeStarted < endDate)
+                .Where(s => s.TimeEnded == DateTimeOffset.MaxValue && s.TimeStarted >= timeRange.Start && s.TimeStarted <= timeRange.End)
+                .ToArrayAsync();
+            return records.Select(s => factory.Session(s));
+        }
+
+        public async Task<IEnumerable<AppSession>> SessionsByTimeRange(TimeRange timeRange)
+        {
+            var records = await repo.Retrieve()
+                .Where(s => s.TimeStarted >= timeRange.Start && s.TimeStarted <= timeRange.End)
                 .ToArrayAsync();
             return records.Select(s => factory.Session(s));
         }

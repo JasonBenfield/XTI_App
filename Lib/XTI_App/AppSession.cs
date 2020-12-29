@@ -77,6 +77,12 @@ namespace XTI_App
             return requestRepo.RetrieveBySession(this);
         }
 
+        public Task<IEnumerable<AppRequest>> MostRecentRequests(int howMany)
+        {
+            var requestRepo = factory.Requests();
+            return requestRepo.RetrieveMostRecent(this, howMany);
+        }
+
         public override string ToString() => $"{nameof(AppSession)} {ID.Value}";
     }
 }

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using XTI_App;
 using XTI_Core;
 
 namespace XTI_App
@@ -28,6 +27,20 @@ namespace XTI_App
 
         public EntityID ID { get; }
         public bool HasEnded() => record.TimeEnded < DateTimeOffset.MaxValue;
+
+        public bool HappendOnOrBefore(DateTimeOffset before)
+        {
+            DateTimeOffset date;
+            if (HasEnded())
+            {
+                date = record.TimeEnded;
+            }
+            else
+            {
+                date = record.TimeStarted;
+            }
+            return date <= before;
+        }
 
         public Task<IEnumerable<AppEvent>> Events() => factory.Events().RetrieveByRequest(this);
 

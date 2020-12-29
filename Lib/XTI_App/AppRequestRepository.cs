@@ -49,5 +49,15 @@ namespace XTI_App
                 .ToArrayAsync();
             return requests.Select(r => factory.Request(r));
         }
+
+        internal async Task<IEnumerable<AppRequest>> RetrieveMostRecent(AppSession session, int howMany)
+        {
+            var requests = await repo.Retrieve()
+                .Where(r => r.SessionID == session.ID.Value)
+                .OrderByDescending(r => r.TimeStarted)
+                .Take(howMany)
+                .ToArrayAsync();
+            return requests.Select(r => factory.Request(r));
+        }
     }
 }
