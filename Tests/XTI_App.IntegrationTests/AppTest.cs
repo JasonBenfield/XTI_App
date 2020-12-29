@@ -1,6 +1,4 @@
-﻿using MainDB.EF;
-using MainDB.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
@@ -9,7 +7,6 @@ using System.Threading.Tasks;
 using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
 using XTI_Core;
-using XTI_Core.Fakes;
 
 namespace XTI_App.IntegrationTests
 {
@@ -59,21 +56,14 @@ namespace XTI_App.IntegrationTests
                 (
                     (hostContext, services) =>
                     {
-                        services.AddAppDbContextForSqlServer(hostContext.Configuration);
-                        services.AddScoped<Clock, FakeClock>();
-                        services.AddScoped<AppFactory>();
-                        services.AddScoped<MainDbReset>();
+                        services.AddXtiTestServices(hostContext.Configuration);
                     }
                 )
                 .Build();
             var scope = host.Services.CreateScope();
-            var factory = scope.ServiceProvider.GetService<AppFactory>();
-            var appDbReset = scope.ServiceProvider.GetService<MainDbReset>();
-            await appDbReset.Run();
-            var clock = scope.ServiceProvider.GetService<Clock>();
-            var setup = new FakeAppSetup(factory, clock);
-            await setup.Run();
-            var input = new TestInput(scope.ServiceProvider, setup.App);
+            await scope.ServiceProvider.Reset();
+            var app = await scope.ServiceProvider.FakeApp();
+            var input = new TestInput(scope.ServiceProvider, app);
             return input;
         }
 
