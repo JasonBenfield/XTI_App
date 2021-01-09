@@ -20,6 +20,11 @@ namespace XTI_App.Api
         public ResourceAccess Access { get; }
         public IEnumerable<AppApiActionTemplate> ActionTemplates { get; }
 
+        public IEnumerable<FormValueTemplate> FormTemplates() =>
+            ActionTemplates
+                .SelectMany(a => a.FormTemplates())
+                .Distinct();
+
         public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>
             ActionTemplates
                 .SelectMany(a => a.ObjectTemplates())

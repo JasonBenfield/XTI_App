@@ -10,6 +10,35 @@ namespace XTI_App.Api
         Type DataType { get; }
         IEnumerable<ObjectValueTemplate> ObjectTemplates();
     }
+    public sealed class DictionaryValueTemplate : ValueTemplate, IEquatable<DictionaryValueTemplate>
+    {
+        public DictionaryValueTemplate(Type dataType)
+        {
+            DataType = dataType;
+            var genericArgs = DataType.GetGenericArguments();
+            KeyTemplate = new ValueTemplateFromType(genericArgs[0]).Template();
+            ValueTemplate = new ValueTemplateFromType(genericArgs[1]).Template();
+        }
+
+        public Type DataType { get; }
+        public ValueTemplate KeyTemplate { get; }
+        public ValueTemplate ValueTemplate { get; }
+
+        public IEnumerable<ObjectValueTemplate> ObjectTemplates()
+            => KeyTemplate.ObjectTemplates().Union(ValueTemplate.ObjectTemplates()).Distinct();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is DictionaryValueTemplate dictTempl)
+            {
+                return Equals(dictTempl);
+            }
+            return base.Equals(obj);
+        }
+        public bool Equals(DictionaryValueTemplate other) => DataType.Equals(other?.DataType);
+        public override int GetHashCode() => DataType.GetHashCode();
+
+    }
     public sealed class SimpleValueTemplate : ValueTemplate, IEquatable<SimpleValueTemplate>
     {
         public SimpleValueTemplate(Type dataType, bool isNullable)
@@ -132,7 +161,8 @@ namespace XTI_App.Api
         public Type DataType { get; }
         public ValueTemplate ElementTemplate { get; }
 
-        public IEnumerable<ObjectValueTemplate> ObjectTemplates() => ElementTemplate.ObjectTemplates();
+        public IEnumerable<ObjectValueTemplate> ObjectTemplates()
+            => ElementTemplate.ObjectTemplates();
 
         public override bool Equals(object obj) => Equals(obj as ArrayValueTemplate);
 
