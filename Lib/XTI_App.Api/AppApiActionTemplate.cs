@@ -27,17 +27,34 @@ namespace XTI_App.Api
         public ValueTemplate ModelTemplate { get; }
         public ValueTemplate ResultTemplate { get; }
 
-        public bool IsView() => ResultTemplate.DataType.Name == "AppActionViewResult";
-        public bool IsRedirect() => ResultTemplate.DataType.Name == "AppActionRedirectResult";
+        public bool IsView() => ResultTemplate.DataType.Name == "WebViewResult";
+        public bool IsPartialView() => ResultTemplate.DataType.Name == "WebPartialViewResult";
+        public bool IsRedirect() => ResultTemplate.DataType.Name == "WebRedirectResult";
         public bool HasEmptyModel() => ModelTemplate.DataType == typeof(EmptyRequest);
 
+        public IEnumerable<FormValueTemplate> FormTemplates()
+        {
+            var formTemplates = new List<FormValueTemplate>();
+            if (ModelTemplate is FormValueTemplate modelFormTempl)
+            {
+                formTemplates.Add(modelFormTempl);
+            }
+            if (ResultTemplate is FormValueTemplate resultFormTempl)
+            {
+                formTemplates.Add(resultFormTempl);
+            }
+            return formTemplates.Distinct();
+        }
+
         public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>
-            ModelTemplate.ObjectTemplates()
-                .Union
-                (
-                    ResultTemplate.ObjectTemplates()
-                )
-                .Distinct();
+            IsView() || IsPartialView() || IsRedirect()
+                ? ModelTemplate.ObjectTemplates()
+                : ModelTemplate.ObjectTemplates()
+                    .Union
+                    (
+                        ResultTemplate.ObjectTemplates()
+                    )
+                    .Distinct();
 
         public IEnumerable<NumericValueTemplate> NumericValueTemplates()
         {

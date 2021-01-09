@@ -18,6 +18,11 @@ namespace XTI_App.Api
         public IEnumerable<AppRoleName> RoleNames { get; }
         public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
 
+        public IEnumerable<FormValueTemplate> FormTemplates() =>
+            GroupTemplates
+                .SelectMany(g => g.FormTemplates())
+                .Distinct();
+
         public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>
             GroupTemplates
                 .SelectMany(g => g.ObjectTemplates())

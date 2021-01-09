@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using XTI_Core;
+using XTI_Forms;
 
 namespace XTI_App.Api
 {
@@ -36,9 +37,20 @@ namespace XTI_App.Api
                     valueTemplate = new SimpleValueTemplate(source, false);
                 }
             }
-            else if (source == typeof(string))
+            else if (source == typeof(string) || source == typeof(object))
             {
                 valueTemplate = new SimpleValueTemplate(source, true);
+            }
+            else if
+            (
+                source.IsGenericType &&
+                (
+                    source.GetGenericTypeDefinition() == typeof(IDictionary<,>) ||
+                    source.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+                )
+            )
+            {
+                valueTemplate = new DictionaryValueTemplate(source);
             }
             else if (isArrayOrEnumerable(source))
             {
@@ -47,6 +59,11 @@ namespace XTI_App.Api
             else if (isDerivedFromNumericValue(source))
             {
                 valueTemplate = new NumericValueTemplate(source);
+            }
+            else if (typeof(Form).IsAssignableFrom(source))
+            {
+                var form = (Form)Activator.CreateInstance(source);
+                valueTemplate = new FormValueTemplate(form);
             }
             else
             {
