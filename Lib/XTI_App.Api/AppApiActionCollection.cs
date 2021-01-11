@@ -82,7 +82,7 @@ namespace XTI_App.Api
                 createExecution ?? defaultCreateAction<TModel, TResult>(),
                 friendlyName
             );
-            actions.Add(action.Path.Action.Value, action);
+            actions.Add(action.ActionName.ToLower(), action);
             return action;
         }
 
@@ -94,7 +94,7 @@ namespace XTI_App.Api
 
         public AppApiAction<TModel, TResult> Add<TModel, TResult>(AppApiAction<TModel, TResult> action)
         {
-            actions.Add(action.Path.Action.Value, action);
+            actions.Add(action.ActionName.ToLower(), action);
             return action;
         }
     }

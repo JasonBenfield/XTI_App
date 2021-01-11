@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\XTI_App\XTI_App.csproj" />
+    <ProjectReference Include="..\XTI_Forms\XTI_Forms.csproj" />
   </ItemGroup>
   
 </Project>

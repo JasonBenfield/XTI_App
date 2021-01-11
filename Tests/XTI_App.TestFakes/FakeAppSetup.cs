@@ -25,22 +25,20 @@ namespace XTI_App.TestFakes
 
         public async Task Run()
         {
-            var fakeTemplateFactory = new FakeAppApiTemplateFactory();
-            var template = fakeTemplateFactory.Create();
+            var fakeApiFactory = new FakeAppApiFactory();
+            var template = fakeApiFactory.CreateTemplate();
             var setup = new DefaultAppSetup
             (
                 appFactory,
                 clock,
                 template,
-                options.Title,
-                options.RoleNames.Values(),
-                new[] { new ModifierCategoryName("Department") }
+                options.Title
             );
             await setup.Run();
             App = await appFactory.Apps().App(template.AppKey);
             var modCategory = await App.ModCategory(new ModifierCategoryName("Department"));
-            await modCategory.AddOrUpdateModifier(1, "IT");
-            await modCategory.AddOrUpdateModifier(2, "HR");
+            await modCategory.AddOrUpdateModifier("IT", "IT");
+            await modCategory.AddOrUpdateModifier("HR", "HR");
             User = await appFactory.Users().Add
             (
                 new AppUserName("xartogg"), new FakeHashedPassword("password"), clock.Now()

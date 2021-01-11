@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using XTI_Core;
 
 namespace XTI_App.Api
 {
@@ -12,9 +13,9 @@ namespace XTI_App.Api
                 + string.Join("\r\n", errors.Select(e => e.Message))
             )
         {
-            Errors = errors;
+            Errors = errors.ToArray();
         }
 
-        public IEnumerable<ErrorModel> Errors { get; }
+        public ErrorModel[] Errors { get; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using XTI_Core;
+using XTI_Forms;
 
 namespace XTI_App.Api
 {
@@ -11,7 +13,7 @@ namespace XTI_App.Api
             ResourceAccess access,
             IAppApiUser user,
             Func<AppActionValidation<TModel>> createValidation,
-            Func<AppAction<TModel, TResult>> createExecution,
+            Func<AppAction<TModel, TResult>> createAction,
             string friendlyName
         )
         {
@@ -19,54 +21,67 @@ namespace XTI_App.Api
             Access = access;
             Path = path;
             FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
-                ? new FriendlyNameFromActionName(path.Action.DisplayText).Value
+                ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
                 : friendlyName;
             this.user = user;
             this.createValidation = createValidation;
-            this.createExecution = createExecution;
+            this.createAction = createAction;
         }
 
         private readonly IAppApiUser user;
         private readonly Func<AppActionValidation<TModel>> createValidation;
-        private readonly Func<AppAction<TModel, TResult>> createExecution;
+        private readonly Func<AppAction<TModel, TResult>> createAction;
 
         public XtiPath Path { get; }
+        public string ActionName { get => Path.Action.DisplayText; }
         public string FriendlyName { get; }
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess(ModifierKey modKey) =>
-            user.HasAccess(Path, Access, modKey);
+        public Task<bool> HasAccess() => user.HasAccess(Access);
 
-        public async Task<object> Execute(ModifierKey modifier, object model) =>
-            await Execute(modifier, (TModel)model);
-
-        public Task<ResultContainer<TResult>> Execute(TModel model) =>
-            Execute(ModifierKey.Default, model);
-
-        public async Task<ResultContainer<TResult>> Execute
-        (
-            ModifierKey modifier, TModel model
-        )
+        public Task<bool> IsOptional()
         {
-            await EnsureUserHasAccess(modifier);
+            var action = createAction();
+            if (action is OptionalAction<TModel, TResult> optional)
+            {
+                return optional.IsOptional();
+            }
+            return Task.FromResult(false);
+        }
+
+        public async Task<object> Execute(object model) => await Execute((TModel)model);
+
+        public async Task<ResultContainer<TResult>> Execute(TModel model)
+        {
+            await EnsureUserHasAccess();
             var errors = new ErrorList();
+            if (model is Form form)
+            {
+                form.Validate(errors);
+                ensureValidInput(errors);
+            }
             var validation = createValidation();
             await validation.Validate(errors, model);
-            if (errors.Any())
-            {
-                throw new ValidationFailedException(errors.Errors());
-            }
-            var action = createExecution();
+            ensureValidInput(errors);
+            var action = createAction();
             var actionResult = await action.Execute(model);
             return new ResultContainer<TResult>(actionResult);
         }
 
-        private async Task EnsureUserHasAccess(ModifierKey modifier)
+        private async Task EnsureUserHasAccess()
         {
-            var hasAccess = await HasAccess(modifier);
+            var hasAccess = await HasAccess();
             if (!hasAccess)
             {
                 throw new AccessDeniedException(Path);
+            }
+        }
+
+        private static void ensureValidInput(ErrorList errors)
+        {
+            if (errors.Any())
+            {
+                throw new ValidationFailedException(errors.Errors());
             }
         }
 
@@ -76,5 +91,7 @@ namespace XTI_App.Api
             var resultTemplate = new ValueTemplateFromType(typeof(TResult)).Template();
             return new AppApiActionTemplate(Path.Action.DisplayText, FriendlyName, Access, modelTemplate, resultTemplate);
         }
+
+        public override string ToString() => $"{GetType().Name} {FriendlyName}";
     }
 }

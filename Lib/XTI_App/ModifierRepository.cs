@@ -39,6 +39,14 @@ namespace XTI_App
             return records.Select(m => factory.Modifier(m));
         }
 
+        internal async Task<Modifier> Modifier(int modifierID)
+        {
+            var record = await repo.Retrieve()
+                .Where(m => m.ID == modifierID)
+                .FirstOrDefaultAsync();
+            return factory.Modifier(record);
+        }
+
         internal async Task<Modifier> Modifier(ModifierKey modKey)
         {
             var record = await repo.Retrieve()

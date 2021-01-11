@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
 using XTI_App.Api;
+using XTI_App.Tests;
+using XTI_Core;
 
 namespace XTI_App.TestFakes
 {
     public sealed class FakeAppApi : AppApi
     {
-
-        public FakeAppApi(AppKey appKey, IAppApiUser user, AppVersionKey versionKey)
+        public FakeAppApi(IAppApiUser user)
             : base
             (
-                appKey,
-                versionKey,
+                FakeAppKey.AppKey,
                 user,
                 ResourceAccess.AllowAuthenticated()
                     .WithAllowed(FakeAppRoles.Instance.Admin)
@@ -91,6 +91,7 @@ namespace XTI_App.TestFakes
             AddEmployee = actions.Add
             (
                 nameof(AddEmployee),
+                api.Access.WithAllowed(FakeAppRoles.Instance.Manager),
                 () => new AddEmployeeValidation(),
                 () => new AddEmployeeAction()
             );
@@ -100,9 +101,19 @@ namespace XTI_App.TestFakes
                 () => new EmployeeAction(),
                 "Get Employee Information"
             );
+            SubmitFakeForm = actions.Add(nameof(SubmitFakeForm), () => new SubmitFakeFormAction());
         }
         public AppApiAction<AddEmployeeModel, int> AddEmployee { get; }
         public AppApiAction<int, Employee> Employee { get; }
+        public AppApiAction<FakeForm, string> SubmitFakeForm { get; }
+    }
+
+    public sealed class SubmitFakeFormAction : AppAction<FakeForm, string>
+    {
+        public Task<string> Execute(FakeForm model)
+        {
+            return Task.FromResult(model.TestText.Value());
+        }
     }
 
     public sealed class AddEmployeeModel
@@ -136,6 +147,7 @@ namespace XTI_App.TestFakes
         public int ID { get; set; }
         public string Name { get; set; }
         public DateTime BirthDate { get; set; }
+        public EmployeeType EmployeeType { get; set; }
     }
 
     public sealed class EmployeeAction : AppAction<int, Employee>

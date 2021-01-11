@@ -3,6 +3,8 @@ using System;
 using System.Threading.Tasks;
 using MainDB.Entities;
 using XTI_Core;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace XTI_App
 {
@@ -17,7 +19,7 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        public async Task<App> AddOrUpdate(AppKey appKey, string title, DateTime timeAdded)
+        public async Task<App> AddOrUpdate(AppKey appKey, string title, DateTimeOffset timeAdded)
         {
             if (string.IsNullOrWhiteSpace(title))
             {
@@ -35,7 +37,7 @@ namespace XTI_App
             return app;
         }
 
-        public async Task<App> Add(AppKey appKey, string title, DateTime timeAdded)
+        public async Task<App> Add(AppKey appKey, string title, DateTimeOffset timeAdded)
         {
             var record = new AppRecord
             {
@@ -46,6 +48,12 @@ namespace XTI_App
             };
             await repo.Create(record);
             return factory.App(record);
+        }
+
+        public async Task<IEnumerable<App>> All()
+        {
+            var records = await repo.Retrieve().ToArrayAsync();
+            return records.Select(r => factory.App(r));
         }
 
         public async Task<App> App(int id)

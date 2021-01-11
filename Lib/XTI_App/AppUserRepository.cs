@@ -37,7 +37,7 @@ namespace XTI_App
         private Task<AppUserRecord> user(AppUserName userName)
             => repo.Retrieve().FirstOrDefaultAsync(u => u.UserName == userName.Value);
 
-        public async Task<AppUser> Add(AppUserName userName, IHashedPassword password, DateTime timeAdded)
+        public async Task<AppUser> Add(AppUserName userName, IHashedPassword password, DateTimeOffset timeAdded)
         {
             var newUser = new AppUserRecord
             {

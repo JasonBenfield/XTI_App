@@ -5,15 +5,16 @@ namespace XTI_App.Fakes
 {
     public sealed class FakeUserContext : IUserContext
     {
-        private IAppUser user;
+        private AppUser user;
 
-        public Task<IAppUser> User() => Task.FromResult(user);
+        public Task<IAppUser> User() => Task.FromResult((IAppUser)user);
 
-        public void SetUser(IAppUser user) => this.user = user;
+        public Task<AppUser> UncachedUser() => Task.FromResult(user);
+
+        public void SetUser(AppUser user) => this.user = user;
 
         public void RefreshUser(IAppUser user)
         {
         }
-
     }
 }

@@ -10,13 +10,12 @@ namespace XTI_App.Api
         protected AppApi
         (
             AppKey appKey,
-            AppVersionKey versionKey,
             IAppApiUser user,
             ResourceAccess access
         )
         {
             AppKey = appKey;
-            Path = new XtiPath(appKey.Name.DisplayText, versionKey.DisplayText);
+            Path = new XtiPath(appKey.Name.DisplayText);
             this.user = user;
             Access = access ?? ResourceAccess.AllowAuthenticated();
         }
@@ -30,13 +29,13 @@ namespace XTI_App.Api
 
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess() => user.HasAccessToApp(Path);
+        public Task<bool> HasAccess() => user.HasAccessToApp();
 
         protected TGroup AddGroup<TGroup>(Func<IAppApiUser, TGroup> createGroup)
             where TGroup : AppApiGroup
         {
             var group = createGroup(user);
-            groups.Add(group.Path.Group.Value, group);
+            groups.Add(group.GroupName.ToLower(), group);
             return group;
         }
 
@@ -45,5 +44,20 @@ namespace XTI_App.Api
         public AppApiGroup Group(string groupName) => groups[groupName.ToLower()];
 
         public AppApiTemplate Template() => new AppApiTemplate(this);
+
+        internal IEnumerable<AppRoleName> RoleNames()
+        {
+            var roleNames = new List<AppRoleName>();
+            roleNames.AddRange(Access.Allowed);
+            roleNames.AddRange(Access.Denied);
+            var groupRoleNames = groups
+                .Values
+                .SelectMany(g => g.RoleNames())
+                .Distinct();
+            roleNames.AddRange(groupRoleNames);
+            return roleNames.Distinct();
+        }
+
+        public override string ToString() => $"{GetType().Name} {Path.App}";
     }
 }

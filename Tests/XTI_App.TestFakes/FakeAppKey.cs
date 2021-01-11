@@ -2,7 +2,6 @@
 {
     public static class FakeAppKey
     {
-        public static readonly AppName AppName = new AppName("Fake");
-        public static readonly AppKey AppKey = new AppKey(AppName, AppType.Values.Service);
+        public static readonly AppKey AppKey = new AppKey(new AppName("Fake"), AppType.Values.Service);
     }
 }

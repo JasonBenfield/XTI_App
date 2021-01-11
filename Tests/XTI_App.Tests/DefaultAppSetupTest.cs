@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -110,7 +111,7 @@ namespace XTI_App.Tests
             Assert.That
             (
                 resources.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee") }),
+                Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee"), new ResourceName("SubmitFakeForm") }),
                 "Should add resources from template actions"
             );
         }
@@ -165,37 +166,43 @@ namespace XTI_App.Tests
 
         private TestInput setup()
         {
-            var services = new ServiceCollection();
-            services.AddServicesForTests();
-            services.AddSingleton<FakeAppOptions>();
-            services.AddSingleton<IAppApiTemplateFactory, FakeAppApiTemplateFactory>();
-            services.AddScoped<IAppSetup>(sp =>
-            {
-                var factory = sp.GetService<AppFactory>();
-                var clock = sp.GetService<Clock>();
-                var options = sp.GetService<FakeAppOptions>();
-                return new FakeAppSetup
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureServices
                 (
-                    factory,
-                    clock,
-                    options
-                );
-            });
-            return new TestInput(services.BuildServiceProvider());
+                    services =>
+                    {
+                        services.AddServicesForTests();
+                        services.AddSingleton<FakeAppOptions>();
+                        services.AddSingleton<AppApiFactory, FakeAppApiFactory>();
+                        services.AddScoped<IAppSetup>(sp =>
+                        {
+                            var factory = sp.GetService<AppFactory>();
+                            var clock = sp.GetService<Clock>();
+                            var options = sp.GetService<FakeAppOptions>();
+                            return new FakeAppSetup
+                            (
+                                factory,
+                                clock,
+                                options
+                            );
+                        });
+                    }
+                )
+                .Build();
+            var scope = host.Services.CreateScope();
+            return new TestInput(scope.ServiceProvider);
         }
 
         private sealed class TestInput
         {
-            public TestInput(ServiceProvider sp)
+            public TestInput(IServiceProvider sp)
             {
                 Services = sp;
                 Factory = sp.GetService<AppFactory>();
-                Clock = sp.GetService<FakeClock>();
                 Options = sp.GetService<FakeAppOptions>();
             }
 
             public AppFactory Factory { get; }
-            public FakeClock Clock { get; }
             public FakeAppOptions Options { get; }
             public IServiceProvider Services { get; }
         }

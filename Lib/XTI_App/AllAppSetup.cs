@@ -22,7 +22,17 @@ namespace XTI_App
                 await appFactory.Users().Add
                 (
                     AppUserName.Anon,
-                    new AnonHashedPassword(),
+                    new SystemHashedPassword(),
+                    clock.Now()
+                );
+            }
+            var superUser = await appFactory.Users().User(AppUserName.SuperUser);
+            if (superUser.ID.IsNotValid())
+            {
+                await appFactory.Users().Add
+                (
+                    AppUserName.SuperUser,
+                    new SystemHashedPassword(),
                     clock.Now()
                 );
             }
@@ -42,11 +52,11 @@ namespace XTI_App
             await group.TryAddResource(ResourceName.Unknown);
         }
 
-        private class AnonHashedPassword : IHashedPassword
+        private class SystemHashedPassword : IHashedPassword
         {
             public bool Equals(string other) => false;
 
-            public string Value() => "ANON";
+            public string Value() => new GeneratedKey().Value();
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Fakes;
@@ -62,9 +64,17 @@ namespace XTI_App.Tests
 
         private async Task<TestInput> setup()
         {
-            var services = new ServiceCollection();
-            services.AddServicesForTests();
-            var sp = services.BuildServiceProvider();
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureServices
+                (
+                    (hostContext, services) =>
+                    {
+                        services.AddServicesForTests();
+                    }
+                )
+                .Build();
+            var scope = host.Services.CreateScope();
+            var sp = scope.ServiceProvider;
             var factory = sp.GetService<AppFactory>();
             var clock = sp.GetService<FakeClock>();
             var setup = new FakeAppSetup(factory, clock);
@@ -75,7 +85,7 @@ namespace XTI_App.Tests
 
         private sealed class TestInput
         {
-            public TestInput(ServiceProvider sp, App app)
+            public TestInput(IServiceProvider sp, App app)
             {
                 Factory = sp.GetService<AppFactory>();
                 Clock = sp.GetService<FakeClock>();

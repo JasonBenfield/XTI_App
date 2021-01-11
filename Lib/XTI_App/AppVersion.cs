@@ -105,6 +105,18 @@ namespace XTI_App
             });
         }
 
+        public AppVersionModel ToModel() => new AppVersionModel
+        {
+            ID = ID.Value,
+            VersionKey = Key().DisplayText,
+            Major = Major,
+            Minor = Minor,
+            Patch = Patch,
+            VersionType = Type(),
+            Status = Status(),
+            TimeAdded = record.TimeAdded
+        };
+
         public override string ToString() => $"{nameof(AppVersion)} {ID.Value}: {Version()}";
 
     }

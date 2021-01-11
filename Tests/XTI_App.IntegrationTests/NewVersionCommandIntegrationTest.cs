@@ -1,14 +1,10 @@
-﻿using MainDB.EF;
-using MainDB.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
-using XTI_Core;
-using XTI_Core.Fakes;
 using XTI_Version;
 
 namespace XTI_App.IntegrationTests
@@ -42,26 +38,6 @@ namespace XTI_App.IntegrationTests
             Assert.That(newVersion?.IsMajor(), Is.True, "Should start new major version");
         }
 
-        [Test]
-        public async Task Configure()
-        {
-            var input = await setup("Production");
-            input.Options.AppName = "TempLog";
-            input.Options.AppType = AppType.Values.Service.DisplayText;
-            input.Options.VersionType = AppVersionType.Values.Minor.DisplayText;
-            var appSetup = new SingleAppSetup
-            (
-                input.Services.GetService<AppFactory>(),
-                input.Services.GetService<Clock>(),
-                new AppKey(input.Options.AppName, AppType.Values.Value(input.Options.AppType)),
-                "",
-                new AppRoleName[] { }
-            );
-            await appSetup.Run();
-            var newVersion = await execute(input);
-            //Assert.That(newVersion?.IsMajor(), Is.True, "Should start new major version");
-        }
-
         private async Task<TestInput> setup(string envName = "Test")
         {
             Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", envName);
@@ -72,23 +48,15 @@ namespace XTI_App.IntegrationTests
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddAppDbContextForSqlServer(hostContext.Configuration);
-                    services.AddScoped<Clock, FakeClock>();
-                    services.AddScoped<AppFactory>();
+                    services.AddXtiTestServices(hostContext.Configuration);
                     services.AddScoped<ManageVersionCommand>();
-                    services.AddScoped<MainDbReset>();
                 })
                 .Build();
             var scope = host.Services.CreateScope();
             var sp = scope.ServiceProvider;
-            var factory = sp.GetService<AppFactory>();
-            var clock = sp.GetService<Clock>();
             if (envName == "Test")
             {
-                var appDbReset = sp.GetService<MainDbReset>();
-                await appDbReset.Run();
-                var setup = new FakeAppSetup(factory, clock);
-                await setup.Run();
+                await sp.Reset();
             }
             var input = new TestInput(sp);
             return input;
@@ -109,7 +77,7 @@ namespace XTI_App.IntegrationTests
                 Options = new ManageVersionOptions
                 {
                     Command = "New",
-                    AppName = FakeAppKey.AppName.Value,
+                    AppName = FakeAppKey.AppKey.Name.Value,
                     AppType = FakeAppKey.AppKey.Type.DisplayText,
                     VersionType = AppVersionType.Values.Patch.DisplayText
                 };

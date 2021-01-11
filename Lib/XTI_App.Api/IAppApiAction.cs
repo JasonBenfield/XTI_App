@@ -1,16 +1,17 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace XTI_App.Api
 {
     public interface IAppApiAction
     {
-        XtiPath Path { get; }
+        string ActionName { get; }
         string FriendlyName { get; }
         ResourceAccess Access { get; }
 
-        Task<bool> HasAccess(ModifierKey modifier);
+        Task<bool> HasAccess();
 
-        Task<object> Execute(ModifierKey modifier, object model);
+        Task<object> Execute(object model);
 
         AppApiActionTemplate Template();
     }

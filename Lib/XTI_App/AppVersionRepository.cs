@@ -19,7 +19,7 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        internal async Task<AppVersion> StartNewVersion(AppVersionKey key, App app, DateTime timeAdded, AppVersionType type)
+        internal async Task<AppVersion> StartNewVersion(AppVersionKey key, App app, DateTimeOffset timeAdded, AppVersionType type)
         {
             AppVersionRecord record = null;
             await repo.Transaction(async () =>

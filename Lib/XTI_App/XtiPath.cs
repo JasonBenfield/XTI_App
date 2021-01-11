@@ -16,18 +16,8 @@ namespace XTI_App
             );
         }
 
-        public XtiPath(string appKey, string version)
-            : this(appKey, version, "", "")
-        {
-        }
-
-        public XtiPath(string appKey, string version, string group)
-            : this(appKey, version, group, "")
-        {
-        }
-
-        public XtiPath(string appKey, string version, string group, string action)
-            : this(appKey, version, group, action, ModifierKey.Default)
+        public XtiPath(string appKey)
+            : this(appKey, AppVersionKey.Current.DisplayText, "", "", ModifierKey.Default)
         {
         }
 
@@ -40,7 +30,7 @@ namespace XTI_App
             Group = new ResourceGroupName(group);
             Action = new ResourceName(action);
             Modifier = modifier;
-            value = $"{App.Value}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
+            value = $"/{App.Value}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
             hashCode = value.GetHashCode();
         }
 
@@ -94,6 +84,17 @@ namespace XTI_App
             return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, actionName, Modifier);
         }
 
+        public XtiPath WithModifier(ModifierKey modKey)
+        {
+            EnsureActionResource();
+            return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, modKey);
+        }
+
+        public XtiPath WithVersion(AppVersionKey versionKey)
+        {
+            return new XtiPath(App.DisplayText, versionKey.DisplayText, Group.DisplayText, Action.DisplayText, Modifier);
+        }
+
         public string Format()
         {
             var parts = new string[]
@@ -101,7 +102,8 @@ namespace XTI_App
                 App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, Modifier.DisplayText
             }
             .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
-            return string.Join("/", parts);
+            var joined = string.Join("/", parts);
+            return $"/{joined}";
         }
 
         public string Value() => Format().ToLower();
@@ -115,9 +117,9 @@ namespace XTI_App
             return Equals(obj as XtiPath);
         }
 
-        public bool Equals(XtiPath other) => value == other?.value;
+        public bool Equals(string other) => Equals(Parse(other));
 
-        public bool Equals(string other) => value == other;
+        public bool Equals(XtiPath other) => value == other?.value;
 
         public override int GetHashCode() => hashCode;
 

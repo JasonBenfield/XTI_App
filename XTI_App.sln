@@ -38,6 +38,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.TestFakes", "Tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_App.IntegrationTests", "Tests\XTI_App.IntegrationTests\XTI_App.IntegrationTests.csproj", "{60EED42A-F496-4BC5-B4AC-CC4C8C680E06}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_Forms", "Lib\XTI_Forms\XTI_Forms.csproj", "{6238491B-DE3A-448E-BB70-D24C910A0895}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{60EED42A-F496-4BC5-B4AC-CC4C8C680E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60EED42A-F496-4BC5-B4AC-CC4C8C680E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60EED42A-F496-4BC5-B4AC-CC4C8C680E06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6238491B-DE3A-448E-BB70-D24C910A0895}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6238491B-DE3A-448E-BB70-D24C910A0895}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6238491B-DE3A-448E-BB70-D24C910A0895}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6238491B-DE3A-448E-BB70-D24C910A0895}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{4156F508-835F-40D8-9921-7C34B66CE91A} = {D22ED6D1-B5ED-4B63-A3A2-738205F8E374}
 		{D61E5C69-9648-45AB-845D-628452B48D41} = {EC9D1552-B6C0-4949-96C7-F013F1718F0C}
 		{60EED42A-F496-4BC5-B4AC-CC4C8C680E06} = {EC9D1552-B6C0-4949-96C7-F013F1718F0C}
+		{6238491B-DE3A-448E-BB70-D24C910A0895} = {D22ED6D1-B5ED-4B63-A3A2-738205F8E374}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AB83988D-D2DE-46B9-B285-B34C08128DFF}
