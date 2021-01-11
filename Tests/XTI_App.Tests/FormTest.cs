@@ -11,7 +11,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldAddTextInputToForm()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             var fields = form.ToModel().Fields;
             var nameField = fields.FirstOrDefault(t => t.Name.Equals("TestText"));
             Assert.That(nameField, Is.Not.Null, "Should add text input");
@@ -24,7 +24,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldFailNotNullValidation_WhenValueIsNull()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.TestText.MustNotBeNull();
             form.TestText.SetValue(null);
             var errorList = new ErrorList();
@@ -37,7 +37,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldPassValidation()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             var errorList = new ErrorList();
             form.Validate(errorList);
             var errors = errorList.Errors().ToArray();
@@ -47,7 +47,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldNotBeValid_WhenValueIsLessThanTheLowerBound()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.PositiveNumber.SetValue(-42);
             var errorList = new ErrorList();
             form.Validate(errorList);
@@ -59,7 +59,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldNotBeValid_WhenValueIsGreaterThanTheUpperBound()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.NegativeNumber.SetValue(42);
             var errorList = new ErrorList();
             form.Validate(errorList);
@@ -72,7 +72,7 @@ namespace XTI_App.Tests
         [TestCase(5), TestCase(20), TestCase(25)]
         public void ShouldNotBeValid_WhenValueIsOutsideTheRange(int? value)
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.RangedNumber.SetValue(value);
             var errorList = new ErrorList();
             form.Validate(errorList);
@@ -91,7 +91,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldNotBeValid_WhenValueIsEqualToTheExcludedUpperBound()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.NegativeNumber.SetValue(0);
             var errorList = new ErrorList();
             form.Validate(errorList);
@@ -103,7 +103,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldNotBeValid_WhenTextIsLongerThanTheMaxLength()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.TestText.MaxLength = 10;
             form.TestText.SetValue("".PadLeft(11, 'A'));
             var errorList = new ErrorList();
@@ -116,7 +116,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldImportValues()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             form.Import(new Dictionary<string, object>
             {
                 { "TestForm_TestText", "Test Import" },
@@ -141,7 +141,7 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldExportValues()
         {
-            var form = new TestForm();
+            var form = new FakeForm();
             var imported = new Dictionary<string, object>
             {
                 { "TestForm_TestText", "Test Import" },
@@ -158,60 +158,5 @@ namespace XTI_App.Tests
             Assert.That(exported, Is.EquivalentTo(imported));
         }
 
-        private sealed class TestForm : Form
-        {
-            public TestForm() : base("TestForm")
-            {
-                TestText = AddTextInput(nameof(TestText));
-                TestText.MaxLength = 100;
-                TestText.SetValue("Initial Value");
-                TestText.MustNotBeNull();
-                NegativeNumber = AddInt32Input(nameof(NegativeNumber));
-                NegativeNumber.SetValue(-99);
-                NegativeNumber.MustNotBeNull();
-                NegativeNumber.AddConstraints(Int32RangeConstraint.Negative());
-                PositiveNumber = AddInt32Input(nameof(PositiveNumber));
-                PositiveNumber.SetValue(23);
-                PositiveNumber.MustNotBeNull();
-                PositiveNumber.AddConstraints(Int32RangeConstraint.Positive());
-                RangedNumber = AddInt32Input(nameof(RangedNumber));
-                RangedNumber.SetValue(15);
-                RangedNumber.MustNotBeNull();
-                RangedNumber.AddConstraints
-                (
-                    Int32RangeConstraint.FromOnOrAbove(10).ToBelow(20)
-                );
-                DecimalDropDown = AddDecimalDropDown
-                (
-                    nameof(DecimalDropDown),
-                    new DropDownItem<decimal?>(5.1M, "Item 1"),
-                    new DropDownItem<decimal?>(5.2M, "Item 2"),
-                    new DropDownItem<decimal?>(5.3M, "Item 3")
-                );
-                DecimalDropDown.ItemCaption = "Select...";
-                Question = AddBooleanDropDown(nameof(Question));
-                TestComplex = AddComplex(nameof(TestComplex), (prefix, name) => new FakeComplexField(prefix, name));
-            }
-
-            public InputField<string> TestText { get; }
-            public InputField<int?> NegativeNumber { get; }
-            public InputField<int?> PositiveNumber { get; }
-            public InputField<int?> RangedNumber { get; }
-            public DropDownField<decimal?> DecimalDropDown { get; }
-            public DropDownField<bool?> Question { get; }
-            public FakeComplexField TestComplex { get; }
-        }
-
-        public sealed class FakeComplexField : ComplexField
-        {
-            public FakeComplexField(string prefix, string name)
-                : base(prefix, name)
-            {
-                Field1 = AddTextInput(nameof(Field1));
-                Field2 = AddInt32Input(nameof(Field2));
-            }
-            public InputField<string> Field1 { get; }
-            public InputField<int?> Field2 { get; }
-        }
     }
 }

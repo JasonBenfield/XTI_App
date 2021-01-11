@@ -111,7 +111,7 @@ namespace XTI_App.Tests
             Assert.That
             (
                 resources.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee") }),
+                Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee"), new ResourceName("SubmitFakeForm") }),
                 "Should add resources from template actions"
             );
         }

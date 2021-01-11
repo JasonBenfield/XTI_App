@@ -13,9 +13,9 @@ namespace XTI_App.Api
                 + string.Join("\r\n", errors.Select(e => e.Message))
             )
         {
-            Errors = errors;
+            Errors = errors.ToArray();
         }
 
-        public IEnumerable<ErrorModel> Errors { get; }
+        public ErrorModel[] Errors { get; }
     }
 }

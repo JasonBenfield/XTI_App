@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using XTI_App.Api;
+using XTI_App.Tests;
 using XTI_Core;
 
 namespace XTI_App.TestFakes
@@ -100,9 +101,19 @@ namespace XTI_App.TestFakes
                 () => new EmployeeAction(),
                 "Get Employee Information"
             );
+            SubmitFakeForm = actions.Add(nameof(SubmitFakeForm), () => new SubmitFakeFormAction());
         }
         public AppApiAction<AddEmployeeModel, int> AddEmployee { get; }
         public AppApiAction<int, Employee> Employee { get; }
+        public AppApiAction<FakeForm, string> SubmitFakeForm { get; }
+    }
+
+    public sealed class SubmitFakeFormAction : AppAction<FakeForm, string>
+    {
+        public Task<string> Execute(FakeForm model)
+        {
+            return Task.FromResult(model.TestText.Value());
+        }
     }
 
     public sealed class AddEmployeeModel
