@@ -51,14 +51,11 @@ namespace XTI_Forms
                 var value = field.Value();
                 if (value == null)
                 {
-                    if (IsNullAllowed)
-                    {
-                        return;
-                    }
-                    else
+                    if (!IsNullAllowed)
                     {
                         errors.Add(field.Error(FormErrors.MustNotBeNull));
                     }
+                    return;
                 }
                 foreach (var constraint in constraints)
                 {

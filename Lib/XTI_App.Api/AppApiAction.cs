@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using XTI_Core;
+using XTI_Forms;
 
 namespace XTI_App.Api
 {
@@ -20,7 +21,7 @@ namespace XTI_App.Api
             Access = access;
             Path = path;
             FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
-                ? new FriendlyNameFromActionName(path.Action.DisplayText).Value
+                ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
                 : friendlyName;
             this.user = user;
             this.createValidation = createValidation;
@@ -54,12 +55,14 @@ namespace XTI_App.Api
         {
             await EnsureUserHasAccess();
             var errors = new ErrorList();
+            if (model is Form form)
+            {
+                form.Validate(errors);
+                ensureValidInput(errors);
+            }
             var validation = createValidation();
             await validation.Validate(errors, model);
-            if (errors.Any())
-            {
-                throw new ValidationFailedException(errors.Errors());
-            }
+            ensureValidInput(errors);
             var action = createAction();
             var actionResult = await action.Execute(model);
             return new ResultContainer<TResult>(actionResult);
@@ -71,6 +74,14 @@ namespace XTI_App.Api
             if (!hasAccess)
             {
                 throw new AccessDeniedException(Path);
+            }
+        }
+
+        private static void ensureValidInput(ErrorList errors)
+        {
+            if (errors.Any())
+            {
+                throw new ValidationFailedException(errors.Errors());
             }
         }
 

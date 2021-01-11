@@ -1,10 +1,5 @@
 ﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XTI_App.Api;
 using XTI_App.TestFakes;
 
 namespace XTI_App.Tests
