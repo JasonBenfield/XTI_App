@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using MainDB.Extensions;
 using XTI_Core;
 using XTI_App.TestFakes;
+using Microsoft.Extensions.Hosting;
+using XTI_Core.Extensions;
 
 namespace XTI_App.IntegrationTests
 {
@@ -32,8 +34,12 @@ namespace XTI_App.IntegrationTests
 
         public static async Task Reset(this IServiceProvider services)
         {
-            var mainDbReset = services.GetService<MainDbReset>();
-            await mainDbReset.Run();
+            var hostEnv = services.GetService<IHostEnvironment>();
+            if (hostEnv.IsTest())
+            {
+                var mainDbReset = services.GetService<MainDbReset>();
+                await mainDbReset.Run();
+            }
             var setup = services.GetService<FakeAppSetup>();
             await setup.Run();
         }

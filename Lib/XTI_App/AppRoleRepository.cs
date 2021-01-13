@@ -10,12 +10,12 @@ namespace XTI_App
     public sealed class AppRoleRepository
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppRoleRecord> repo;
+        private readonly IMainDataRepositoryFactory repoFactory;
 
-        internal AppRoleRepository(AppFactory factory, DataRepository<AppRoleRecord> repo)
+        internal AppRoleRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
         {
             this.factory = factory;
-            this.repo = repo;
+            this.repoFactory = repoFactory;
         }
 
         internal async Task<AppRole> Add(App app, AppRoleName name)
@@ -25,13 +25,13 @@ namespace XTI_App
                 AppID = app.ID.Value,
                 Name = name.Value
             };
-            await repo.Create(record);
+            await repoFactory.CreateRoles().Create(record);
             return factory.Role(record);
         }
 
         internal async Task<IEnumerable<AppRole>> RolesForApp(App app)
         {
-            var records = await repo.Retrieve()
+            var records = await repoFactory.CreateRoles().Retrieve()
                 .Where(r => r.AppID == app.ID.Value)
                 .ToArrayAsync();
             return records.Select(r => factory.Role(r));
@@ -39,17 +39,49 @@ namespace XTI_App
 
         internal async Task<AppRole> Role(App app, AppRoleName roleName)
         {
-            var record = await repo.Retrieve()
+            var record = await repoFactory.CreateRoles().Retrieve()
                 .Where(r => r.AppID == app.ID.Value && r.Name == roleName.Value)
                 .FirstOrDefaultAsync();
             return factory.Role(record);
         }
 
-        internal IQueryable<int> RoleIDsForApp(IApp app)
+        internal Task<IEnumerable<AppRole>> AllowedRolesForResourceGroup(ResourceGroup group)
+            => rolesForResourceGroup(group, true);
+
+        internal Task<IEnumerable<AppRole>> DeniedRolesForResourceGroup(ResourceGroup group)
+            => rolesForResourceGroup(group, false);
+
+        private async Task<IEnumerable<AppRole>> rolesForResourceGroup(ResourceGroup group, bool isAllowed)
         {
-            return repo.Retrieve()
-                .Where(r => r.AppID == app.ID.Value)
-                .Select(r => r.ID);
+            var roleIDs = repoFactory.CreateResourceGroupRoles()
+                .Retrieve()
+                .Where(gr => gr.GroupID == group.ID.Value && gr.IsAllowed == isAllowed)
+                .Select(gr => gr.RoleID);
+            var records = await repoFactory.CreateRoles()
+                .Retrieve()
+                .Where(r => roleIDs.Any(id => id == r.ID))
+                .ToArrayAsync();
+            return records.Select(r => factory.Role(r));
         }
+
+        internal Task<IEnumerable<AppRole>> AllowedRolesForResource(Resource resource)
+            => rolesForResource(resource, true);
+
+        internal Task<IEnumerable<AppRole>> DeniedRolesForResource(Resource resource)
+            => rolesForResource(resource, false);
+
+        private async Task<IEnumerable<AppRole>> rolesForResource(Resource resource, bool isAllowed)
+        {
+            var roleIDs = repoFactory.CreateResourceRoles()
+                .Retrieve()
+                .Where(gr => gr.ResourceID == resource.ID.Value && gr.IsAllowed == isAllowed)
+                .Select(gr => gr.RoleID);
+            var records = await repoFactory.CreateRoles()
+                .Retrieve()
+                .Where(r => roleIDs.Any(id => id == r.ID))
+                .ToArrayAsync();
+            return records.Select(r => factory.Role(r));
+        }
+
     }
 }

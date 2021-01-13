@@ -9,13 +9,15 @@ namespace XTI_App
 {
     public sealed class AppUserRoleRepository
     {
+        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
         private readonly DataRepository<AppUserRoleRecord> repo;
 
-        internal AppUserRoleRepository(AppFactory factory, DataRepository<AppUserRoleRecord> repo)
+        internal AppUserRoleRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
         {
+            this.repoFactory = repoFactory;
             this.factory = factory;
-            this.repo = repo;
+            repo = repoFactory.CreateUserRoles();
         }
 
         internal async Task<AppUserRole> Add(AppUser user, AppRole role)
@@ -31,13 +33,16 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppUserRole>> RolesForUser(IAppUser user, IApp app)
         {
-            var roleRepo = factory.Roles();
+            var roleIDs = repoFactory.CreateRoles()
+                .Retrieve()
+                .Where(r => r.AppID == app.ID.Value)
+                .Select(r => r.ID);
             var records = await repo.Retrieve()
                 .Where
                 (
                     ur =>
                         ur.UserID == user.ID.Value
-                        && roleRepo.RoleIDsForApp(app).Any(id => id == ur.RoleID)
+                        && roleIDs.Any(id => id == ur.RoleID)
                 )
                 .ToArrayAsync();
             return records.Select(ur => factory.UserRole(ur));
