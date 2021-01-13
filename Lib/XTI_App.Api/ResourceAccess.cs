@@ -6,14 +6,10 @@ namespace XTI_App.Api
     public sealed class ResourceAccess
     {
         public static ResourceAccess AllowAnonymous()
-        {
-            return new ResourceAccess(new AppRoleName[] { }, new AppRoleName[] { }, true);
-        }
+            => new ResourceAccess(new AppRoleName[] { }, new AppRoleName[] { }, true);
 
         public static ResourceAccess AllowAuthenticated()
-        {
-            return new ResourceAccess(new AppRoleName[] { }, new AppRoleName[] { }, false);
-        }
+            => new ResourceAccess(new AppRoleName[] { }, new AppRoleName[] { }, false);
 
         public ResourceAccess(IEnumerable<AppRoleName> allowed, IEnumerable<AppRoleName> denied)
             : this(allowed, denied, false)
@@ -43,8 +39,8 @@ namespace XTI_App.Api
 
         public override string ToString()
         {
-            var allowed = string.Join(",", Allowed);
-            var denied = string.Join(",", Denied);
+            var allowed = string.Join(",", Allowed.Select(r => r.DisplayText));
+            var denied = string.Join(",", Denied.Select(r => r.DisplayText));
             return $"{nameof(ResourceAccess)}\r\nAllowed: {allowed}\r\nDenied: {denied}";
         }
     }

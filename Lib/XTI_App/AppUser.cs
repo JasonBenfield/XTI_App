@@ -29,13 +29,13 @@ namespace XTI_App
         public Task<AppUserRole> AddRole(AppRole role) =>
             factory.UserRoles().Add(this, role);
 
-        public Task<IEnumerable<AppUserRole>> RolesForApp(App app) =>
+        public Task<IEnumerable<AppUserRole>> RolesForApp(IApp app) =>
             factory.UserRoles().RolesForUser(this, app);
 
         async Task<IEnumerable<IAppUserRole>> IAppUser.RolesForApp(IApp app) =>
-            await factory.UserRoles().RolesForUser(this, app);
+            await RolesForApp(app);
 
-        public Task RemoveRole(AppUserRole userAdminRole) => userAdminRole.Delete();
+        public Task RemoveRole(AppUserRole userRole) => userRole.Delete();
 
         public Task ChangePassword(IHashedPassword password)
             => repo.Update(record, u => u.Password = password.Value());

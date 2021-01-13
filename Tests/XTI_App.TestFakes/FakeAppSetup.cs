@@ -36,13 +36,18 @@ namespace XTI_App.TestFakes
             );
             await setup.Run();
             App = await appFactory.Apps().App(template.AppKey);
-            var modCategory = await App.ModCategory(new ModifierCategoryName("Department"));
+            var modCategory = await App.TryAddModCategory(new ModifierCategoryName("Department"));
             await modCategory.AddOrUpdateModifier("IT", "IT");
             await modCategory.AddOrUpdateModifier("HR", "HR");
-            User = await appFactory.Users().Add
-            (
-                new AppUserName("xartogg"), new FakeHashedPassword("password"), clock.Now()
-            );
+            var userName = new AppUserName("xartogg");
+            User = await appFactory.Users().User(userName);
+            if (!User.UserName().Equals(userName))
+            {
+                User = await appFactory.Users().Add
+                (
+                    userName, new FakeHashedPassword("password"), clock.Now()
+                );
+            }
         }
     }
 }

@@ -29,12 +29,12 @@ namespace XTI_App
 
         private AppRoleRepository roles;
         internal AppRoleRepository Roles()
-            => roles ?? (roles = new AppRoleRepository(this, repos.CreateRoles()));
+            => roles ?? (roles = new AppRoleRepository(repos, this));
         internal AppRole Role(AppRoleRecord record) => new AppRole(repos.CreateRoles(), record);
 
         private AppUserRoleRepository userRoles;
         internal AppUserRoleRepository UserRoles()
-            => userRoles ?? (userRoles = new AppUserRoleRepository(this, repos.CreateUserRoles()));
+            => userRoles ?? (userRoles = new AppUserRoleRepository(repos, this));
         internal AppUserRole UserRole(AppUserRoleRecord record) =>
             new AppUserRole(repos.CreateUserRoles(), record);
 
@@ -42,12 +42,12 @@ namespace XTI_App
         internal ResourceGroupRepository Groups()
             => groups ?? (groups = new ResourceGroupRepository(this, repos.CreateResourceGroups()));
         internal ResourceGroup Group(ResourceGroupRecord record)
-            => new ResourceGroup(repos.CreateResourceGroups(), this, record);
+            => new ResourceGroup(repos, this, record);
 
         private ResourceRepository resources;
         internal ResourceRepository Resources()
             => resources ?? (resources = new ResourceRepository(this, repos.CreateResources()));
-        internal Resource Resource(ResourceRecord record) => new Resource(record);
+        internal Resource Resource(ResourceRecord record) => new Resource(repos, this, record);
 
         private ModifierCategoryRepository modCategories;
         public ModifierCategoryRepository ModCategories()
