@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class AppRoleName : TextValue, IEquatable<AppRoleName>
+    public sealed class AppRoleName : TextKeyValue, IEquatable<AppRoleName>
     {
-        public AppRoleName(string displayText)
-            : base(whitespaceRegex.Replace(displayText?.Trim().ToLower() ?? "", "_"), displayText?.Trim() ?? "")
+        public AppRoleName(string value) : base(value)
         {
-            if (string.IsNullOrWhiteSpace(displayText))
+            if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException($"{nameof(displayText)} is required");
+                throw new ArgumentException($"{nameof(value)} is required");
             }
         }
-
-        private static readonly Regex whitespaceRegex = new Regex("\\s+");
 
         public override bool Equals(object obj) => base.Equals(obj);
         public override int GetHashCode() => base.GetHashCode();

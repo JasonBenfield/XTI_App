@@ -52,6 +52,12 @@ namespace XTI_App
 
         public Task<IEnumerable<Modifier>> Modifiers() => factory.Modifiers().Modifiers(this);
 
+        public ModifierCategoryModel ToModel() => new ModifierCategoryModel
+        {
+            ID = ID.Value,
+            Name = Name().DisplayText
+        };
+
         public override string ToString() => $"{nameof(ModifierCategory)} {ID.Value}";
     }
 }

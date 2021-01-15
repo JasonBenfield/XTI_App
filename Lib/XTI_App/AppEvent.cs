@@ -19,6 +19,17 @@ namespace XTI_App
         public string Detail { get => record.Detail; }
         public AppEventSeverity Severity() => AppEventSeverity.Values.Value(record.Severity);
 
+        public AppEventModel ToModel() => new AppEventModel
+        {
+            ID = ID.Value,
+            RequestID = record.RequestID,
+            TimeOccurred = record.TimeOccurred,
+            Severity = Severity(),
+            Caption = Caption,
+            Message = Message,
+            Detail = Detail
+        };
+
         public override string ToString() => $"{nameof(AppEvent)} {ID.Value}";
     }
 }

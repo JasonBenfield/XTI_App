@@ -156,6 +156,12 @@ namespace XTI_App
             });
         }
 
+        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+            => factory.Requests().MostRecentForApp(this, howMany);
+
+        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+            => factory.Events().MostRecentErrorsForApp(this, howMany);
+
         public AppModel ToAppModel()
         {
             var key = Key();

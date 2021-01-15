@@ -154,7 +154,8 @@ namespace XTI_App
             {
                 ID = ID.Value,
                 Name = Name().DisplayText,
-                IsAnonymousAllowed = record.IsAnonymousAllowed
+                IsAnonymousAllowed = record.IsAnonymousAllowed,
+                ModCategoryID = record.ModCategoryID
             };
 
         public override string ToString() => $"{nameof(ResourceGroup)} {ID.Value}";

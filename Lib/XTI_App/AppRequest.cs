@@ -75,6 +75,17 @@ namespace XTI_App
                 }
             );
 
+        public AppRequestModel ToModel() => new AppRequestModel
+        {
+            ID = ID.Value,
+            SessionID = record.SessionID,
+            Path = record.Path,
+            ResourceID = record.ResourceID,
+            ModifierID = record.ModifierID,
+            TimeStarted = record.TimeStarted,
+            TimeEnded = record.TimeEnded
+        };
+
         public override string ToString() => $"{nameof(AppRequest)} {ID.Value}";
 
     }
