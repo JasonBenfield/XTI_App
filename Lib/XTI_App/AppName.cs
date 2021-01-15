@@ -3,12 +3,11 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class AppName : TextValue, IEquatable<AppName>
+    public sealed class AppName : TextKeyValue, IEquatable<AppName>
     {
         public static readonly AppName Unknown = new AppName("Unknown");
 
-        public AppName(string value)
-            : base(value?.Trim().ToLower() ?? "", value)
+        public AppName(string value) : base(value)
         {
         }
 

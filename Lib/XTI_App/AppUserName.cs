@@ -8,8 +8,7 @@ namespace XTI_App
         public static readonly AppUserName Anon = new AppUserName("xti_anon");
         public static readonly AppUserName SuperUser = new AppUserName("xti_superuser");
 
-        public AppUserName(string value)
-            : base(value?.Trim().ToLower() ?? "", value)
+        public AppUserName(string value) : base(value?.Trim().ToLower() ?? "")
         {
         }
 

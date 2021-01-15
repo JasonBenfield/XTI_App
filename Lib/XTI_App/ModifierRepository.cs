@@ -9,13 +9,15 @@ namespace XTI_App
 {
     public sealed class ModifierRepository
     {
+        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
         private readonly DataRepository<ModifierRecord> repo;
 
-        internal ModifierRepository(AppFactory factory, DataRepository<ModifierRecord> repo)
+        internal ModifierRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
         {
+            this.repoFactory = repoFactory;
             this.factory = factory;
-            this.repo = repo;
+            this.repo = repoFactory.CreateModifiers();
         }
 
         internal async Task<Modifier> Add(ModifierCategory category, ModifierKey modKey, string targetID, string displayText)
@@ -67,6 +69,19 @@ namespace XTI_App
                 .Where(m => m.CategoryID == category.ID.Value && m.TargetKey == targetKey)
                 .FirstOrDefaultAsync();
             return factory.Modifier(record);
+        }
+
+        internal async Task<IEnumerable<Modifier>> ModifiersForUser(AppUser appUser, ModifierCategory modCategory)
+        {
+            var modIDs = repoFactory.CreateUserModifiers()
+                .Retrieve()
+                .Where(um => um.UserID == appUser.ID.Value)
+                .Select(um => um.ModifierID);
+            var records = await repo
+                .Retrieve()
+                .Where(m => m.CategoryID == modCategory.ID.Value && modIDs.Any(id => m.ID == id))
+                .ToArrayAsync();
+            return records.Select(r => factory.Modifier(r));
         }
     }
 }

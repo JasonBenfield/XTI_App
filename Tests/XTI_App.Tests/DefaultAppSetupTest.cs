@@ -197,7 +197,9 @@ namespace XTI_App.Tests
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
             var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
-            var modifiers = (await employeeGroup.Modifiers()).ToArray();
+            var modifiers = (await employeeGroup.Modifiers())
+                .Select(m => m.ToModel())
+                .ToArray();
             Assert.That
             (
                 modifiers.Select(m => m.DisplayText),

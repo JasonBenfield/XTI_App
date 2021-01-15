@@ -48,36 +48,31 @@ namespace XTI_App.IntegrationTests
             Assert.That(requests.Length, Is.EqualTo(1), "Should get most recent request");
         }
 
-        private static async Task logRequest(IServiceProvider services, AppSession createdSession)
+        [Test]
+        public async Task ShouldGetMostRecentRequestsForApp()
         {
+            var services = await setup();
+            var factory = services.GetService<AppFactory>();
+            var user = await factory.Users().User(AppUserName.Anon);
+            var createdSession = await createSession(factory, user);
+            await logRequest(services, createdSession);
             var app = await services.FakeApp();
-            var version = await app.CurrentVersion();
-            var resourceGroup = await app.ResourceGroup(ResourceGroupName.Unknown);
-            var resource = await resourceGroup.Resource(ResourceName.Unknown);
-            var modCategory = await app.ModCategory(ModifierCategoryName.Default);
-            var modifier = await modCategory.Modifier(ModifierKey.Default);
-            await createdSession.LogRequest
-            (
-                "New-Request",
-                version,
-                resource,
-                modifier,
-                "/Fake/Current",
-                DateTimeOffset.UtcNow
-            );
+            var requests = (await app.MostRecentRequests(10)).ToArray();
+            Assert.That(requests.Length, Is.EqualTo(1));
         }
 
-        private static async Task<AppSession> createSession(AppFactory factory, AppUser user)
+        [Test]
+        public async Task ShouldGetMostRecentErrorEventsForApp()
         {
-            return await factory.Sessions().Create
-                        (
-                            "JustCreated",
-                            user,
-                            DateTimeOffset.UtcNow,
-                            "Testing",
-                            "UserAgent",
-                            "127.0.0.1"
-                        );
+            var services = await setup();
+            var factory = services.GetService<AppFactory>();
+            var user = await factory.Users().User(AppUserName.Anon);
+            var createdSession = await createSession(factory, user);
+            var request = await logRequest(services, createdSession);
+            await logEvent(request);
+            var app = await services.FakeApp();
+            var events = (await app.MostRecentErrorEvents(10)).ToArray();
+            Assert.That(events.Length, Is.EqualTo(1));
         }
 
         private static async Task<IServiceProvider> setup()
@@ -103,5 +98,52 @@ namespace XTI_App.IntegrationTests
             await scope.ServiceProvider.Reset();
             return scope.ServiceProvider;
         }
+
+        private static Task<AppSession> createSession(AppFactory factory, AppUser user)
+        {
+            return factory.Sessions().Create
+            (
+                "JustCreated",
+                user,
+                DateTimeOffset.UtcNow,
+                "Testing",
+                "UserAgent",
+                "127.0.0.1"
+            );
+        }
+
+        private static async Task<AppRequest> logRequest(IServiceProvider services, AppSession createdSession)
+        {
+            var app = await services.FakeApp();
+            var version = await app.CurrentVersion();
+            var resourceGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var resource = await resourceGroup.Resource(new ResourceName("AddEmployee"));
+            var modCategory = await app.ModCategory(ModifierCategoryName.Default);
+            var modifier = await modCategory.Modifier(ModifierKey.Default);
+            var request = await createdSession.LogRequest
+            (
+                "New-Request",
+                version,
+                resource,
+                modifier,
+                "/Fake/Current",
+                DateTimeOffset.UtcNow
+            );
+            return request;
+        }
+
+        private static Task<AppEvent> logEvent(AppRequest request)
+        {
+            return request.LogEvent
+            (
+                new GeneratedKey().Value(),
+                AppEventSeverity.Values.CriticalError,
+                DateTimeOffset.Now,
+                "Test",
+                "Test Error",
+                "Testing"
+            );
+        }
+
     }
 }
