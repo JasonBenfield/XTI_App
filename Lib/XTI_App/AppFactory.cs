@@ -46,7 +46,7 @@ namespace XTI_App
 
         private ResourceRepository resources;
         internal ResourceRepository Resources()
-            => resources ?? (resources = new ResourceRepository(this, repos.CreateResources()));
+            => resources ?? (resources = new ResourceRepository(repos, this));
         internal Resource Resource(ResourceRecord record) => new Resource(repos, this, record);
 
         private ModifierCategoryRepository modCategories;

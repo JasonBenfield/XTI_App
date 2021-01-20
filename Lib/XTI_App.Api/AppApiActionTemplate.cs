@@ -14,7 +14,7 @@ namespace XTI_App.Api
             ValueTemplate resultTemplate
         )
         {
-            Name = name;
+            Name = name.Replace(" ", "");
             FriendlyName = friendlyName;
             Access = access;
             ModelTemplate = modelTemplate;

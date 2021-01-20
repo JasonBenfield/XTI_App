@@ -5,46 +5,45 @@ using System.Threading.Tasks;
 
 namespace XTI_App.Api
 {
-    public class AppApiGroup
+    public sealed class AppApiGroup : IAppApiGroup
     {
+        private readonly ModifierCategoryName modCategory;
+        private readonly IAppApiUser user;
+        private readonly Dictionary<string, IAppApiAction> actions = new Dictionary<string, IAppApiAction>();
+
         public AppApiGroup
         (
-            AppApi api,
-            string groupName,
+            XtiPath path,
             ModifierCategoryName modCategory,
             ResourceAccess access,
-            IAppApiUser user,
-            Func<XtiPath, ResourceAccess, IAppApiUser, IAppApiActionCollection> createActions
+            IAppApiUser user
         )
         {
-            Path = api.Path.WithGroup(groupName);
+            Path = path;
             this.modCategory = modCategory ?? ModifierCategoryName.Default;
             Access = access ?? ResourceAccess.AllowAuthenticated();
             this.user = user;
-            actions = createActions(Path, Access, user);
         }
 
-        private readonly ModifierCategoryName modCategory;
-        private readonly IAppApiUser user;
-        private readonly IAppApiActionCollection actions;
+        public IAppApiUser User { get => user; }
 
-        protected T Actions<T>() where T : IAppApiActionCollection => (T)actions;
+        public AppApiAction<TModel, TResult> Action<TModel, TResult>(string actionName) =>
+            (AppApiAction<TModel, TResult>)actions[actionKey(actionName)];
 
-        protected void Actions<T>(Action<T> init) where T : IAppApiActionCollection
+        public IEnumerable<IAppApiAction> Actions() => actions.Values.ToArray();
+
+        public AppApiAction<TModel, TResult> AddAction<TModel, TResult>(AppApiAction<TModel, TResult> action)
         {
-            init((T)actions);
+            actions.Add(actionKey(action.ActionName), action);
+            return action;
         }
+        private static string actionKey(string actionName) => actionName.ToLower().Replace(" ", "");
 
         public XtiPath Path { get; }
-        public string GroupName { get => Path.Group.DisplayText; }
+        public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
         public ResourceAccess Access { get; }
 
         public Task<bool> HasAccess() => user.HasAccess(Access);
-
-        public IEnumerable<IAppApiAction> Actions() => actions.Actions();
-
-        public AppApiAction<TModel, TResult> Action<TModel, TResult>(string actionName) =>
-            actions.Action<TModel, TResult>(actionName);
 
         public AppApiGroupTemplate Template()
         {

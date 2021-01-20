@@ -9,13 +9,15 @@ namespace XTI_App
 {
     public sealed class ResourceRepository
     {
+        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
         private readonly DataRepository<ResourceRecord> repo;
 
-        internal ResourceRepository(AppFactory factory, DataRepository<ResourceRecord> repo)
+        internal ResourceRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
         {
             this.factory = factory;
-            this.repo = repo;
+            this.repoFactory = repoFactory;
+            repo = repoFactory.CreateResources();
         }
 
         public async Task<Resource> Add(ResourceGroup group, ResourceName name)
@@ -46,6 +48,17 @@ namespace XTI_App
                 record = await repo.Retrieve()
                    .FirstOrDefaultAsync(r => r.Name == ResourceName.Unknown.Value);
             }
+            return factory.Resource(record);
+        }
+
+        internal async Task<Resource> Resource(App app, int id)
+        {
+            var groupIDs = repoFactory.CreateResourceGroups()
+                .Retrieve()
+                .Where(rg => rg.AppID == app.ID.Value)
+                .Select(rg => rg.ID);
+            var record = await repo.Retrieve()
+                .FirstOrDefaultAsync(r => r.ID == id && groupIDs.Any(gID => gID == r.GroupID));
             return factory.Resource(record);
         }
     }

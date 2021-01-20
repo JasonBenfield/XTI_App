@@ -2,10 +2,10 @@
 {
     public abstract class AppApiFactory
     {
-        public AppApi Create(IAppApiUser user) => _Create(user);
-        public AppApi CreateForSuperUser() => _Create(new AppApiSuperUser());
+        public IAppApi Create(IAppApiUser user) => _Create(user);
+        public IAppApi CreateForSuperUser() => _Create(new AppApiSuperUser());
         public AppApiTemplate CreateTemplate() => CreateForSuperUser().Template();
 
-        protected abstract AppApi _Create(IAppApiUser user);
+        protected abstract IAppApi _Create(IAppApiUser user);
     }
 }

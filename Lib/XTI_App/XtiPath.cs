@@ -102,7 +102,7 @@ namespace XTI_App
                 App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, Modifier.DisplayText
             }
             .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
-            var joined = string.Join("/", parts);
+            var joined = string.Join("/", parts.Select(part => part.Replace(" ", "")));
             return $"/{joined}";
         }
 

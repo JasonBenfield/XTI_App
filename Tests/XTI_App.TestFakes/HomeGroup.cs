@@ -2,24 +2,19 @@
 
 namespace XTI_App.TestFakes
 {
-    public sealed class HomeGroup : AppApiGroup
+    public sealed class HomeGroup : AppApiGroupWrapper
     {
-        public HomeGroup(AppApi api, IAppApiUser user)
-            : base
-            (
-                  api,
-                  new NameFromGroupClassName(nameof(HomeGroup)).Value,
-                  ModifierCategoryName.Default,
-                  ResourceAccess.AllowAuthenticated(),
-                  user,
-                  (n, a, u) => new AppApiActionCollection(n, a, u)
-            )
+        public HomeGroup(AppApiGroup source)
+            : base(source)
         {
-            var actions = Actions<AppApiActionCollection>();
-            DoSomething = actions.Add
+            var actions = new AppApiActionFactory(source);
+            DoSomething = source.AddAction
             (
-                nameof(DoSomething),
-                () => new EmptyAppAction<EmptyRequest, EmptyActionResult>()
+                actions.Action
+                (
+                    nameof(DoSomething),
+                    () => new EmptyAppAction<EmptyRequest, EmptyActionResult>()
+                )
             );
         }
         public AppApiAction<EmptyRequest, EmptyActionResult> DoSomething { get; }

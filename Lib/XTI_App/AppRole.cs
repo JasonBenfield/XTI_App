@@ -23,6 +23,12 @@ namespace XTI_App
 
         internal Task Delete() => repo.Delete(record);
 
+        public AppRoleModel ToModel() => new AppRoleModel
+        {
+            ID = ID.Value,
+            Name = Name().DisplayText
+        };
+
         public override string ToString() => $"{nameof(AppRole)} {ID.Value}";
 
     }

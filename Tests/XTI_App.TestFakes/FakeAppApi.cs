@@ -2,21 +2,52 @@
 
 namespace XTI_App.TestFakes
 {
-    public sealed class FakeAppApi : AppApi
+    public sealed class FakeAppApi : AppApiWrapper
     {
         public FakeAppApi(IAppApiUser user)
             : base
             (
-                FakeAppKey.AppKey,
-                user,
-                ResourceAccess.AllowAuthenticated()
-                    .WithAllowed(FakeAppRoles.Instance.Admin)
+                new AppApi
+                (
+                    FakeInfo.AppKey,
+                    user,
+                    ResourceAccess.AllowAuthenticated()
+                        .WithAllowed(FakeAppRoles.Instance.Admin)
+                )
             )
         {
-            Home = AddGroup(u => new HomeGroup(this, u));
-            Login = AddGroup(u => new LoginGroup(this, u));
-            Employee = AddGroup(u => new EmployeeGroup(this, u));
-            Product = AddGroup(u => new ProductGroup(this, u));
+            Home = new HomeGroup
+            (
+                source.AddGroup
+                (
+                    nameof(Home),
+                    ResourceAccess.AllowAuthenticated()
+                )
+            );
+            Login = new LoginGroup
+            (
+                source.AddGroup
+                (
+                    nameof(Login),
+                    ResourceAccess.AllowAnonymous()
+                )
+            );
+            Employee = new EmployeeGroup
+            (
+                source.AddGroup
+                (
+                    nameof(Employee),
+                    FakeInfo.ModCategories.Department
+                )
+            );
+            Product = new ProductGroup
+            (
+                source.AddGroup
+                (
+                    nameof(Product),
+                    Access.WithDenied(FakeAppRoles.Instance.Viewer)
+                )
+            );
         }
         public HomeGroup Home { get; }
         public LoginGroup Login { get; }

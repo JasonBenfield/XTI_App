@@ -44,6 +44,13 @@ namespace XTI_App
             return records.Select(c => factory.ModCategory(c));
         }
 
+        internal async Task<ModifierCategory> Category(App app, int id)
+        {
+            var record = await repo.Retrieve()
+                .FirstOrDefaultAsync(c => c.AppID == app.ID.Value && c.ID == id);
+            return factory.ModCategory(record);
+        }
+
         internal async Task<ModifierCategory> Category(IApp app, ModifierCategoryName name)
         {
             var record = await repo.Retrieve()

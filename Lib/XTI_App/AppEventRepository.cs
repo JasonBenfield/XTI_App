@@ -57,13 +57,13 @@ namespace XTI_App
                         .Retrieve(),
                     req => req.ResourceID,
                     res => res.ID,
-                    (req, res) => new { RequestID = req.ID, ResourceID = res.ID }
+                    (req, res) => new { RequestID = req.ID, GroupID = res.GroupID }
                 )
                 .Join
                 (
                     repoFactory.CreateResourceGroups()
                         .Retrieve(),
-                    res => res.ResourceID,
+                    res => res.GroupID,
                     rg => rg.ID,
                     (res, rg) => new { RequestID = res.RequestID, AppID = rg.AppID }
                 )
