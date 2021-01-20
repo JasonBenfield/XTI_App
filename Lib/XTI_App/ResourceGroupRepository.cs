@@ -53,5 +53,13 @@ namespace XTI_App
             }
             return factory.Group(record);
         }
+
+        internal async Task<ResourceGroup> Group(App app, int id)
+        {
+            var record = await repo.Retrieve()
+                .Where(g => g.AppID == app.ID.Value && g.ID == id)
+                .FirstOrDefaultAsync();
+            return factory.Group(record);
+        }
     }
 }

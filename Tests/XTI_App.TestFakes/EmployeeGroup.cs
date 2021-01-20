@@ -3,34 +3,34 @@ using XTI_App.Tests;
 
 namespace XTI_App.TestFakes
 {
-    public sealed class EmployeeGroup : AppApiGroup
+    public sealed class EmployeeGroup : AppApiGroupWrapper
     {
-        public EmployeeGroup(AppApi api, IAppApiUser user)
-            : base
-            (
-                  api,
-                  new NameFromGroupClassName(nameof(EmployeeGroup)).Value,
-                  new ModifierCategoryName("Department"),
-                  api.Access,
-                  user,
-                  (n, a, u) => new AppApiActionCollection(n, a, u)
-            )
+        public EmployeeGroup(AppApiGroup source) : base(source)
         {
-            var actions = Actions<AppApiActionCollection>();
-            AddEmployee = actions.Add
+            var actions = new AppApiActionFactory(source);
+            AddEmployee = source.AddAction
             (
-                nameof(AddEmployee),
-                api.Access.WithAllowed(FakeAppRoles.Instance.Manager),
-                () => new AddEmployeeValidation(),
-                () => new AddEmployeeAction()
+                actions.Action
+                (
+                    nameof(AddEmployee),
+                    source.Access.WithAllowed(FakeAppRoles.Instance.Manager),
+                    () => new AddEmployeeValidation(),
+                    () => new AddEmployeeAction()
+                )
             );
-            Employee = actions.Add
+            Employee = source.AddAction
             (
-                nameof(Employee),
-                () => new EmployeeAction(),
-                "Get Employee Information"
+                actions.Action
+                (
+                    nameof(Employee),
+                    () => new EmployeeAction(),
+                    "Get Employee Information"
+                )
             );
-            SubmitFakeForm = actions.Add(nameof(SubmitFakeForm), () => new SubmitFakeFormAction());
+            SubmitFakeForm = source.AddAction
+            (
+                actions.Action(nameof(SubmitFakeForm), () => new SubmitFakeFormAction())
+            );
         }
         public AppApiAction<AddEmployeeModel, int> AddEmployee { get; }
         public AppApiAction<int, Employee> Employee { get; }

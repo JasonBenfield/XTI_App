@@ -20,7 +20,7 @@ namespace XTI_App.IntegrationTests
         {
             services.AddAppDbContextForSqlServer(config);
             services.AddSingleton<Clock, UtcClock>();
-            services.AddSingleton(_ => FakeAppKey.AppKey);
+            services.AddSingleton(_ => FakeInfo.AppKey);
             services.AddScoped<AppFactory>();
             services.AddScoped<MainDbReset>();
             services.AddScoped<FakeAppSetup>();
@@ -47,7 +47,7 @@ namespace XTI_App.IntegrationTests
         public static Task<App> FakeApp(this IServiceProvider services)
         {
             var factory = services.GetService<AppFactory>();
-            return factory.Apps().App(FakeAppKey.AppKey);
+            return factory.Apps().App(FakeInfo.AppKey);
         }
     }
 }

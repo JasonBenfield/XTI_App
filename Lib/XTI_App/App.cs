@@ -38,6 +38,9 @@ namespace XTI_App
         public Task<IEnumerable<ModifierCategory>> ModCategories()
             => factory.ModCategories().Categories(this);
 
+        public Task<ModifierCategory> ModCategory(int modCategoryID)
+            => factory.ModCategories().Category(this, modCategoryID);
+
         public Task<ModifierCategory> ModCategory(ModifierCategoryName name)
             => factory.ModCategories().Category(this, name);
 
@@ -58,11 +61,18 @@ namespace XTI_App
         public Task<ResourceGroup> AddResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
             => factory.Groups().Add(this, name, modCategory);
 
-        public Task<ResourceGroup> ResourceGroup(ResourceGroupName name) => factory.Groups().Group(this, name);
+        public Task<ResourceGroup> ResourceGroup(ResourceGroupName name)
+            => factory.Groups().Group(this, name);
+
+        public Task<ResourceGroup> ResourceGroup(int id)
+            => factory.Groups().Group(this, id);
 
         public Task<IEnumerable<ResourceGroup>> ResourceGroups() => factory.Groups().Groups(this);
 
         async Task<IResourceGroup> IApp.ResourceGroup(ResourceGroupName name) => await ResourceGroup(name);
+
+        public Task<Resource> Resource(int id)
+            => factory.Resources().Resource(this, id);
 
         public Task<AppRole> AddRole(AppRoleName name) =>
             factory.Roles().Add(this, name);

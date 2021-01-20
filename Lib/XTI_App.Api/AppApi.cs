@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace XTI_App.Api
 {
-    public class AppApi
+    public sealed class AppApi
     {
-        protected AppApi
+        public AppApi
         (
             AppKey appKey,
             IAppApiUser user,
@@ -31,17 +30,27 @@ namespace XTI_App.Api
 
         public Task<bool> HasAccess() => user.HasAccessToApp();
 
-        protected TGroup AddGroup<TGroup>(Func<IAppApiUser, TGroup> createGroup)
-            where TGroup : AppApiGroup
+        public AppApiGroup AddGroup(string name)
+            => AddGroup(name, ModifierCategoryName.Default, Access);
+
+        public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory)
+            => AddGroup(name, modCategory, Access);
+
+        public AppApiGroup AddGroup(string name, ResourceAccess access)
+            => AddGroup(name, ModifierCategoryName.Default, access);
+
+        public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess access)
         {
-            var group = createGroup(user);
-            groups.Add(group.GroupName.ToLower(), group);
+            var group = new AppApiGroup(Path.WithGroup(name), modCategory, access, user);
+            groups.Add(groupKey(group.GroupName), group);
             return group;
         }
 
         public IEnumerable<AppApiGroup> Groups() => groups.Values.ToArray();
 
-        public AppApiGroup Group(string groupName) => groups[groupName.ToLower()];
+        public AppApiGroup Group(string groupName) => groups[groupKey(groupName)];
+
+        private static string groupKey(string groupName) => groupName.ToLower().Replace(" ", "");
 
         public AppApiTemplate Template() => new AppApiTemplate(this);
 

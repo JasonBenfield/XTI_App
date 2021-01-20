@@ -22,7 +22,7 @@ namespace XTI_App.IntegrationTests
             var fakeAppSetup = services.GetService<FakeAppSetup>();
             await fakeAppSetup.Run();
             var factory = services.GetService<AppFactory>();
-            var app = await factory.Apps().App(FakeAppKey.AppKey);
+            var app = await factory.Apps().App(FakeInfo.AppKey);
             var groups = await app.ResourceGroups();
             Assert.That
             (

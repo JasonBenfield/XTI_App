@@ -27,7 +27,7 @@ namespace XTI_App
                 );
             }
             var superUser = await appFactory.Users().User(AppUserName.SuperUser);
-            if (superUser.ID.IsNotValid())
+            if (!superUser.UserName().Equals(AppUserName.SuperUser))
             {
                 await appFactory.Users().Add
                 (

@@ -39,7 +39,7 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var roleNames = FakeAppRoles.Instance.Values();
+            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
             var appRoles = await app.Roles();
             Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
         }

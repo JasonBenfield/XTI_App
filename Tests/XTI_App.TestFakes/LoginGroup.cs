@@ -2,24 +2,18 @@
 
 namespace XTI_App.TestFakes
 {
-    public sealed class LoginGroup : AppApiGroup
+    public sealed class LoginGroup : AppApiGroupWrapper
     {
-        public LoginGroup(AppApi api, IAppApiUser user)
-            : base
-            (
-                  api,
-                  new NameFromGroupClassName(nameof(LoginGroup)).Value,
-                  ModifierCategoryName.Default,
-                  ResourceAccess.AllowAnonymous(),
-                  user,
-                  (p, a, u) => new AppApiActionCollection(p, a, u)
-            )
+        public LoginGroup(AppApiGroup source) : base(source)
         {
-            var actions = Actions<AppApiActionCollection>();
-            Authenticate = actions.Add
+            var factory = new AppApiActionFactory(source);
+            Authenticate = source.AddAction
             (
-                nameof(Authenticate),
-                () => new EmptyAppAction<EmptyRequest, EmptyActionResult>()
+                factory.Action
+                (
+                    nameof(Authenticate),
+                    () => new EmptyAppAction<EmptyRequest, EmptyActionResult>()
+                )
             );
         }
         public AppApiAction<EmptyRequest, EmptyActionResult> Authenticate { get; }

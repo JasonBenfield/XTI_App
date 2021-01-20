@@ -14,7 +14,7 @@ namespace XTI_App.Api
         }
 
         public AppKey AppKey { get; }
-        public string Name { get => AppKey.Name.DisplayText; }
+        public string Name { get => AppKey.Name.DisplayText.Replace(" ", ""); }
         public IEnumerable<AppRoleName> RoleNames { get; }
         public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
 

@@ -18,7 +18,7 @@ namespace XTI_App.Tests
             Assert.That(appModel.ID, Is.EqualTo(input.App.ID.Value));
             Assert.That(appModel.AppName, Is.EqualTo("Fake"));
             Assert.That(appModel.Title, Is.EqualTo("Fake Title"));
-            Assert.That(appModel.Type, Is.EqualTo(FakeAppKey.AppKey.Type));
+            Assert.That(appModel.Type, Is.EqualTo(FakeInfo.AppKey.Type));
         }
 
         private async Task<TestInput> setup()
@@ -38,7 +38,7 @@ namespace XTI_App.Tests
             var clock = sp.GetService<FakeClock>();
             var setup = new FakeAppSetup(factory, clock);
             await setup.Run();
-            var app = await factory.Apps().App(FakeAppKey.AppKey);
+            var app = await factory.Apps().App(FakeInfo.AppKey);
             return new TestInput(sp, app);
         }
 

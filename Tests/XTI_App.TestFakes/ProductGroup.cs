@@ -2,37 +2,36 @@
 
 namespace XTI_App.TestFakes
 {
-    public sealed class ProductGroup : AppApiGroup
+    public sealed class ProductGroup : AppApiGroupWrapper
     {
-        public ProductGroup(AppApi api, IAppApiUser user)
-            : base
-            (
-                api,
-                new NameFromGroupClassName(nameof(ProductGroup)).Value,
-                ModifierCategoryName.Default,
-                api.Access
-                  .WithDenied(FakeAppRoles.Instance.Viewer),
-                user,
-                (n, a, u) => new AppApiActionCollection(n, a, u)
-            )
+        public ProductGroup(AppApiGroup source) : base(source)
         {
-            var actions = Actions<AppApiActionCollection>();
-            GetInfo = actions.Add
+            var actions = new AppApiActionFactory(source);
+            GetInfo = source.AddAction
             (
-                "GetInfo",
-                () => new GetInfoAction()
+                actions.Action
+                (
+                    nameof(GetInfo),
+                    () => new GetInfoAction()
+                )
             );
-            AddProduct = actions.Add
+            AddProduct = source.AddAction
             (
-                nameof(AddProduct),
-                () => new AddProductValidation(),
-                () => new AddProductAction()
+                actions.Action
+                (
+                    nameof(AddProduct),
+                    () => new AddProductValidation(),
+                    () => new AddProductAction()
+                )
             );
-            Product = actions.Add
+            Product = source.AddAction
             (
-                "Product",
-                () => new ProductAction(),
-                "Get Product Information"
+                actions.Action
+                (
+                    nameof(Product),
+                    () => new ProductAction(),
+                    "Get Product Information"
+                )
             );
         }
         public AppApiAction<EmptyRequest, string> GetInfo { get; }

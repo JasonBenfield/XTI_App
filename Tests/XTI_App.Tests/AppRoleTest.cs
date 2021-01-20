@@ -43,7 +43,7 @@ namespace XTI_App.Tests
         public async Task ShouldNotAddRoleFromAppRoleNames_WhenTheRoleAlreadyExists()
         {
             var input = await setup();
-            var roleNames = FakeAppRoles.Instance.Values();
+            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
             await input.App.SetRoles(roleNames);
             await input.App.SetRoles(roleNames);
             var appRoles = await input.App.Roles();
@@ -54,7 +54,7 @@ namespace XTI_App.Tests
         public async Task ShouldRemoveRolesNotInAppRoleNames()
         {
             var input = await setup();
-            var roleNames = FakeAppRoles.Instance.Values();
+            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
             await input.App.SetRoles(roleNames);
             roleNames = roleNames.Where(rn => !rn.Equals(FakeAppRoles.Instance.Manager)).ToArray();
             await input.App.SetRoles(roleNames);

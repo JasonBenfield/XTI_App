@@ -8,7 +8,7 @@ namespace XTI_App.Api
     {
         public AppApiGroupTemplate(string name, ModifierCategoryName modCategory, ResourceAccess access, IEnumerable<AppApiActionTemplate> actionTemplates)
         {
-            Name = name;
+            Name = name.Replace(" ", "");
             ModCategory = modCategory;
             Access = access;
             ActionTemplates = actionTemplates;

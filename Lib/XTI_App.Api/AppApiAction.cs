@@ -33,7 +33,7 @@ namespace XTI_App.Api
         private readonly Func<AppAction<TModel, TResult>> createAction;
 
         public XtiPath Path { get; }
-        public string ActionName { get => Path.Action.DisplayText; }
+        public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
         public string FriendlyName { get; }
         public ResourceAccess Access { get; }
 

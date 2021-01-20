@@ -3,7 +3,7 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
+    public sealed class ModifierKey : TextValue, IEquatable<ModifierKey>
     {
         public static bool operator ==(ModifierKey a, ModifierKey b) => Equals(a, b);
         public static bool operator !=(ModifierKey a, ModifierKey b) => !(a == b);
@@ -15,7 +15,7 @@ namespace XTI_App
         public static ModifierKey FromValue(string value) =>
             string.IsNullOrWhiteSpace(value) ? Default : new ModifierKey(value);
 
-        public ModifierKey(string value) : base(value)
+        public ModifierKey(string value) : base(value?.ToLower() ?? "")
         {
         }
 

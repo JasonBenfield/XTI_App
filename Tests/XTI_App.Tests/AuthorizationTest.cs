@@ -191,7 +191,7 @@ namespace XTI_App.Tests
                         services.AddScoped<IAppContext, DefaultAppContext>();
                         services.AddScoped<IUserContext, FakeUserContext>();
                         services.AddScoped<IAppApiUser, XtiAppApiUser>();
-                        services.AddSingleton(sp => FakeAppKey.AppKey);
+                        services.AddSingleton(sp => FakeInfo.AppKey);
                         services.AddScoped<FakeAppApi>();
                     }
                 )
