@@ -46,7 +46,7 @@ namespace XTI_App
             return records.Select(e => factory.Event(e));
         }
 
-        internal async Task<IEnumerable<AppEvent>> MostRecentErrorsForApp(App app, int howMany)
+        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForApp(App app, int howMany)
         {
             var requestIDs = repoFactory
                 .CreateRequests()
@@ -69,6 +69,39 @@ namespace XTI_App
                 )
                 .Where(rg => rg.AppID == app.ID.Value)
                 .Select(rg => rg.RequestID);
+            return mostRecentErrors(howMany, requestIDs);
+        }
+
+        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForResourceGroup(ResourceGroup group, int howMany)
+        {
+            var requestIDs = repoFactory
+                .CreateRequests()
+                .Retrieve()
+                .Join
+                (
+                    repoFactory.CreateResources()
+                        .Retrieve(),
+                    req => req.ResourceID,
+                    res => res.ID,
+                    (req, res) => new { RequestID = req.ID, GroupID = res.GroupID }
+                )
+                .Where(rg => rg.GroupID == group.ID.Value)
+                .Select(rg => rg.RequestID);
+            return mostRecentErrors(howMany, requestIDs);
+        }
+
+        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForResource(Resource resource, int howMany)
+        {
+            var requestIDs = repoFactory
+                .CreateRequests()
+                .Retrieve()
+                .Where(r => r.ResourceID == resource.ID.Value)
+                .Select(r => r.ResourceID);
+            return mostRecentErrors(howMany, requestIDs);
+        }
+
+        private async Task<IEnumerable<AppEvent>> mostRecentErrors(int howMany, IQueryable<int> requestIDs)
+        {
             var events = await repo.Retrieve()
                 .Where
                 (
@@ -80,5 +113,6 @@ namespace XTI_App
                 .ToArrayAsync();
             return events.Select(evt => factory.Event(evt));
         }
+
     }
 }

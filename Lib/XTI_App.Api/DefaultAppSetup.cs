@@ -70,7 +70,7 @@ namespace XTI_App.Api
         private static async Task updateResourceFromTemplate(App app, ResourceGroup resourceGroup, AppApiActionTemplate actionTemplate)
         {
             var resourceName = new ResourceName(actionTemplate.Name);
-            var resource = await resourceGroup.TryAddResource(resourceName);
+            var resource = await resourceGroup.TryAddResource(resourceName, actionTemplate.ResultType());
             if (actionTemplate.Access.IsAnonymousAllowed)
             {
                 await resource.AllowAnonymous();

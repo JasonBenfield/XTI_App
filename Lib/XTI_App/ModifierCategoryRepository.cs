@@ -40,6 +40,7 @@ namespace XTI_App
         {
             var records = await repo.Retrieve()
                 .Where(c => c.AppID == app.ID.Value)
+                .OrderBy(c => c.Name)
                 .ToArrayAsync();
             return records.Select(c => factory.ModCategory(c));
         }

@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -36,6 +34,7 @@ namespace XTI_App
         {
             var records = await repo.Retrieve()
                 .Where(g => g.AppID == app.ID.Value)
+                .OrderBy(g => g.Name)
                 .ToArrayAsync();
             return records.Select(g => factory.Group(g));
         }
@@ -60,6 +59,15 @@ namespace XTI_App
                 .Where(g => g.AppID == app.ID.Value && g.ID == id)
                 .FirstOrDefaultAsync();
             return factory.Group(record);
+        }
+
+        internal async Task<IEnumerable<ResourceGroup>> Groups(ModifierCategory modCategory)
+        {
+            var records = await repo.Retrieve()
+                .Where(g => g.ModCategoryID == modCategory.ID.Value)
+                .OrderBy(g => g.Name)
+                .ToArrayAsync();
+            return records.Select(g => factory.Group(g));
         }
     }
 }

@@ -23,17 +23,22 @@ namespace XTI_App
         public EntityID ID { get; }
         public ResourceGroupName Name() => new ResourceGroupName(record.Name);
 
-        public async Task<Resource> TryAddResource(ResourceName name)
+        public async Task<Resource> TryAddResource(ResourceName name, ResourceResultType resultType)
         {
             var resource = await Resource(name);
-            if (!resource.Name().Equals(name))
+            if (resource.Name().Equals(name))
             {
-                resource = await AddResource(name);
+                await resource.UpdateResultType(resultType);
+            }
+            else
+            {
+                resource = await AddResource(name, resultType);
             }
             return resource;
         }
 
-        private Task<Resource> AddResource(ResourceName name) => factory.Resources().Add(this, name);
+        private Task<Resource> AddResource(ResourceName name, ResourceResultType resultType)
+            => factory.Resources().Add(this, name, resultType);
 
         async Task<IResource> IResourceGroup.Resource(ResourceName name) => await Resource(name);
 
@@ -148,6 +153,12 @@ namespace XTI_App
                         IsAllowed = isAllowed
                     }
                 );
+
+        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+            => factory.Requests().MostRecentForResourceGroup(this, howMany);
+
+        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+            => factory.Events().MostRecentErrorsForResourceGroup(this, howMany);
 
         public ResourceGroupModel ToModel()
             => new ResourceGroupModel
