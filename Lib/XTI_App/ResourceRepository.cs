@@ -20,12 +20,13 @@ namespace XTI_App
             repo = repoFactory.CreateResources();
         }
 
-        public async Task<Resource> Add(ResourceGroup group, ResourceName name)
+        public async Task<Resource> Add(ResourceGroup group, ResourceName name, ResourceResultType resultType)
         {
             var record = new ResourceRecord
             {
                 GroupID = group.ID.Value,
-                Name = name.Value
+                Name = name.Value,
+                ResultType = resultType.Value
             };
             await repo.Create(record);
             return factory.Resource(record);
@@ -35,6 +36,8 @@ namespace XTI_App
         {
             var records = await repo.Retrieve()
                 .Where(r => r.GroupID == group.ID.Value)
+                .OrderBy(r => r.ResultType)
+                .ThenBy(r => r.Name)
                 .ToArrayAsync();
             return records.Select(r => factory.Resource(r));
         }

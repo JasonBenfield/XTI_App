@@ -36,6 +36,17 @@ namespace XTI_App
                     }
                 );
 
+        internal Task UpdateResultType(ResourceResultType resultType)
+            => repoFactory.CreateResources()
+                .Update
+                (
+                    record,
+                    r =>
+                    {
+                        r.ResultType = resultType.Value;
+                    }
+                );
+
         public Task<IEnumerable<AppRole>> AllowedRoles()
             => factory.Roles().AllowedRolesForResource(this);
 
@@ -100,12 +111,19 @@ namespace XTI_App
                     }
                 );
 
+        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+            => factory.Requests().MostRecentForResource(this, howMany);
+
+        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+            => factory.Events().MostRecentErrorsForResource(this, howMany);
+
         public ResourceModel ToModel()
             => new ResourceModel
             {
                 ID = ID.Value,
                 Name = Name().DisplayText,
-                IsAnonymousAllowed = record.IsAnonymousAllowed
+                IsAnonymousAllowed = record.IsAnonymousAllowed,
+                ResultType = ResourceResultType.Values.Value(record.ResultType)
             };
 
         public override string ToString() => $"{nameof(Resource)} {ID.Value}";

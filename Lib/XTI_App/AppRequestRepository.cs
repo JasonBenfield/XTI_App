@@ -64,16 +64,6 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForApp(App app, int howMany)
         {
-            var resourceGroupIDs = repoFactory
-                .CreateResourceGroups()
-                .Retrieve()
-                .Where(rg => rg.AppID == app.ID.Value)
-                .Select(rg => rg.ID);
-            var resourceIDs = repoFactory
-                .CreateResources()
-                .Retrieve()
-                .Where(r => resourceGroupIDs.Any(rg => rg == r.GroupID))
-                .Select(r => r.ID);
             var resources = repoFactory
                 .CreateResources()
                 .Retrieve()
@@ -85,15 +75,74 @@ namespace XTI_App
                         .Where(rg => rg.AppID == app.ID.Value),
                     res => res.GroupID,
                     rg => rg.ID,
-                    (res, rg) => new
+                    (res, rg) => new ResourceWithGroupRecord
                     {
                         ResourceID = res.ID,
                         ActionName = res.Name,
                         GroupID = rg.ID,
-                        GroupName = rg.Name
+                        GroupName = rg.Name,
+                        ResultType = ResourceResultType.Values.Value(res.ResultType)
                     }
                 );
-            var requests = await repo.Retrieve()
+            var requests = await requestsWithResources(howMany, resources);
+            return requests;
+        }
+
+        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForResourceGroup(ResourceGroup group, int howMany)
+        {
+            var resources = repoFactory
+                .CreateResources()
+                .Retrieve()
+                .Join
+                (
+                    repoFactory
+                        .CreateResourceGroups()
+                        .Retrieve()
+                        .Where(rg => rg.ID == group.ID.Value),
+                    res => res.GroupID,
+                    rg => rg.ID,
+                    (res, rg) => new ResourceWithGroupRecord
+                    {
+                        ResourceID = res.ID,
+                        ActionName = res.Name,
+                        GroupID = rg.ID,
+                        GroupName = rg.Name,
+                        ResultType = ResourceResultType.Values.Value(res.ResultType)
+                    }
+                );
+            var requests = await requestsWithResources(howMany, resources);
+            return requests;
+        }
+
+        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForResource(Resource resource, int howMany)
+        {
+            var resources = repoFactory
+                .CreateResources()
+                .Retrieve()
+                .Where(r => r.ID == resource.ID.Value)
+                .Join
+                (
+                    repoFactory
+                        .CreateResourceGroups()
+                        .Retrieve(),
+                    res => res.GroupID,
+                    rg => rg.ID,
+                    (res, rg) => new ResourceWithGroupRecord
+                    {
+                        ResourceID = res.ID,
+                        ActionName = res.Name,
+                        GroupID = rg.ID,
+                        GroupName = rg.Name,
+                        ResultType = ResourceResultType.Values.Value(res.ResultType)
+                    }
+                );
+            var requests = await requestsWithResources(howMany, resources);
+            return requests;
+        }
+
+        private Task<AppRequestExpandedModel[]> requestsWithResources(int howMany, IQueryable<ResourceWithGroupRecord> resources)
+        {
+            return repo.Retrieve()
                 .Join
                 (
                     resources,
@@ -154,7 +203,16 @@ namespace XTI_App
                     }
                 )
                 .ToArrayAsync();
-            return requests;
         }
+
+        private sealed class ResourceWithGroupRecord
+        {
+            public int ResourceID { get; set; }
+            public string ActionName { get; set; }
+            public int GroupID { get; set; }
+            public string GroupName { get; set; }
+            public ResourceResultType ResultType { get; set; }
+        }
+
     }
 }
