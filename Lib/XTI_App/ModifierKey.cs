@@ -15,8 +15,7 @@ namespace XTI_App
         public static ModifierKey FromValue(string value) =>
             string.IsNullOrWhiteSpace(value) ? Default : new ModifierKey(value);
 
-        public ModifierKey(string value)
-            : base(value?.Trim(), value)
+        public ModifierKey(string value) : base(value?.ToLower() ?? "")
         {
         }
 

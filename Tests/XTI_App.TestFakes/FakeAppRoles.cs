@@ -1,17 +1,11 @@
 ﻿namespace XTI_App.TestFakes
 {
-    public sealed class FakeAppRoles : AppRoleNames
+    public sealed class FakeAppRoles
     {
         public static readonly FakeAppRoles Instance = new FakeAppRoles();
 
-        public FakeAppRoles()
-        {
-            Admin = Add("Admin");
-            Viewer = Add("Viewer");
-            Manager = Add("Manager");
-        }
-        public AppRoleName Admin { get; }
-        public AppRoleName Viewer { get; }
-        public AppRoleName Manager { get; }
+        public AppRoleName Admin { get; } = new AppRoleName(nameof(Admin));
+        public AppRoleName Viewer { get; } = new AppRoleName(nameof(Viewer));
+        public AppRoleName Manager { get; } = new AppRoleName(nameof(Manager));
     }
 }

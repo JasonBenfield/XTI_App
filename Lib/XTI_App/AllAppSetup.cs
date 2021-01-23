@@ -27,7 +27,7 @@ namespace XTI_App
                 );
             }
             var superUser = await appFactory.Users().User(AppUserName.SuperUser);
-            if (superUser.ID.IsNotValid())
+            if (!superUser.UserName().Equals(AppUserName.SuperUser))
             {
                 await appFactory.Users().Add
                 (
@@ -49,7 +49,7 @@ namespace XTI_App
             var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
             await defaultModCategory.TryAddDefaultModifier();
             var group = await app.AddOrUpdateResourceGroup(ResourceGroupName.Unknown, defaultModCategory);
-            await group.TryAddResource(ResourceName.Unknown);
+            await group.TryAddResource(ResourceName.Unknown, ResourceResultType.Values.None);
         }
 
         private class SystemHashedPassword : IHashedPassword

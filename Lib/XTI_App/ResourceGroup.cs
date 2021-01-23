@@ -1,19 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_Core;
 
 namespace XTI_App
 {
     public sealed class ResourceGroup : IResourceGroup
     {
-        private readonly DataRepository<ResourceGroupRecord> repo;
+        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
         private readonly ResourceGroupRecord record;
 
-        internal ResourceGroup(DataRepository<ResourceGroupRecord> repo, AppFactory factory, ResourceGroupRecord record)
+        internal ResourceGroup(IMainDataRepositoryFactory repoFactory, AppFactory factory, ResourceGroupRecord record)
         {
-            this.repo = repo;
+            this.repoFactory = repoFactory;
             this.factory = factory;
             this.record = record ?? new ResourceGroupRecord();
             ID = new EntityID(this.record.ID);
@@ -22,17 +23,22 @@ namespace XTI_App
         public EntityID ID { get; }
         public ResourceGroupName Name() => new ResourceGroupName(record.Name);
 
-        public async Task<Resource> TryAddResource(ResourceName name)
+        public async Task<Resource> TryAddResource(ResourceName name, ResourceResultType resultType)
         {
             var resource = await Resource(name);
-            if (!resource.Name().Equals(name))
+            if (resource.Name().Equals(name))
             {
-                resource = await AddResource(name);
+                await resource.UpdateResultType(resultType);
+            }
+            else
+            {
+                resource = await AddResource(name, resultType);
             }
             return resource;
         }
 
-        private Task<Resource> AddResource(ResourceName name) => factory.Resources().Add(this, name);
+        private Task<Resource> AddResource(ResourceName name, ResourceResultType resultType)
+            => factory.Resources().Add(this, name, resultType);
 
         async Task<IResource> IResourceGroup.Resource(ResourceName name) => await Resource(name);
 
@@ -55,15 +61,113 @@ namespace XTI_App
         }
 
         public Task SetModCategory(ModifierCategory category)
-            => repo.Update(record, r =>
-            {
-                r.ModCategoryID = category.ID.Value;
-            });
+        {
+            var repo = repoFactory.CreateResourceGroups();
+            return repo.Update
+            (
+                record, r =>
+                {
+                    r.ModCategoryID = category.ID.Value;
+                }
+            );
+        }
 
         async Task<IModifierCategory> IResourceGroup.ModCategory() => await ModCategory();
 
         public Task<ModifierCategory> ModCategory()
             => factory.ModCategories().Category(record.ModCategoryID);
+
+        public Task AllowAnonymous() => setIsAnonymousAllowed(true);
+        public Task DenyAnonymous() => setIsAnonymousAllowed(false);
+        private Task setIsAnonymousAllowed(bool isAllowed)
+            => repoFactory.CreateResourceGroups()
+                .Update
+                (
+                    record,
+                    r =>
+                    {
+                        r.IsAnonymousAllowed = isAllowed;
+                    }
+                );
+
+        public Task<IEnumerable<AppRole>> AllowedRoles()
+            => factory.Roles().AllowedRolesForResourceGroup(this);
+
+        public Task<IEnumerable<AppRole>> DeniedRoles()
+            => factory.Roles().DeniedRolesForResourceGroup(this);
+
+        public Task SetRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
+            => repoFactory.Transaction(() => setRoleAccess(allowedRoles, deniedRoles));
+
+        private async Task setRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
+        {
+            await deleteExistingRoles(allowedRoles, deniedRoles);
+            var existingAllowedRoles = await AllowedRoles();
+            foreach (var allowedRole in allowedRoles)
+            {
+                if (!existingAllowedRoles.Any(r => r.ID.Equals(allowedRole.ID.Value)))
+                {
+                    await addGroupRole(allowedRole, true);
+                }
+            }
+            var existingDeniedRoles = await DeniedRoles();
+            foreach (var deniedRole in deniedRoles)
+            {
+                if (!existingDeniedRoles.Any(r => r.ID.Equals(deniedRole.ID.Value)))
+                {
+                    await addGroupRole(deniedRole, false);
+                }
+            }
+        }
+
+        private async Task deleteExistingRoles(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
+        {
+            var groupRoles = repoFactory.CreateResourceGroupRoles();
+            var allowedRoleIDs = allowedRoles.Select(r => r.ID.Value);
+            var deniedRoleIDs = deniedRoles.Select(r => r.ID.Value);
+            var rolesToDelete = await groupRoles
+                .Retrieve()
+                .Where
+                (
+                    gr => gr.GroupID == ID.Value
+                        && (
+                            (!allowedRoleIDs.Any(id => id == gr.RoleID) && gr.IsAllowed)
+                            || (!deniedRoleIDs.Any(id => id == gr.RoleID) && !gr.IsAllowed)
+                        )
+                )
+                .ToArrayAsync();
+            foreach (var groupRole in rolesToDelete)
+            {
+                await groupRoles.Delete(groupRole);
+            }
+        }
+
+        private Task addGroupRole(AppRole role, bool isAllowed)
+            => repoFactory.CreateResourceGroupRoles()
+                .Create
+                (
+                    new ResourceGroupRoleRecord
+                    {
+                        GroupID = ID.Value,
+                        RoleID = role.ID.Value,
+                        IsAllowed = isAllowed
+                    }
+                );
+
+        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+            => factory.Requests().MostRecentForResourceGroup(this, howMany);
+
+        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+            => factory.Events().MostRecentErrorsForResourceGroup(this, howMany);
+
+        public ResourceGroupModel ToModel()
+            => new ResourceGroupModel
+            {
+                ID = ID.Value,
+                Name = Name().DisplayText,
+                IsAnonymousAllowed = record.IsAnonymousAllowed,
+                ModCategoryID = record.ModCategoryID
+            };
 
         public override string ToString() => $"{nameof(ResourceGroup)} {ID.Value}";
     }

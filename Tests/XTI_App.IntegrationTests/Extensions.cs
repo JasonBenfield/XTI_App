@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using MainDB.Extensions;
 using XTI_Core;
 using XTI_App.TestFakes;
+using Microsoft.Extensions.Hosting;
+using XTI_Core.Extensions;
 
 namespace XTI_App.IntegrationTests
 {
@@ -18,7 +20,7 @@ namespace XTI_App.IntegrationTests
         {
             services.AddAppDbContextForSqlServer(config);
             services.AddSingleton<Clock, UtcClock>();
-            services.AddSingleton(_ => FakeAppKey.AppKey);
+            services.AddSingleton(_ => FakeInfo.AppKey);
             services.AddScoped<AppFactory>();
             services.AddScoped<MainDbReset>();
             services.AddScoped<FakeAppSetup>();
@@ -32,8 +34,12 @@ namespace XTI_App.IntegrationTests
 
         public static async Task Reset(this IServiceProvider services)
         {
-            var mainDbReset = services.GetService<MainDbReset>();
-            await mainDbReset.Run();
+            var hostEnv = services.GetService<IHostEnvironment>();
+            if (hostEnv.IsTest())
+            {
+                var mainDbReset = services.GetService<MainDbReset>();
+                await mainDbReset.Run();
+            }
             var setup = services.GetService<FakeAppSetup>();
             await setup.Run();
         }
@@ -41,7 +47,7 @@ namespace XTI_App.IntegrationTests
         public static Task<App> FakeApp(this IServiceProvider services)
         {
             var factory = services.GetService<AppFactory>();
-            return factory.Apps().App(FakeAppKey.AppKey);
+            return factory.Apps().App(FakeInfo.AppKey);
         }
     }
 }

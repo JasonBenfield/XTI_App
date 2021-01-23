@@ -19,7 +19,6 @@ namespace XTI_App
         public EntityID ID { get; }
         public ModifierKey ModKey() => new ModifierKey(record.ModKey);
         public string TargetKey { get => record.TargetKey; }
-        public string DisplayText { get => record.DisplayText; }
         public int TargetID() => int.Parse(TargetKey);
 
         public bool IsForCategory(ModifierCategory modCategory) => modCategory.ID.Value == record.CategoryID;
@@ -31,6 +30,15 @@ namespace XTI_App
                 r.DisplayText = displayText;
             });
         }
+
+        public ModifierModel ToModel() => new ModifierModel
+        {
+            ID = ID.Value,
+            CategoryID = record.CategoryID,
+            ModKey = ModKey().DisplayText,
+            TargetKey = TargetKey,
+            DisplayText = record.DisplayText
+        };
 
         public override string ToString() => $"{nameof(Modifier)} {ID.Value}";
     }

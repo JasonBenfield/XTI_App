@@ -39,7 +39,7 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var roleNames = FakeAppRoles.Instance.Values();
+            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
             var appRoles = await app.Roles();
             Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
         }
@@ -101,6 +101,38 @@ namespace XTI_App.Tests
         }
 
         [Test]
+        public async Task ShouldAddAllowedGroupRoleFromAppGroupTemplate()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var employeeGroup = (await app.ResourceGroups()).First(g => g.Name().Equals("Employee"));
+            var allowedRoles = await employeeGroup.AllowedRoles();
+            Assert.That
+            (
+                allowedRoles.Select(r => r.Name()),
+                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Admin }),
+                "Should add allowed group roles from group template"
+            );
+        }
+
+        [Test]
+        public async Task ShouldAddDeniedGroupRoleFromAppGroupTemplate()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var productGroup = (await app.ResourceGroups()).First(g => g.Name().Equals("Product"));
+            var deniedRoles = await productGroup.DeniedRoles();
+            Assert.That
+            (
+                deniedRoles.Select(r => r.Name()),
+                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Viewer }),
+                "Should add denied group roles from group template"
+            );
+        }
+
+        [Test]
         public async Task ShouldAddResourcesFromAppTemplateActions()
         {
             var input = setup();
@@ -113,6 +145,23 @@ namespace XTI_App.Tests
                 resources.Select(r => r.Name()),
                 Is.EquivalentTo(new[] { new ResourceName("AddEmployee"), new ResourceName("Employee"), new ResourceName("SubmitFakeForm") }),
                 "Should add resources from template actions"
+            );
+        }
+
+        [Test]
+        public async Task ShouldAddAllowedResourceRoleFromActionTemplate()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var employeeGroup = (await app.ResourceGroups()).First(g => g.Name().Equals("Employee"));
+            var addEmployeeAction = await employeeGroup.Resource(new ResourceName("AddEmployee"));
+            var allowedRoles = await addEmployeeAction.AllowedRoles();
+            Assert.That
+            (
+                allowedRoles.Select(r => r.Name()),
+                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Admin, FakeAppRoles.Instance.Manager }),
+                "Should add allowed resource roles from action template"
             );
         }
 
@@ -148,13 +197,61 @@ namespace XTI_App.Tests
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
             var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
-            var modifiers = (await employeeGroup.Modifiers()).ToArray();
+            var modifiers = (await employeeGroup.Modifiers())
+                .Select(m => m.ToModel())
+                .ToArray();
             Assert.That
             (
                 modifiers.Select(m => m.DisplayText),
                 Is.EquivalentTo(new[] { "IT", "HR" }),
                 "Should add modifiers from group"
             );
+        }
+
+        [Test]
+        public async Task ShouldAllowAnonymousForResourceGroup()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var loginGroup = await app.ResourceGroup(new ResourceGroupName("Login"));
+            var loginGroupModel = loginGroup.ToModel();
+            Assert.That(loginGroupModel.IsAnonymousAllowed, Is.True, "Should allow anonymous");
+        }
+
+        [Test]
+        public async Task ShouldDenyAnonymousForResourceGroup()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var employeeGroupModel = employeeGroup.ToModel();
+            Assert.That(employeeGroupModel.IsAnonymousAllowed, Is.False, "Should deny anonymous");
+        }
+
+        [Test]
+        public async Task ShouldAllowAnonymousForResource()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var loginGroup = await app.ResourceGroup(new ResourceGroupName("Login"));
+            var resource = await loginGroup.Resource(new ResourceName("Authenticate"));
+            var resourceModel = resource.ToModel();
+            Assert.That(resourceModel.IsAnonymousAllowed, Is.True, "Should allow anonymous");
+        }
+
+        [Test]
+        public async Task ShouldDenyAnonymousForResource()
+        {
+            var input = setup();
+            await execute(input);
+            var app = await input.Factory.Apps().App(input.Options.AppKey);
+            var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var resource = await employeeGroup.Resource(new ResourceName("AddEmployee"));
+            var resourceModel = resource.ToModel();
+            Assert.That(resourceModel.IsAnonymousAllowed, Is.False, "Should deny anonymous");
         }
 
         private async Task execute(TestInput input)

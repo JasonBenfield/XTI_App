@@ -14,7 +14,7 @@ namespace XTI_App.Api
             ValueTemplate resultTemplate
         )
         {
-            Name = name;
+            Name = name.Replace(" ", "");
             FriendlyName = friendlyName;
             Access = access;
             ModelTemplate = modelTemplate;
@@ -27,9 +27,30 @@ namespace XTI_App.Api
         public ValueTemplate ModelTemplate { get; }
         public ValueTemplate ResultTemplate { get; }
 
-        public bool IsView() => ResultTemplate.DataType.Name == "WebViewResult";
-        public bool IsPartialView() => ResultTemplate.DataType.Name == "WebPartialViewResult";
-        public bool IsRedirect() => ResultTemplate.DataType.Name == "WebRedirectResult";
+        public ResourceResultType ResultType()
+        {
+            ResourceResultType type;
+            if (ResultTemplate.DataType.Name == "WebViewResult")
+            {
+                type = ResourceResultType.Values.View;
+            }
+            else if (ResultTemplate.DataType.Name == "WebPartialViewResult")
+            {
+                type = ResourceResultType.Values.PartialView;
+            }
+            else if (ResultTemplate.DataType.Name == "WebRedirectResult")
+            {
+                type = ResourceResultType.Values.Redirect;
+            }
+            else
+            {
+                type = ResourceResultType.Values.Json;
+            }
+            return type;
+        }
+        public bool IsView() => ResultType().Equals(ResourceResultType.Values.View);
+        public bool IsPartialView() => ResultType().Equals(ResourceResultType.Values.PartialView);
+        public bool IsRedirect() => ResultType().Equals(ResourceResultType.Values.Redirect);
         public bool HasEmptyModel() => ModelTemplate.DataType == typeof(EmptyRequest);
 
         public IEnumerable<FormValueTemplate> FormTemplates()

@@ -14,7 +14,7 @@ namespace XTI_App
         private AppUserRepository users;
         public AppUserRepository Users()
             => users ?? (users = new AppUserRepository(this, repos.CreateUsers()));
-        internal AppUser User(AppUserRecord record) => new AppUser(repos.CreateUsers(), this, record);
+        internal AppUser User(AppUserRecord record) => new AppUser(repos, this, record);
 
         private AppRepository apps;
         public AppRepository Apps()
@@ -29,12 +29,12 @@ namespace XTI_App
 
         private AppRoleRepository roles;
         internal AppRoleRepository Roles()
-            => roles ?? (roles = new AppRoleRepository(this, repos.CreateRoles()));
+            => roles ?? (roles = new AppRoleRepository(repos, this));
         internal AppRole Role(AppRoleRecord record) => new AppRole(repos.CreateRoles(), record);
 
         private AppUserRoleRepository userRoles;
         internal AppUserRoleRepository UserRoles()
-            => userRoles ?? (userRoles = new AppUserRoleRepository(this, repos.CreateUserRoles()));
+            => userRoles ?? (userRoles = new AppUserRoleRepository(repos, this));
         internal AppUserRole UserRole(AppUserRoleRecord record) =>
             new AppUserRole(repos.CreateUserRoles(), record);
 
@@ -42,12 +42,12 @@ namespace XTI_App
         internal ResourceGroupRepository Groups()
             => groups ?? (groups = new ResourceGroupRepository(this, repos.CreateResourceGroups()));
         internal ResourceGroup Group(ResourceGroupRecord record)
-            => new ResourceGroup(repos.CreateResourceGroups(), this, record);
+            => new ResourceGroup(repos, this, record);
 
         private ResourceRepository resources;
         internal ResourceRepository Resources()
-            => resources ?? (resources = new ResourceRepository(this, repos.CreateResources()));
-        internal Resource Resource(ResourceRecord record) => new Resource(record);
+            => resources ?? (resources = new ResourceRepository(repos, this));
+        internal Resource Resource(ResourceRecord record) => new Resource(repos, this, record);
 
         private ModifierCategoryRepository modCategories;
         public ModifierCategoryRepository ModCategories()
@@ -57,7 +57,7 @@ namespace XTI_App
 
         private ModifierRepository modifiers;
         internal ModifierRepository Modifiers()
-            => modifiers ?? (modifiers = new ModifierRepository(this, repos.CreateModifiers()));
+            => modifiers ?? (modifiers = new ModifierRepository(repos, this));
         internal Modifier Modifier(ModifierRecord record)
             => new Modifier(repos.CreateModifiers(), record);
 
@@ -65,12 +65,6 @@ namespace XTI_App
         internal ModifierCategoryAdminRepository ModCategoryAdmins()
             => modCategoryAdmins
                 ?? (modCategoryAdmins = new ModifierCategoryAdminRepository(this, repos.CreateModifierCategoryAdmins()));
-
-        private AppUserModifierRepository userModifiers;
-        internal AppUserModifierRepository UserModifiers()
-            => userModifiers
-                ?? (userModifiers = new AppUserModifierRepository(this, repos.CreateUserModifiers()));
-        internal AppUserModifier UserModifier(AppUserModifierRecord record) => new AppUserModifier(this, record);
 
         private AppSessionRepository sessions;
         public AppSessionRepository Sessions()
@@ -80,13 +74,13 @@ namespace XTI_App
 
         private AppRequestRepository requests;
         public AppRequestRepository Requests()
-            => requests ?? (requests = new AppRequestRepository(this, repos.CreateRequests()));
+            => requests ?? (requests = new AppRequestRepository(repos, this));
         internal AppRequest Request(AppRequestRecord record) =>
             new AppRequest(this, repos.CreateRequests(), record);
 
         private AppEventRepository events;
         public AppEventRepository Events()
-            => events ?? (events = new AppEventRepository(this, repos.CreateEvents()));
+            => events ?? (events = new AppEventRepository(repos, this));
         internal AppEvent Event(AppEventRecord record) => new AppEvent(record);
     }
 }
