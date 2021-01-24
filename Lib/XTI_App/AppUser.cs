@@ -65,7 +65,8 @@ namespace XTI_App
         public async Task RemoveModifier(Modifier modifier)
         {
             var userModRepo = repoFactory.CreateUserModifiers();
-            var record = await userModRepo.Retrieve()
+            var record = await userModRepo
+                .Retrieve()
                 .FirstOrDefaultAsync
                 (
                     um => um.UserID == ID.Value && um.ModifierID == modifier.ID.Value
@@ -88,6 +89,14 @@ namespace XTI_App
 
         public Task<IEnumerable<Modifier>> Modifiers(ModifierCategory modCategory)
             => factory.Modifiers().ModifiersForUser(this, modCategory);
+
+        public AppUserModel ToModel() => new AppUserModel
+        {
+            ID = ID.Value,
+            UserName = UserName().DisplayText,
+            Name = new PersonName(record.Name).DisplayText,
+            Email = new EmailAddress(record.Email).DisplayText
+        };
 
         public override string ToString() => $"{nameof(AppUser)} {ID.Value}";
 
