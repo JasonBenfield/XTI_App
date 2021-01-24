@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Fakes;
 using XTI_Core;
@@ -32,6 +33,25 @@ namespace XTI_App.Tests
             Assert.That(userModel.UserName, Is.EqualTo("test.user"));
             Assert.That(userModel.Name, Is.EqualTo("Test User"));
             Assert.That(userModel.Email, Is.EqualTo("test.user@hotmail.com"));
+        }
+
+        [Test]
+        public async Task ShouldGetUsers()
+        {
+            var services = await setup();
+            var userName = new AppUserName("Test.User");
+            var factory = services.GetService<AppFactory>();
+            var clock = services.GetService<Clock>();
+            await factory.Users().Add
+            (
+                userName,
+                new FakeHashedPassword("Password12345"),
+                new PersonName("Test User"),
+                new EmailAddress("test.user@hotmail.com"),
+                clock.Now()
+            );
+            var users = (await factory.Users().Users()).ToArray();
+            Assert.That(users.Select(u => u.UserName()), Has.One.EqualTo(userName), "Should get all users");
         }
 
         private async Task<IServiceProvider> setup()

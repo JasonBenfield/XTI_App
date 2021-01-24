@@ -3,6 +3,8 @@ using System;
 using System.Threading.Tasks;
 using MainDB.Entities;
 using XTI_Core;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace XTI_App
 {
@@ -15,6 +17,12 @@ namespace XTI_App
         {
             this.factory = factory;
             this.repo = repo;
+        }
+
+        public async Task<IEnumerable<AppUser>> Users()
+        {
+            var records = await repo.Retrieve().ToArrayAsync();
+            return records.Select(u => factory.User(u));
         }
 
         public async Task<AppUser> User(int id)
