@@ -43,6 +43,17 @@ namespace XTI_App
         public Task ChangePassword(IHashedPassword password)
             => repo.Update(record, u => u.Password = password.Value());
 
+        public Task Edit(PersonName name, EmailAddress email)
+            => repo.Update
+            (
+                record,
+                u =>
+                {
+                    u.Name = name.Value;
+                    u.Email = email.Value;
+                }
+            );
+
         public Task<bool> IsModCategoryAdmin(IModifierCategory modCategory)
             => factory.ModCategoryAdmins().IsAdmin(modCategory, this);
 

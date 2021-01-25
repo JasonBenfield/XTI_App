@@ -54,6 +54,29 @@ namespace XTI_App.Tests
             Assert.That(users.Select(u => u.UserName()), Has.One.EqualTo(userName), "Should get all users");
         }
 
+        [Test]
+        public async Task ShouldEditUser()
+        {
+            var services = await setup();
+            var userName = new AppUserName("Test.User");
+            var factory = services.GetService<AppFactory>();
+            var clock = services.GetService<Clock>();
+            await factory.Users().Add
+            (
+                userName,
+                new FakeHashedPassword("Password12345"),
+                new PersonName("Test User"),
+                new EmailAddress("test.user@hotmail.com"),
+                clock.Now()
+            );
+            var user = await factory.Users().User(userName);
+            await user.Edit(new PersonName("Changed Name"), new EmailAddress("changed@gmail.com"));
+            user = await factory.Users().User(userName);
+            var userModel = user.ToModel();
+            Assert.That(userModel.Name, Is.EqualTo("Changed Name"), "Should update user");
+            Assert.That(userModel.Email, Is.EqualTo("changed@gmail.com"), "Should update user");
+        }
+
         private async Task<IServiceProvider> setup()
         {
             var host = Host.CreateDefaultBuilder()
