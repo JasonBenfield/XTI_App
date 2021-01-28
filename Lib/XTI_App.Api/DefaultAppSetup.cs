@@ -25,7 +25,7 @@ namespace XTI_App.Api
             this.appTitle = appTitle;
         }
 
-        public async Task Run()
+        public async Task Run(AppVersionKey versionKey)
         {
             var allAppSetup = new AllAppSetup(appFactory, clock);
             await allAppSetup.Run();
@@ -39,17 +39,18 @@ namespace XTI_App.Api
             );
             await appSetup.Run();
             var app = await appFactory.Apps().App(appTemplate.AppKey);
+            var version = await app.Version(versionKey);
             foreach (var groupTemplate in appTemplate.GroupTemplates)
             {
-                await updateResourceGroupFromTemplate(app, groupTemplate);
+                await updateResourceGroupFromTemplate(app, version, groupTemplate);
             }
         }
 
-        private static async Task updateResourceGroupFromTemplate(App app, AppApiGroupTemplate groupTemplate)
+        private static async Task updateResourceGroupFromTemplate(App app, AppVersion version, AppApiGroupTemplate groupTemplate)
         {
             var modCategory = await app.TryAddModCategory(groupTemplate.ModCategory);
             var groupName = new ResourceGroupName(groupTemplate.Name);
-            var resourceGroup = await app.AddOrUpdateResourceGroup(groupName, modCategory);
+            var resourceGroup = await version.AddOrUpdateResourceGroup(groupName, modCategory);
             if (groupTemplate.Access.IsAnonymousAllowed)
             {
                 await resourceGroup.AllowAnonymous();

@@ -46,7 +46,7 @@ namespace XTI_App
             return records.Select(e => factory.Event(e));
         }
 
-        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForApp(App app, int howMany)
+        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForVersion(AppVersion version, int howMany)
         {
             var requestIDs = repoFactory
                 .CreateRequests()
@@ -65,9 +65,9 @@ namespace XTI_App
                         .Retrieve(),
                     res => res.GroupID,
                     rg => rg.ID,
-                    (res, rg) => new { RequestID = res.RequestID, AppID = rg.AppID }
+                    (res, rg) => new { RequestID = res.RequestID, VersionID = rg.VersionID }
                 )
-                .Where(rg => rg.AppID == app.ID.Value)
+                .Where(rg => rg.VersionID == version.ID.Value)
                 .Select(rg => rg.RequestID);
             return mostRecentErrors(howMany, requestIDs);
         }

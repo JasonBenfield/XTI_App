@@ -39,6 +39,12 @@ namespace XTI_Version
             return match.Groups[5].Value;
         }
 
+        public AppVersionType VersionType()
+        {
+            var match = branchNameRegex.Match(branchName);
+            return AppVersionType.Values.Value(match.Groups[1].Value);
+        }
+
         public override string ToString() => $"{nameof(XtiVersionBranch)} {branchName}";
     }
 }

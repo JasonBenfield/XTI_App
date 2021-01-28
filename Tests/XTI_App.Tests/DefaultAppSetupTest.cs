@@ -70,7 +70,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(AppKey.Unknown);
-            var group = await app.ResourceGroup(ResourceGroupName.Unknown);
+            var version = await app.CurrentVersion();
+            var group = await version.ResourceGroup(ResourceGroupName.Unknown);
             Assert.That(group.ID.IsValid(), Is.True, "Should add unknown resource group");
         }
 
@@ -80,7 +81,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(AppKey.Unknown);
-            var group = await app.ResourceGroup(ResourceGroupName.Unknown);
+            var version = await app.CurrentVersion();
+            var group = await version.ResourceGroup(ResourceGroupName.Unknown);
             var resource = await group.Resource(ResourceName.Unknown);
             Assert.That(resource.ID.IsValid(), Is.True, "Should add unknown resource");
         }
@@ -91,7 +93,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var groups = (await app.ResourceGroups()).ToArray();
+            var version = await app.CurrentVersion();
+            var groups = (await version.ResourceGroups()).ToArray();
             Assert.That
             (
                 groups.Select(g => g.Name()),
@@ -106,7 +109,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var employeeGroup = (await app.ResourceGroups()).First(g => g.Name().Equals("Employee"));
+            var version = await app.CurrentVersion();
+            var employeeGroup = (await version.ResourceGroups()).First(g => g.Name().Equals("Employee"));
             var allowedRoles = await employeeGroup.AllowedRoles();
             Assert.That
             (
@@ -122,7 +126,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var productGroup = (await app.ResourceGroups()).First(g => g.Name().Equals("Product"));
+            var version = await app.CurrentVersion();
+            var productGroup = (await version.ResourceGroups()).First(g => g.Name().Equals("Product"));
             var deniedRoles = await productGroup.DeniedRoles();
             Assert.That
             (
@@ -138,7 +143,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var group = await app.ResourceGroup(new ResourceGroupName("employee"));
+            var version = await app.CurrentVersion();
+            var group = await version.ResourceGroup(new ResourceGroupName("employee"));
             var resources = (await group.Resources()).ToArray();
             Assert.That
             (
@@ -154,7 +160,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var employeeGroup = (await app.ResourceGroups()).First(g => g.Name().Equals("Employee"));
+            var version = await app.CurrentVersion();
+            var employeeGroup = (await version.ResourceGroups()).First(g => g.Name().Equals("Employee"));
             var addEmployeeAction = await employeeGroup.Resource(new ResourceName("AddEmployee"));
             var allowedRoles = await addEmployeeAction.AllowedRoles();
             Assert.That
@@ -196,7 +203,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var version = await app.CurrentVersion();
+            var employeeGroup = await version.ResourceGroup(new ResourceGroupName("Employee"));
             var modifiers = (await employeeGroup.Modifiers())
                 .Select(m => m.ToModel())
                 .ToArray();
@@ -214,7 +222,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var loginGroup = await app.ResourceGroup(new ResourceGroupName("Login"));
+            var version = await app.CurrentVersion();
+            var loginGroup = await version.ResourceGroup(new ResourceGroupName("Login"));
             var loginGroupModel = loginGroup.ToModel();
             Assert.That(loginGroupModel.IsAnonymousAllowed, Is.True, "Should allow anonymous");
         }
@@ -225,7 +234,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var version = await app.CurrentVersion();
+            var employeeGroup = await version.ResourceGroup(new ResourceGroupName("Employee"));
             var employeeGroupModel = employeeGroup.ToModel();
             Assert.That(employeeGroupModel.IsAnonymousAllowed, Is.False, "Should deny anonymous");
         }
@@ -236,7 +246,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var loginGroup = await app.ResourceGroup(new ResourceGroupName("Login"));
+            var version = await app.CurrentVersion();
+            var loginGroup = await version.ResourceGroup(new ResourceGroupName("Login"));
             var resource = await loginGroup.Resource(new ResourceName("Authenticate"));
             var resourceModel = resource.ToModel();
             Assert.That(resourceModel.IsAnonymousAllowed, Is.True, "Should allow anonymous");
@@ -248,7 +259,8 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var employeeGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var version = await app.CurrentVersion();
+            var employeeGroup = await version.ResourceGroup(new ResourceGroupName("Employee"));
             var resource = await employeeGroup.Resource(new ResourceName("AddEmployee"));
             var resourceModel = resource.ToModel();
             Assert.That(resourceModel.IsAnonymousAllowed, Is.False, "Should deny anonymous");
@@ -258,7 +270,7 @@ namespace XTI_App.Tests
         {
             using var scope = input.Services.CreateScope();
             var setup = scope.ServiceProvider.GetService<IAppSetup>();
-            await setup.Run();
+            await setup.Run(AppVersionKey.Current);
         }
 
         private TestInput setup()

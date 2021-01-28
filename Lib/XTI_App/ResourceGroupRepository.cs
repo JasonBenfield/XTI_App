@@ -18,11 +18,11 @@ namespace XTI_App
             this.repo = repo;
         }
 
-        internal async Task<ResourceGroup> Add(App app, ResourceGroupName name, ModifierCategory modCategory)
+        internal async Task<ResourceGroup> Add(AppVersion version, ResourceGroupName name, ModifierCategory modCategory)
         {
             var record = new ResourceGroupRecord
             {
-                AppID = app.ID.Value,
+                VersionID = version.ID.Value,
                 Name = name.Value,
                 ModCategoryID = modCategory.ID.Value
             };
@@ -30,33 +30,39 @@ namespace XTI_App
             return factory.Group(record);
         }
 
-        internal async Task<IEnumerable<ResourceGroup>> Groups(App app)
+        internal async Task<IEnumerable<ResourceGroup>> Groups(AppVersion version)
         {
             var records = await repo.Retrieve()
-                .Where(g => g.AppID == app.ID.Value)
+                .Where(g => g.VersionID == version.ID.Value)
                 .OrderBy(g => g.Name)
                 .ToArrayAsync();
             return records.Select(g => factory.Group(g));
         }
 
-        internal async Task<ResourceGroup> Group(App app, ResourceGroupName name)
+        internal async Task<ResourceGroup> Group(AppVersion version, ResourceGroupName name)
         {
             var record = await repo.Retrieve()
-                .Where(g => g.AppID == app.ID.Value && g.Name == name.Value)
+                .Where(g => g.VersionID == version.ID.Value && g.Name == name.Value)
                 .FirstOrDefaultAsync();
             if (record == null)
             {
                 record = await repo.Retrieve()
-                    .Where(g => g.Name == ResourceGroupName.Unknown.Value)
+                    .Where(g => g.VersionID == version.ID.Value && g.Name == ResourceGroupName.Unknown.Value)
                     .FirstOrDefaultAsync();
+                if (record == null)
+                {
+                    record = await repo.Retrieve()
+                        .Where(g => g.Name == ResourceGroupName.Unknown.Value)
+                        .FirstOrDefaultAsync();
+                }
             }
             return factory.Group(record);
         }
 
-        internal async Task<ResourceGroup> Group(App app, int id)
+        internal async Task<ResourceGroup> Group(AppVersion version, int id)
         {
             var record = await repo.Retrieve()
-                .Where(g => g.AppID == app.ID.Value && g.ID == id)
+                .Where(g => g.VersionID == version.ID.Value && g.ID == id)
                 .FirstOrDefaultAsync();
             return factory.Group(record);
         }

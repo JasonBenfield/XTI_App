@@ -33,7 +33,7 @@ namespace XTI_App.Tests
             var factory = sp.GetService<AppFactory>();
             var clock = sp.GetService<Clock>();
             var setup = new FakeAppSetup(factory, clock);
-            await setup.Run();
+            await setup.Run(AppVersionKey.Current);
             var appKey = setup.App.Key();
             Options = new ManageVersionOptions
             {

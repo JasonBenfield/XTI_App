@@ -9,6 +9,5 @@ namespace XTI_App
         string Title { get; }
         Task<IAppVersion> Version(AppVersionKey versionKey);
         Task<IEnumerable<IAppRole>> Roles();
-        Task<IResourceGroup> ResourceGroup(ResourceGroupName name);
     }
 }

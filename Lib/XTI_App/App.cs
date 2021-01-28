@@ -44,36 +44,6 @@ namespace XTI_App
         public Task<ModifierCategory> ModCategory(ModifierCategoryName name)
             => factory.ModCategories().Category(this, name);
 
-        public async Task<ResourceGroup> AddOrUpdateResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
-        {
-            var resourceGroup = await ResourceGroup(name);
-            if (resourceGroup.Name().Equals(name))
-            {
-                await resourceGroup.SetModCategory(modCategory);
-            }
-            else
-            {
-                resourceGroup = await AddResourceGroup(name, modCategory);
-            }
-            return resourceGroup;
-        }
-
-        public Task<ResourceGroup> AddResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
-            => factory.Groups().Add(this, name, modCategory);
-
-        public Task<ResourceGroup> ResourceGroup(ResourceGroupName name)
-            => factory.Groups().Group(this, name);
-
-        public Task<ResourceGroup> ResourceGroup(int id)
-            => factory.Groups().Group(this, id);
-
-        public Task<IEnumerable<ResourceGroup>> ResourceGroups() => factory.Groups().Groups(this);
-
-        async Task<IResourceGroup> IApp.ResourceGroup(ResourceGroupName name) => await ResourceGroup(name);
-
-        public Task<Resource> Resource(int id)
-            => factory.Resources().Resource(this, id);
-
         public Task<AppRole> AddRole(AppRoleName name) =>
             factory.Roles().Add(this, name);
 
@@ -85,6 +55,9 @@ namespace XTI_App
 
         public Task<AppRole> Role(AppRoleName roleName) =>
             factory.Roles().Role(this, roleName);
+
+        public Task<AppVersion> NewVersion(AppVersionKey versionKey, AppVersionType type, Version version, DateTimeOffset timeAdded)
+            => factory.Versions().Create(versionKey, this, type, version, timeAdded);
 
         public Task<AppVersion> StartNewPatch(DateTimeOffset timeAdded) =>
             startNewVersion(timeAdded, AppVersionType.Values.Patch);
@@ -166,11 +139,19 @@ namespace XTI_App
             });
         }
 
-        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
-            => factory.Requests().MostRecentForApp(this, howMany);
+        public async Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+        {
+            var version = await CurrentVersion();
+            var requests = await version.MostRecentRequests(howMany);
+            return requests;
+        }
 
-        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
-            => factory.Events().MostRecentErrorsForApp(this, howMany);
+        public async Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+        {
+            var version = await CurrentVersion();
+            var requests = await version.MostRecentErrorEvents(howMany);
+            return requests;
+        }
 
         public AppModel ToAppModel()
         {

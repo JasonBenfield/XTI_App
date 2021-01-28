@@ -21,13 +21,12 @@ namespace XTI_App
             repo = repoFactory.CreateRequests();
         }
 
-        internal async Task<AppRequest> Add(AppSession session, string requestKey, AppVersion version, Resource resource, Modifier modifier, string path, DateTimeOffset timeRequested)
+        internal async Task<AppRequest> Add(AppSession session, string requestKey, Resource resource, Modifier modifier, string path, DateTimeOffset timeRequested)
         {
             var record = new AppRequestRecord
             {
                 SessionID = session.ID.Value,
                 RequestKey = requestKey,
-                VersionID = version.ID.Value,
                 ResourceID = resource.ID.Value,
                 ModifierID = modifier.ID.Value,
                 Path = path ?? "",
@@ -62,7 +61,7 @@ namespace XTI_App
             return requests.Select(r => factory.Request(r));
         }
 
-        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForApp(App app, int howMany)
+        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForVersion(AppVersion version, int howMany)
         {
             var resources = repoFactory
                 .CreateResources()
@@ -72,7 +71,7 @@ namespace XTI_App
                     repoFactory
                         .CreateResourceGroups()
                         .Retrieve()
-                        .Where(rg => rg.AppID == app.ID.Value),
+                        .Where(rg => rg.VersionID == version.ID.Value),
                     res => res.GroupID,
                     rg => rg.ID,
                     (res, rg) => new ResourceWithGroupRecord

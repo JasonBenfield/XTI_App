@@ -19,6 +19,24 @@ namespace XTI_App
             this.repo = repo;
         }
 
+        internal async Task<AppVersion> Create(AppVersionKey key, App app, AppVersionType type, Version version, DateTimeOffset timeAdded)
+        {
+            var record = new AppVersionRecord
+            {
+                VersionKey = key.Value,
+                AppID = app.ID.Value,
+                Major = version.Major,
+                Minor = version.Minor,
+                Patch = version.Build,
+                TimeAdded = timeAdded,
+                Description = "",
+                Status = AppVersionStatus.Values.New.Value,
+                Type = type.Value
+            };
+            await repo.Create(record);
+            return factory.Version(record);
+        }
+
         internal async Task<AppVersion> StartNewVersion(AppVersionKey key, App app, DateTimeOffset timeAdded, AppVersionType type)
         {
             AppVersionRecord record = null;
