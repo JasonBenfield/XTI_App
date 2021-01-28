@@ -4,6 +4,6 @@ namespace XTI_App
 {
     public interface IAppSetup
     {
-        Task Run();
+        Task Run(AppVersionKey versionKey);
     }
 }

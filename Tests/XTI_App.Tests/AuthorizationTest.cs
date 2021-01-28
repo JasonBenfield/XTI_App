@@ -201,7 +201,7 @@ namespace XTI_App.Tests
             var factory = sp.GetService<AppFactory>();
             var clock = (FakeClock)sp.GetService<Clock>();
             var appSetup = new FakeAppSetup(factory, clock);
-            await appSetup.Run();
+            await appSetup.Run(AppVersionKey.Current);
             if (string.IsNullOrWhiteSpace(department))
             {
                 var pathAccessor = sp.GetService<XtiPathAccessor>();

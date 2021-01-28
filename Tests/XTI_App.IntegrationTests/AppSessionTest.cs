@@ -116,14 +116,13 @@ namespace XTI_App.IntegrationTests
         {
             var app = await services.FakeApp();
             var version = await app.CurrentVersion();
-            var resourceGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var resourceGroup = await version.ResourceGroup(new ResourceGroupName("Employee"));
             var resource = await resourceGroup.Resource(new ResourceName("AddEmployee"));
             var modCategory = await app.ModCategory(ModifierCategoryName.Default);
             var modifier = await modCategory.Modifier(ModifierKey.Default);
             var request = await createdSession.LogRequest
             (
                 "New-Request",
-                version,
                 resource,
                 modifier,
                 "/Fake/Current",

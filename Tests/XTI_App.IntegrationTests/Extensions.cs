@@ -41,7 +41,7 @@ namespace XTI_App.IntegrationTests
                 await mainDbReset.Run();
             }
             var setup = services.GetService<FakeAppSetup>();
-            await setup.Run();
+            await setup.Run(AppVersionKey.Current);
         }
 
         public static Task<App> FakeApp(this IServiceProvider services)

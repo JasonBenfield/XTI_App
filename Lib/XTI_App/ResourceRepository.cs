@@ -49,16 +49,21 @@ namespace XTI_App
             if (record == null)
             {
                 record = await repo.Retrieve()
-                   .FirstOrDefaultAsync(r => r.Name == ResourceName.Unknown.Value);
+                   .FirstOrDefaultAsync(r => r.GroupID == group.ID.Value && r.Name == ResourceName.Unknown.Value);
+                if (record == null)
+                {
+                    record = await repo.Retrieve()
+                       .FirstOrDefaultAsync(r => r.Name == ResourceName.Unknown.Value);
+                }
             }
             return factory.Resource(record);
         }
 
-        internal async Task<Resource> Resource(App app, int id)
+        internal async Task<Resource> Resource(AppVersion version, int id)
         {
             var groupIDs = repoFactory.CreateResourceGroups()
                 .Retrieve()
-                .Where(rg => rg.AppID == app.ID.Value)
+                .Where(rg => rg.VersionID == version.ID.Value)
                 .Select(rg => rg.ID);
             var record = await repo.Retrieve()
                 .FirstOrDefaultAsync(r => r.ID == id && groupIDs.Any(gID => gID == r.GroupID));

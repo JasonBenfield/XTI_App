@@ -60,14 +60,13 @@ namespace XTI_App
             });
         }
 
-        public Task Edit(AppSession session, AppVersion version, Resource resource, Modifier modifier, string path, DateTimeOffset timeStarted)
+        public Task Edit(AppSession session, Resource resource, Modifier modifier, string path, DateTimeOffset timeStarted)
             => repo.Update
             (
                 record,
                 r =>
                 {
                     r.SessionID = session.ID.Value;
-                    r.VersionID = version.ID.Value;
                     r.ResourceID = resource.ID.Value;
                     r.ModifierID = modifier.ID.Value;
                     r.Path = path ?? "";

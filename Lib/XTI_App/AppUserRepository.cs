@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_Core;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using XTI_Core;
 
 namespace XTI_App
 {
@@ -21,7 +21,10 @@ namespace XTI_App
 
         public async Task<IEnumerable<AppUser>> Users()
         {
-            var records = await repo.Retrieve().ToArrayAsync();
+            var records = await repo
+                .Retrieve()
+                .OrderBy(u => u.UserName)
+                .ToArrayAsync();
             return records.Select(u => factory.User(u));
         }
 

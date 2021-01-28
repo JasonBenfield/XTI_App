@@ -30,7 +30,6 @@ namespace XTI_App
         public Task<AppRequest> LogRequest
         (
             string requestKey,
-            AppVersion version,
             Resource resource,
             Modifier modifier,
             string path,
@@ -38,7 +37,7 @@ namespace XTI_App
         )
         {
             var requestRepo = factory.Requests();
-            return requestRepo.Add(this, requestKey, version, resource, modifier, path, timeRequested);
+            return requestRepo.Add(this, requestKey, resource, modifier, path, timeRequested);
         }
 
         public Task Edit(AppUser user, DateTimeOffset timeStarted, string requesterKey, string userAgent, string remoteAddress)

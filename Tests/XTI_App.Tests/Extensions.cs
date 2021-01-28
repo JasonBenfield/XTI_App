@@ -23,7 +23,7 @@ namespace XTI_App.Tests
             var factory = services.GetService<AppFactory>();
             var clock = services.GetService<FakeClock>();
             var setup = new FakeAppSetup(factory, clock);
-            return setup.Run();
+            return setup.Run(AppVersionKey.Current);
         }
 
         public static Task<App> FakeApp(this IServiceProvider services)

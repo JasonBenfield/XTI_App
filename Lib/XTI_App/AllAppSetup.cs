@@ -3,7 +3,7 @@ using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class AllAppSetup : IAppSetup
+    public sealed class AllAppSetup
     {
         private readonly AppFactory appFactory;
         private readonly Clock clock;
@@ -48,8 +48,6 @@ namespace XTI_App
             var app = await appFactory.Apps().App(AppKey.Unknown);
             var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
             await defaultModCategory.TryAddDefaultModifier();
-            var group = await app.AddOrUpdateResourceGroup(ResourceGroupName.Unknown, defaultModCategory);
-            await group.TryAddResource(ResourceName.Unknown, ResourceResultType.Values.None);
         }
 
         private class SystemHashedPassword : IHashedPassword

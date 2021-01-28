@@ -23,7 +23,7 @@ namespace XTI_App.TestFakes
         public AppVersion CurrentVersion { get; private set; }
         public AppUser User { get; private set; }
 
-        public async Task Run()
+        public async Task Run(AppVersionKey versionKey)
         {
             var fakeApiFactory = new FakeAppApiFactory();
             var template = fakeApiFactory.CreateTemplate();
@@ -34,7 +34,7 @@ namespace XTI_App.TestFakes
                 template,
                 options.Title
             );
-            await setup.Run();
+            await setup.Run(versionKey);
             App = await appFactory.Apps().App(template.AppKey);
             var modCategory = await App.TryAddModCategory(new ModifierCategoryName("Department"));
             await modCategory.AddOrUpdateModifier("IT", "IT");

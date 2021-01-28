@@ -21,14 +21,26 @@ namespace XTI_App
         {
         }
 
-        public XtiPath(string appKey, string version, string group, string action, ModifierKey modifier)
+        public XtiPath(string appName, string version, string group, string action, ModifierKey modifier)
+            : this
+            (
+                 new AppName(appName),
+                 string.IsNullOrWhiteSpace(version) ? AppVersionKey.Current : AppVersionKey.Parse(version),
+                 new ResourceGroupName(group),
+                 new ResourceName(action),
+                 modifier
+            )
         {
-            if (string.IsNullOrWhiteSpace(appKey) && (!string.IsNullOrWhiteSpace(group) || !string.IsNullOrWhiteSpace(action))) { throw new ArgumentException($"{nameof(appKey)} is required"); }
-            if (string.IsNullOrWhiteSpace(group) && !string.IsNullOrWhiteSpace(action)) { throw new ArgumentException($"{nameof(group)} is required when there is an action"); }
-            App = new AppName(appKey);
-            Version = string.IsNullOrWhiteSpace(version) ? AppVersionKey.Current : AppVersionKey.Parse(version);
-            Group = new ResourceGroupName(group);
-            Action = new ResourceName(action);
+        }
+
+        public XtiPath(AppName appName, AppVersionKey version, ResourceGroupName group, ResourceName action, ModifierKey modifier)
+        {
+            if (string.IsNullOrWhiteSpace(appName.Value) && (!string.IsNullOrWhiteSpace(group.Value) || !string.IsNullOrWhiteSpace(action.Value))) { throw new ArgumentException($"{nameof(appName)} is required"); }
+            if (string.IsNullOrWhiteSpace(group.Value) && !string.IsNullOrWhiteSpace(action.Value)) { throw new ArgumentException($"{nameof(group)} is required when there is an action"); }
+            App = appName;
+            Version = version;
+            Group = group;
+            Action = action;
             Modifier = modifier;
             value = $"/{App.Value}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
             hashCode = value.GetHashCode();
@@ -69,19 +81,36 @@ namespace XTI_App
             }
         }
 
-        public XtiPath WithNewGroup(string groupName)
-            => new XtiPath(App.DisplayText, Version.DisplayText, groupName, "", Modifier);
-
-        public XtiPath WithGroup(string groupName)
+        public XtiPath WithNewGroup(XtiPath path)
         {
-            if (!string.IsNullOrWhiteSpace(Group)) { throw new ArgumentException("Cannot create group for a group"); }
-            return new XtiPath(App.DisplayText, Version.DisplayText, groupName, "", Modifier);
+            var newPath = WithNewGroup(path.Group);
+            if (!string.IsNullOrWhiteSpace(path.Action.Value))
+            {
+                newPath = newPath.WithAction(path.Action);
+            }
+            return newPath.WithModifier(path.Modifier);
         }
 
-        public XtiPath WithAction(string actionName)
+        public XtiPath WithNewGroup(string groupName)
+            => WithNewGroup(new ResourceGroupName(groupName));
+
+        public XtiPath WithNewGroup(ResourceGroupName groupName)
+            => new XtiPath(App.DisplayText, Version.DisplayText, groupName.DisplayText, "", Modifier);
+
+        public XtiPath WithGroup(string groupName) => WithGroup(new ResourceGroupName(groupName));
+
+        public XtiPath WithGroup(ResourceGroupName groupName)
+        {
+            if (!string.IsNullOrWhiteSpace(Group)) { throw new ArgumentException("Cannot create group for a group"); }
+            return new XtiPath(App.DisplayText, Version.DisplayText, groupName.DisplayText, "", Modifier);
+        }
+
+        public XtiPath WithAction(string actionName) => WithAction(new ResourceName(actionName));
+
+        public XtiPath WithAction(ResourceName action)
         {
             if (!string.IsNullOrWhiteSpace(Action)) { throw new ArgumentException("Cannot create action for an action"); }
-            return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, actionName, Modifier);
+            return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, action, Modifier);
         }
 
         public XtiPath WithModifier(ModifierKey modKey)

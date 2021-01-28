@@ -58,7 +58,8 @@ namespace XTI_App.Api
             }
             if (!path.Modifier.Equals(ModifierKey.Default))
             {
-                var group = await app.ResourceGroup(path.Group);
+                var version = await app.Version(path.Version);
+                var group = await version.ResourceGroup(path.Group);
                 var modCategory = await group.ModCategory();
                 if (!modCategory.Name().Equals(ModifierCategoryName.Default))
                 {
