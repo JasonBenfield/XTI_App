@@ -20,7 +20,7 @@ namespace XTI_App.Api
         {
             var app = await appContext.App();
             var user = await userContext.User();
-            var userRoles = await user.RolesForApp(app);
+            var userRoles = await user.Roles(app);
             return userRoles.Any();
         }
 
@@ -42,8 +42,8 @@ namespace XTI_App.Api
             }
             else
             {
-                var userRoles = await user.RolesForApp(app);
-                if (userRoles.Any(ur => allowedRoles.Any(ar => ur.IsRole(ar))))
+                var userRoles = await user.Roles(app);
+                if (userRoles.Any(ur => allowedRoles.Any(ar => ur.ID.Equals(ar.ID))))
                 {
                     hasAccess = true;
                 }
@@ -51,12 +51,12 @@ namespace XTI_App.Api
                 (
                     dr => roles.FirstOrDefault(r => r.Name().Equals(dr))
                 );
-                if (userRoles.Any(ur => deniedRoles.Any(ar => ur.IsRole(ar))))
+                if (userRoles.Any(ur => deniedRoles.Any(dr => ur.ID.Equals(dr.ID))))
                 {
                     hasAccess = false;
                 }
             }
-            if (!path.Modifier.Equals(ModifierKey.Default))
+            if (hasAccess && !path.Modifier.Equals(ModifierKey.Default))
             {
                 var version = await app.Version(path.Version);
                 var group = await version.ResourceGroup(path.Group);

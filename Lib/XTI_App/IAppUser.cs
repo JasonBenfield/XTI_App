@@ -7,7 +7,7 @@ namespace XTI_App
     {
         EntityID ID { get; }
         AppUserName UserName();
-        Task<IEnumerable<IAppUserRole>> RolesForApp(IApp app);
+        Task<IEnumerable<IAppRole>> Roles(IApp app);
         Task<bool> IsModCategoryAdmin(IModifierCategory modCategory);
         Task<bool> HasModifier(ModifierKey modKey);
     }
