@@ -38,9 +38,9 @@ namespace XTI_App.Tests
                 new AppUserName("someone"), new FakeHashedPassword("Password"), clock.Now()
             );
             await user.AddRole(adminRole);
-            var userRoles = (await user.RolesForApp(app)).ToArray();
+            var userRoles = (await user.Roles(app)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
-            Assert.That(userRoles[0].IsRole(adminRole), Is.True, "Should add role to user");
+            Assert.That(userRoles[0].ID.Equals(adminRole.ID), Is.True, "Should add role to user");
         }
 
         [Test]

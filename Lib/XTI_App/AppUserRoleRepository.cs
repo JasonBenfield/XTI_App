@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -31,21 +31,38 @@ namespace XTI_App
             return factory.UserRole(record);
         }
 
-        internal async Task<IEnumerable<AppUserRole>> RolesForUser(IAppUser user, IApp app)
+        internal Task<AppUserRoleModel[]> AssignedRoles(AppUser user, App app)
+        {
+            return repo
+                .Retrieve()
+                .Where(ur => ur.UserID == user.ID.Value)
+                .Join
+                (
+                    repoFactory.CreateRoles()
+                        .Retrieve()
+                        .Where(r => r.AppID == app.ID.Value),
+                    ur => ur.RoleID,
+                    r => r.ID,
+                    (ur, r) => new AppUserRoleModel
+                    {
+                        ID = ur.ID,
+                        Role = factory.Role(r).ToModel()
+                    }
+                )
+                .ToArrayAsync();
+        }
+
+        internal async Task<AppUserRole> UserRole(App app, int userRoleID)
         {
             var roleIDs = repoFactory.CreateRoles()
                 .Retrieve()
                 .Where(r => r.AppID == app.ID.Value)
                 .Select(r => r.ID);
-            var records = await repo.Retrieve()
-                .Where
-                (
-                    ur =>
-                        ur.UserID == user.ID.Value
-                        && roleIDs.Any(id => id == ur.RoleID)
-                )
-                .ToArrayAsync();
-            return records.Select(ur => factory.UserRole(ur));
+            var record = await repo
+                .Retrieve()
+                .Where(ur => ur.ID == userRoleID && roleIDs.Any(roleID => roleID == ur.RoleID))
+                .FirstOrDefaultAsync();
+            return factory.UserRole(record);
         }
     }
 }

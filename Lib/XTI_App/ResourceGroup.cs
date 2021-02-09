@@ -90,10 +90,10 @@ namespace XTI_App
                     }
                 );
 
-        public Task<IEnumerable<AppRole>> AllowedRoles()
+        public Task<AppRole[]> AllowedRoles()
             => factory.Roles().AllowedRolesForResourceGroup(this);
 
-        public Task<IEnumerable<AppRole>> DeniedRoles()
+        public Task<AppRole[]> DeniedRoles()
             => factory.Roles().DeniedRolesForResourceGroup(this);
 
         public Task SetRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)

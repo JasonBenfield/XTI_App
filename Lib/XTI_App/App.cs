@@ -50,11 +50,16 @@ namespace XTI_App
         async Task<IEnumerable<IAppRole>> IApp.Roles() =>
             await factory.Roles().RolesForApp(this);
 
-        public Task<IEnumerable<AppRole>> Roles() =>
-            factory.Roles().RolesForApp(this);
+        public Task<AppRole[]> Roles() => factory.Roles().RolesForApp(this);
+
+        public Task<AppRole> Role(int roleID) =>
+            factory.Roles().Role(this, roleID);
 
         public Task<AppRole> Role(AppRoleName roleName) =>
             factory.Roles().Role(this, roleName);
+
+        public Task<AppUserRole> UserRole(int userRoleID) =>
+            factory.UserRoles().UserRole(this, userRoleID);
 
         public Task<AppVersion> NewVersion(AppVersionKey versionKey, AppVersionType type, Version version, DateTimeOffset timeAdded)
             => factory.Versions().Create(versionKey, this, type, version, timeAdded);

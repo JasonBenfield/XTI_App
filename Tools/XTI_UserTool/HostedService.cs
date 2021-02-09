@@ -119,10 +119,10 @@ namespace XTI_UserApp
                     }
                 }
             }
-            var userRoles = (await user.RolesForApp(app)).ToArray();
+            var userRoles = (await user.Roles(app)).ToArray();
             foreach (var role in roles)
             {
-                if (!userRoles.Any(ur => ur.IsRole(role)))
+                if (!userRoles.Any(ur => ur.ID.Equals(role.ID)))
                 {
                     await user.AddRole(role);
                 }
