@@ -1,4 +1,6 @@
-﻿namespace XTI_App.Api
+﻿using XTI_App.Abstractions;
+
+namespace XTI_App.Api
 {
     public sealed class AccessDeniedException : AppException
     {

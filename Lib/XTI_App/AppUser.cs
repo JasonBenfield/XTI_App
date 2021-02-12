@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_App
@@ -42,7 +43,7 @@ namespace XTI_App
         public Task<AppRole[]> UnassignedRoles(App app)
             => factory.Roles().RolesNotAssignedToUser(this, app);
 
-        public Task<AppUserRoleModel[]> AssignedRoles(App app) 
+        public Task<AppUserRoleModel[]> AssignedRoles(App app)
             => factory.UserRoles().AssignedRoles(this, app);
 
         public Task ChangePassword(IHashedPassword password)

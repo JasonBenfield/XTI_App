@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_App.TestFakes;
 using XTI_Core;
 using XTI_Core.Fakes;

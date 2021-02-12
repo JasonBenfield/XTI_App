@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using XTI_App;
+using XTI_App.Abstractions;
 
 namespace XTI_Version
 {

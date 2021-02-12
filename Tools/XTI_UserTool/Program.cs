@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using XTI_App;
+using XTI_App.Abstractions;
 using XTI_Configuration.Extensions;
 using XTI_Secrets.Extensions;
 using XTI_Tool.Extensions;

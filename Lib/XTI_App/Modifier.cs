@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using MainDB.Entities;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_App

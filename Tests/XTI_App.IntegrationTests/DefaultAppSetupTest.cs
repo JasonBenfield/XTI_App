@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
 
