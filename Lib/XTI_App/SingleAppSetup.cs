@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_App

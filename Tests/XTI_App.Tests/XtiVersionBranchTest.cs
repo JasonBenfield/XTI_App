@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using XTI_App.Abstractions;
 using XTI_Version;
 
 namespace XTI_App.Tests

@@ -1,4 +1,6 @@
-﻿namespace XTI_App
+﻿using XTI_App.Abstractions;
+
+namespace XTI_App
 {
     public sealed class AppModel
     {

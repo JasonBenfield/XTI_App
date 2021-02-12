@@ -11,6 +11,7 @@ using XTI_Core;
 using XTI_App.TestFakes;
 using Microsoft.Extensions.Hosting;
 using XTI_Core.Extensions;
+using XTI_App.Abstractions;
 
 namespace XTI_App.IntegrationTests
 {

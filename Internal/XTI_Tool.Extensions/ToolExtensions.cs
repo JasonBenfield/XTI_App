@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using XTI_App;
+using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_DB;
 using XTI_Secrets.Extensions;

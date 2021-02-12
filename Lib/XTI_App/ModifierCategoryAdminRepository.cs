@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MainDB.Entities;
 using XTI_Core;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {

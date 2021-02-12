@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using XTI_App.Abstractions;
 
 namespace XTI_App.Api
 {
@@ -6,5 +7,8 @@ namespace XTI_App.Api
     {
         Task<IApp> App();
         Task<IAppVersion> Version();
+    }
+    public interface ISourceAppContext : IAppContext
+    {
     }
 }

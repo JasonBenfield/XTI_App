@@ -1,4 +1,6 @@
-﻿namespace XTI_App.TestFakes
+﻿using XTI_App.Abstractions;
+
+namespace XTI_App.TestFakes
 {
     public sealed class FakeAppRoles
     {
