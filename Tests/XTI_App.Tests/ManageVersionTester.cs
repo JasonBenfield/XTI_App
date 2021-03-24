@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_App.TestFakes;
 using XTI_Core;
 using XTI_Secrets.Fakes;
@@ -33,7 +34,7 @@ namespace XTI_App.Tests
             var factory = sp.GetService<AppFactory>();
             var clock = sp.GetService<Clock>();
             var setup = new FakeAppSetup(factory, clock);
-            await setup.Run();
+            await setup.Run(AppVersionKey.Current);
             var appKey = setup.App.Key();
             Options = new ManageVersionOptions
             {

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MainDB.Entities;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_App
@@ -8,13 +10,11 @@ namespace XTI_App
     public sealed class AppVersion : IAppVersion
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppVersionRecord> repo;
         private readonly AppVersionRecord record;
 
-        internal AppVersion(AppFactory factory, DataRepository<AppVersionRecord> repo, AppVersionRecord record)
+        internal AppVersion(AppFactory factory, AppVersionRecord record)
         {
             this.factory = factory;
-            this.repo = repo;
             this.record = record ?? new AppVersionRecord();
             ID = new EntityID(this.record.ID);
         }
@@ -52,7 +52,7 @@ namespace XTI_App
         public async Task Publishing()
         {
             var current = await Current();
-            await repo.Update(record, r =>
+            await factory.DB.Versions.Update(record, r =>
             {
                 r.Status = AppVersionStatus.Values.Publishing.Value;
                 var type = Type();
@@ -91,7 +91,7 @@ namespace XTI_App
             {
                 await current.Archive();
             }
-            await repo.Update(record, r =>
+            await factory.DB.Versions.Update(record, r =>
             {
                 r.Status = AppVersionStatus.Values.Current.Value;
             });
@@ -99,11 +99,48 @@ namespace XTI_App
 
         private Task Archive()
         {
-            return repo.Update(record, r =>
+            return factory.DB.Versions.Update(record, r =>
             {
                 r.Status = AppVersionStatus.Values.Old.Value;
             });
         }
+
+        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+            => factory.Requests().MostRecentForVersion(this, howMany);
+
+        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+            => factory.Events().MostRecentErrorsForVersion(this, howMany);
+
+        public async Task<ResourceGroup> AddOrUpdateResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
+        {
+            var resourceGroup = await ResourceGroup(name);
+            if (resourceGroup.Name().Equals(name))
+            {
+                await resourceGroup.SetModCategory(modCategory);
+            }
+            else
+            {
+                resourceGroup = await AddResourceGroup(name, modCategory);
+            }
+            return resourceGroup;
+        }
+
+        public Task<ResourceGroup> AddResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
+            => factory.Groups().Add(this, name, modCategory);
+
+        public Task<ResourceGroup[]> ResourceGroups() => factory.Groups().Groups(this);
+
+        async Task<IResourceGroup> IAppVersion.ResourceGroup(ResourceGroupName name)
+            => await ResourceGroup(name);
+
+        public Task<ResourceGroup> ResourceGroup(int id)
+            => factory.Groups().Group(this, id);
+
+        public Task<ResourceGroup> ResourceGroup(ResourceGroupName name)
+            => factory.Groups().Group(this, name);
+
+        public Task<Resource> Resource(int id)
+            => factory.Resources().Resource(this, id);
 
         public AppVersionModel ToModel() => new AppVersionModel
         {

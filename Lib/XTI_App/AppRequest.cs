@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_App
@@ -9,17 +10,14 @@ namespace XTI_App
     public sealed class AppRequest
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppRequestRecord> repo;
         private readonly AppRequestRecord record;
 
         internal AppRequest
         (
             AppFactory factory,
-            DataRepository<AppRequestRecord> repo,
             AppRequestRecord record
         )
         {
-            this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppRequestRecord();
             ID = new EntityID(this.record.ID);
@@ -53,27 +51,28 @@ namespace XTI_App
         }
 
         public Task End(DateTimeOffset timeEnded)
-        {
-            return repo.Update(record, r =>
-            {
-                r.TimeEnded = timeEnded;
-            });
-        }
-
-        public Task Edit(AppSession session, AppVersion version, Resource resource, Modifier modifier, string path, DateTimeOffset timeStarted)
-            => repo.Update
-            (
-                record,
-                r =>
+            => factory.DB
+                .Requests
+                .Update(record, r =>
                 {
-                    r.SessionID = session.ID.Value;
-                    r.VersionID = version.ID.Value;
-                    r.ResourceID = resource.ID.Value;
-                    r.ModifierID = modifier.ID.Value;
-                    r.Path = path ?? "";
-                    r.TimeStarted = timeStarted;
-                }
-            );
+                    r.TimeEnded = timeEnded;
+                });
+
+        public Task Edit(AppSession session, Resource resource, Modifier modifier, string path, DateTimeOffset timeStarted)
+            => factory.DB
+                .Requests
+                .Update
+                (
+                    record,
+                    r =>
+                    {
+                        r.SessionID = session.ID.Value;
+                        r.ResourceID = resource.ID.Value;
+                        r.ModifierID = modifier.ID.Value;
+                        r.Path = path ?? "";
+                        r.TimeStarted = timeStarted;
+                    }
+                );
 
         public AppRequestModel ToModel() => new AppRequestModel
         {

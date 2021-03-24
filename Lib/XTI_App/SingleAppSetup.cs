@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_App
 {
-    public sealed class SingleAppSetup : IAppSetup
+    public sealed class SingleAppSetup
     {
         private readonly AppFactory appFactory;
         private readonly Clock clock;
@@ -32,7 +33,9 @@ namespace XTI_App
                 await currentVersion.Published();
             }
             await app.SetRoles(roleNames);
-            await app.TryAddModCategory(ModifierCategoryName.Default);
+            var defaultModCategory = await app.TryAddModCategory(ModifierCategoryName.Default);
+            var group = await currentVersion.AddOrUpdateResourceGroup(ResourceGroupName.Unknown, defaultModCategory);
+            await group.TryAddResource(ResourceName.Unknown, ResourceResultType.Values.None);
         }
 
     }

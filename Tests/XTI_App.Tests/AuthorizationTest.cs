@@ -3,7 +3,9 @@ using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_App.EfApi;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
 using XTI_Core;
@@ -58,8 +60,6 @@ namespace XTI_App.Tests
         public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndUserHasAccessToTheModifiedAction()
         {
             var input = await setup("/Fake/Current/Employee/AddEmployee", "IT");
-            var viewerRole = await input.App.Role(FakeAppRoles.Instance.Viewer);
-            await addRolesToUser(input, viewerRole);
             var user = await input.User();
             var modCategory = await input.App.ModCategory(new ModifierCategoryName("Department"));
             var modifier = await modCategory.Modifier("IT");
@@ -68,6 +68,18 @@ namespace XTI_App.Tests
             await addRolesToUser(input, adminRole);
             var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
+        }
+
+        [Test]
+        public async Task ShouldNotHaveAccess_WhenUserDoesNotBelongToAnAllowedRole_AndUserHasAccessToTheModifiedAction()
+        {
+            var input = await setup("/Fake/Current/Employee/AddEmployee", "IT");
+            var user = await input.User();
+            var modCategory = await input.App.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier("IT");
+            await user.AddModifier(modifier);
+            var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
+            Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role even if they have access to the modified action");
         }
 
         [Test]
@@ -192,6 +204,7 @@ namespace XTI_App.Tests
                         services.AddScoped<IUserContext, FakeUserContext>();
                         services.AddScoped<IAppApiUser, XtiAppApiUser>();
                         services.AddSingleton(sp => FakeInfo.AppKey);
+                        services.AddSingleton(_ => AppVersionKey.Current);
                         services.AddScoped<FakeAppApi>();
                     }
                 )
@@ -201,7 +214,7 @@ namespace XTI_App.Tests
             var factory = sp.GetService<AppFactory>();
             var clock = (FakeClock)sp.GetService<Clock>();
             var appSetup = new FakeAppSetup(factory, clock);
-            await appSetup.Run();
+            await appSetup.Run(AppVersionKey.Current);
             if (string.IsNullOrWhiteSpace(department))
             {
                 var pathAccessor = sp.GetService<XtiPathAccessor>();

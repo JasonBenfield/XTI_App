@@ -4,18 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using MainDB.Entities;
 using XTI_Core;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class ModifierCategoryRepository
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<ModifierCategoryRecord> repo;
 
-        internal ModifierCategoryRepository(AppFactory factory, DataRepository<ModifierCategoryRecord> repo)
+        internal ModifierCategoryRepository(AppFactory factory)
         {
             this.factory = factory;
-            this.repo = repo;
         }
 
         internal async Task<ModifierCategory> Add(IApp app, ModifierCategoryName name)
@@ -25,40 +24,50 @@ namespace XTI_App
                 AppID = app.ID.Value,
                 Name = name.Value
             };
-            await repo.Create(record);
+            await factory.DB.ModifierCategories.Create(record);
             return factory.ModCategory(record);
         }
 
         internal async Task<ModifierCategory> Category(int id)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .ModifierCategories
+                .Retrieve()
                 .FirstOrDefaultAsync(c => c.ID == id);
             return factory.ModCategory(record);
         }
 
-        internal async Task<IEnumerable<ModifierCategory>> Categories(IApp app)
+        internal Task<ModifierCategory[]> Categories(IApp app)
         {
-            var records = await repo.Retrieve()
+            return factory.DB
+                .ModifierCategories
+                .Retrieve()
                 .Where(c => c.AppID == app.ID.Value)
                 .OrderBy(c => c.Name)
+                .Select(c => factory.ModCategory(c))
                 .ToArrayAsync();
-            return records.Select(c => factory.ModCategory(c));
         }
 
         internal async Task<ModifierCategory> Category(App app, int id)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .ModifierCategories
+                .Retrieve()
                 .FirstOrDefaultAsync(c => c.AppID == app.ID.Value && c.ID == id);
             return factory.ModCategory(record);
         }
 
         internal async Task<ModifierCategory> Category(IApp app, ModifierCategoryName name)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .ModifierCategories
+                .Retrieve()
                 .FirstOrDefaultAsync(c => c.AppID == app.ID.Value && c.Name == name.Value);
             if (record == null)
             {
-                record = await repo.Retrieve()
+                record = await factory.DB
+                    .ModifierCategories
+                    .Retrieve()
                     .FirstOrDefaultAsync(c => c.AppID == app.ID.Value && c.Name == ModifierCategoryName.Default.Value);
             }
             return factory.ModCategory(record);

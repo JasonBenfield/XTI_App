@@ -4,83 +4,77 @@ namespace XTI_App
 {
     public sealed class AppFactory
     {
-        private readonly IMainDataRepositoryFactory repos;
-
-        public AppFactory(IMainDataRepositoryFactory repos)
+        public AppFactory(IMainDbContext db)
         {
-            this.repos = repos;
+            DB = db;
         }
+
+        internal IMainDbContext DB { get; }
 
         private AppUserRepository users;
         public AppUserRepository Users()
-            => users ?? (users = new AppUserRepository(this, repos.CreateUsers()));
-        internal AppUser User(AppUserRecord record) => new AppUser(repos, this, record);
+            => users ?? (users = new AppUserRepository(this));
+        internal AppUser User(AppUserRecord record) => new AppUser(this, record);
 
         private AppRepository apps;
         public AppRepository Apps()
-            => apps ?? (apps = new AppRepository(this, repos.CreateApps()));
+            => apps ?? (apps = new AppRepository(this));
         internal App App(AppRecord record) =>
-            new App(repos.CreateApps(), this, record);
+            new App(this, record);
 
         private AppVersionRepository versions;
         public AppVersionRepository Versions()
-            => versions ?? (versions = new AppVersionRepository(this, repos.CreateVersions()));
-        internal AppVersion Version(AppVersionRecord record) => new AppVersion(this, repos.CreateVersions(), record);
+            => versions ?? (versions = new AppVersionRepository(this));
+        internal AppVersion Version(AppVersionRecord record) => new AppVersion(this, record);
 
         private AppRoleRepository roles;
         internal AppRoleRepository Roles()
-            => roles ?? (roles = new AppRoleRepository(repos, this));
-        internal AppRole Role(AppRoleRecord record) => new AppRole(repos.CreateRoles(), record);
-
-        private AppUserRoleRepository userRoles;
-        internal AppUserRoleRepository UserRoles()
-            => userRoles ?? (userRoles = new AppUserRoleRepository(repos, this));
-        internal AppUserRole UserRole(AppUserRoleRecord record) =>
-            new AppUserRole(repos.CreateUserRoles(), record);
+            => roles ?? (roles = new AppRoleRepository(this));
+        internal AppRole Role(AppRoleRecord record) => new AppRole(this, record);
 
         private ResourceGroupRepository groups;
         internal ResourceGroupRepository Groups()
-            => groups ?? (groups = new ResourceGroupRepository(this, repos.CreateResourceGroups()));
+            => groups ?? (groups = new ResourceGroupRepository(this));
         internal ResourceGroup Group(ResourceGroupRecord record)
-            => new ResourceGroup(repos, this, record);
+            => new ResourceGroup(this, record);
 
         private ResourceRepository resources;
         internal ResourceRepository Resources()
-            => resources ?? (resources = new ResourceRepository(repos, this));
-        internal Resource Resource(ResourceRecord record) => new Resource(repos, this, record);
+            => resources ?? (resources = new ResourceRepository(this));
+        internal Resource Resource(ResourceRecord record) => new Resource(this, record);
 
         private ModifierCategoryRepository modCategories;
         public ModifierCategoryRepository ModCategories()
             => modCategories
-                ?? (modCategories = new ModifierCategoryRepository(this, repos.CreateModifierCategories()));
+                ?? (modCategories = new ModifierCategoryRepository(this));
         internal ModifierCategory ModCategory(ModifierCategoryRecord record) => new ModifierCategory(this, record);
 
         private ModifierRepository modifiers;
         internal ModifierRepository Modifiers()
-            => modifiers ?? (modifiers = new ModifierRepository(repos, this));
+            => modifiers ?? (modifiers = new ModifierRepository(this));
         internal Modifier Modifier(ModifierRecord record)
-            => new Modifier(repos.CreateModifiers(), record);
+            => new Modifier(this, record);
 
         private ModifierCategoryAdminRepository modCategoryAdmins;
         internal ModifierCategoryAdminRepository ModCategoryAdmins()
             => modCategoryAdmins
-                ?? (modCategoryAdmins = new ModifierCategoryAdminRepository(this, repos.CreateModifierCategoryAdmins()));
+                ?? (modCategoryAdmins = new ModifierCategoryAdminRepository(this));
 
         private AppSessionRepository sessions;
         public AppSessionRepository Sessions()
-            => sessions ?? (sessions = new AppSessionRepository(this, repos.CreateSessions()));
+            => sessions ?? (sessions = new AppSessionRepository(this));
         internal AppSession Session(AppSessionRecord record) =>
-            new AppSession(this, repos.CreateSessions(), record);
+            new AppSession(this, record);
 
         private AppRequestRepository requests;
         public AppRequestRepository Requests()
-            => requests ?? (requests = new AppRequestRepository(repos, this));
+            => requests ?? (requests = new AppRequestRepository(this));
         internal AppRequest Request(AppRequestRecord record) =>
-            new AppRequest(this, repos.CreateRequests(), record);
+            new AppRequest(this, record);
 
         private AppEventRepository events;
         public AppEventRepository Events()
-            => events ?? (events = new AppEventRepository(repos, this));
+            => events ?? (events = new AppEventRepository(this));
         internal AppEvent Event(AppEventRecord record) => new AppEvent(record);
     }
 }

@@ -1,14 +1,12 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using MainDB.Extensions;
-using XTI_Configuration.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using XTI_App.Abstractions;
 using XTI_App.TestFakes;
+using XTI_Configuration.Extensions;
 
 namespace XTI_App.IntegrationTests
 {
@@ -20,10 +18,11 @@ namespace XTI_App.IntegrationTests
             var services = setup();
             await services.Reset();
             var fakeAppSetup = services.GetService<FakeAppSetup>();
-            await fakeAppSetup.Run();
+            await fakeAppSetup.Run(AppVersionKey.Current);
             var factory = services.GetService<AppFactory>();
             var app = await factory.Apps().App(FakeInfo.AppKey);
-            var groups = await app.ResourceGroups();
+            var version = await app.CurrentVersion();
+            var groups = await version.ResourceGroups();
             Assert.That
             (
                 groups.Select(g => g.Name()),

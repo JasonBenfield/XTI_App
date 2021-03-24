@@ -3,18 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class ResourceGroup : IResourceGroup
     {
-        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
         private readonly ResourceGroupRecord record;
 
-        internal ResourceGroup(IMainDataRepositoryFactory repoFactory, AppFactory factory, ResourceGroupRecord record)
+        internal ResourceGroup(AppFactory factory, ResourceGroupRecord record)
         {
-            this.repoFactory = repoFactory;
             this.factory = factory;
             this.record = record ?? new ResourceGroupRecord();
             ID = new EntityID(this.record.ID);
@@ -44,7 +43,7 @@ namespace XTI_App
 
         public Task<Resource> Resource(ResourceName name) => factory.Resources().Resource(this, name);
 
-        public Task<IEnumerable<Resource>> Resources() => factory.Resources().Resources(this);
+        public Task<Resource[]> Resources() => factory.Resources().Resources(this);
 
         public async Task<IEnumerable<Modifier>> Modifiers()
         {
@@ -61,16 +60,15 @@ namespace XTI_App
         }
 
         public Task SetModCategory(ModifierCategory category)
-        {
-            var repo = repoFactory.CreateResourceGroups();
-            return repo.Update
-            (
-                record, r =>
-                {
-                    r.ModCategoryID = category.ID.Value;
-                }
-            );
-        }
+            => factory.DB
+                .ResourceGroups
+                .Update
+                (
+                    record, r =>
+                    {
+                        r.ModCategoryID = category.ID.Value;
+                    }
+                );
 
         async Task<IModifierCategory> IResourceGroup.ModCategory() => await ModCategory();
 
@@ -80,7 +78,8 @@ namespace XTI_App
         public Task AllowAnonymous() => setIsAnonymousAllowed(true);
         public Task DenyAnonymous() => setIsAnonymousAllowed(false);
         private Task setIsAnonymousAllowed(bool isAllowed)
-            => repoFactory.CreateResourceGroups()
+            => factory.DB
+                .ResourceGroups
                 .Update
                 (
                     record,
@@ -90,14 +89,14 @@ namespace XTI_App
                     }
                 );
 
-        public Task<IEnumerable<AppRole>> AllowedRoles()
+        public Task<AppRole[]> AllowedRoles()
             => factory.Roles().AllowedRolesForResourceGroup(this);
 
-        public Task<IEnumerable<AppRole>> DeniedRoles()
+        public Task<AppRole[]> DeniedRoles()
             => factory.Roles().DeniedRolesForResourceGroup(this);
 
         public Task SetRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
-            => repoFactory.Transaction(() => setRoleAccess(allowedRoles, deniedRoles));
+            => factory.DB.Transaction(() => setRoleAccess(allowedRoles, deniedRoles));
 
         private async Task setRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
         {
@@ -122,10 +121,10 @@ namespace XTI_App
 
         private async Task deleteExistingRoles(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
         {
-            var groupRoles = repoFactory.CreateResourceGroupRoles();
             var allowedRoleIDs = allowedRoles.Select(r => r.ID.Value);
             var deniedRoleIDs = deniedRoles.Select(r => r.ID.Value);
-            var rolesToDelete = await groupRoles
+            var rolesToDelete = await factory.DB
+                .ResourceGroupRoles
                 .Retrieve()
                 .Where
                 (
@@ -138,12 +137,13 @@ namespace XTI_App
                 .ToArrayAsync();
             foreach (var groupRole in rolesToDelete)
             {
-                await groupRoles.Delete(groupRole);
+                await factory.DB.ResourceGroupRoles.Delete(groupRole);
             }
         }
 
         private Task addGroupRole(AppRole role, bool isAllowed)
-            => repoFactory.CreateResourceGroupRoles()
+            => factory.DB
+                .ResourceGroupRoles
                 .Create
                 (
                     new ResourceGroupRoleRecord

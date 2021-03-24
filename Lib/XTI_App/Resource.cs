@@ -3,18 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class Resource : IResource
     {
-        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
         private readonly ResourceRecord record;
 
-        internal Resource(IMainDataRepositoryFactory repoFactory, AppFactory factory, ResourceRecord record)
+        internal Resource(AppFactory factory, ResourceRecord record)
         {
-            this.repoFactory = repoFactory;
             this.factory = factory;
             this.record = record ?? new ResourceRecord();
             ID = new EntityID(this.record.ID);
@@ -26,7 +25,8 @@ namespace XTI_App
         public Task AllowAnonymous() => setIsAnonymousAllowed(true);
         public Task DenyAnonymous() => setIsAnonymousAllowed(false);
         private Task setIsAnonymousAllowed(bool isAllowed)
-            => repoFactory.CreateResources()
+            => factory.DB
+                .Resources
                 .Update
                 (
                     record,
@@ -37,7 +37,8 @@ namespace XTI_App
                 );
 
         internal Task UpdateResultType(ResourceResultType resultType)
-            => repoFactory.CreateResources()
+            => factory.DB
+                .Resources
                 .Update
                 (
                     record,
@@ -47,14 +48,14 @@ namespace XTI_App
                     }
                 );
 
-        public Task<IEnumerable<AppRole>> AllowedRoles()
+        public Task<AppRole[]> AllowedRoles()
             => factory.Roles().AllowedRolesForResource(this);
 
-        public Task<IEnumerable<AppRole>> DeniedRoles()
+        public Task<AppRole[]> DeniedRoles()
             => factory.Roles().DeniedRolesForResource(this);
 
         public Task SetRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
-            => repoFactory.Transaction(() => setRoleAccess(allowedRoles, deniedRoles));
+            => factory.DB.Transaction(() => setRoleAccess(allowedRoles, deniedRoles));
 
         private async Task setRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
         {
@@ -79,10 +80,10 @@ namespace XTI_App
 
         private async Task deleteExistingRoles(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
         {
-            var resourceRoles = repoFactory.CreateResourceRoles();
             var allowedRoleIDs = allowedRoles.Select(r => r.ID.Value);
             var deniedRoleIDs = deniedRoles.Select(r => r.ID.Value);
-            var rolesToDelete = await resourceRoles
+            var rolesToDelete = await factory.DB
+                .ResourceRoles
                 .Retrieve()
                 .Where
                 (
@@ -95,12 +96,13 @@ namespace XTI_App
                 .ToArrayAsync();
             foreach (var resourceRole in rolesToDelete)
             {
-                await resourceRoles.Delete(resourceRole);
+                await factory.DB.ResourceRoles.Delete(resourceRole);
             }
         }
 
         private Task addResourceRole(AppRole role, bool isAllowed)
-            => repoFactory.CreateResourceRoles()
+            => factory.DB
+                .ResourceRoles
                 .Create
                 (
                     new ResourceRoleRecord

@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using XTI_App;
+using XTI_App.Abstractions;
 using XTI_Core;
 
 namespace XTI_Version
@@ -28,13 +29,25 @@ namespace XTI_Version
             else
             {
                 var xtiVersionBranch = new XtiVersionBranch(options.BranchName);
-                var versionKey = xtiVersionBranch.VersionKey();
-                version = await factory.Versions().Version(AppVersionKey.Parse(versionKey));
+                var versionKeyText = xtiVersionBranch.VersionKey();
+                var versionKey = AppVersionKey.Parse(versionKeyText);
+                version = await factory.Versions().Version(versionKey);
                 if (options.Command.Equals("BeginPublish", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (!version.Key().Equals(versionKey))
+                    {
+                        var appKey = getAppKey(options);
+                        var app = await getApp(options);
+                        if (!app.Key().Equals(appKey))
+                        {
+                            app = await factory.Apps().Add(appKey, appKey.Name.DisplayText, clock.Now());
+                        }
+                        var versionType = xtiVersionBranch.VersionType();
+                        version = await app.NewVersion(versionKey, versionType, new Version(1, 0, 0), clock.Now());
+                    }
                     if (!version.IsNew() && !version.IsPublishing())
                     {
-                        throw new PublishVersionException($"Unable to begin publishing version {versionKey} when it's status is not 'New' or 'Publishing'");
+                        throw new PublishVersionException($"Unable to begin publishing version {versionKeyText} when it's status is not 'New' or 'Publishing'");
                     }
                     await version.Publishing();
                 }
@@ -77,10 +90,7 @@ namespace XTI_Version
 
         private async Task<AppVersion> startNewVersion(ManageVersionOptions options)
         {
-            var appType = string.IsNullOrWhiteSpace(options.AppType)
-                ? AppType.Values.WebApp
-                : AppType.Values.Value(options.AppType);
-            var app = await factory.Apps().App(new AppKey(options.AppName, appType));
+            var app = await getApp(options);
             AppVersion version;
             var versionType = AppVersionType.Values.Value(options.VersionType);
             if (versionType.Equals(AppVersionType.Values.Major))
@@ -100,6 +110,21 @@ namespace XTI_Version
                 version = null;
             }
             return version;
+        }
+
+        private Task<App> getApp(ManageVersionOptions options)
+        {
+            var appKey = getAppKey(options);
+            return factory.Apps().App(appKey);
+        }
+
+        private static AppKey getAppKey(ManageVersionOptions options)
+        {
+            var appType = string.IsNullOrWhiteSpace(options.AppType)
+                ? AppType.Values.WebApp
+                : AppType.Values.Value(options.AppType);
+            var appKey = new AppKey(options.AppName, appType);
+            return appKey;
         }
 
         private class VersionRecord

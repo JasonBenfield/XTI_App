@@ -4,9 +4,10 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_App.Fakes;
 using XTI_App.TestFakes;
-using XTI_Core.Fakes;
+using XTI_Core;
 
 namespace XTI_App.Tests
 {
@@ -15,10 +16,11 @@ namespace XTI_App.Tests
         [Test]
         public async Task ShouldAddRoleToApp()
         {
-            var input = await setup();
+            var services = await setup();
+            var app = await services.FakeApp();
             var adminRoleName = new AppRoleName("Admin");
-            await input.App.AddRole(adminRoleName);
-            var roles = (await input.App.Roles()).ToArray();
+            await app.AddRole(adminRoleName);
+            var roles = (await app.Roles()).ToArray();
             Assert.That(roles.Length, Is.EqualTo(1), "Should add role to app");
             Assert.That(roles[0].Name(), Is.EqualTo(adminRoleName), "Should add role to app");
         }
@@ -26,43 +28,48 @@ namespace XTI_App.Tests
         [Test]
         public async Task ShouldAddRoleToUser()
         {
-            var input = await setup();
+            var services = await setup();
+            var app = await services.FakeApp();
             var adminRoleName = new AppRoleName("Admin");
-            var adminRole = await input.App.AddRole(adminRoleName);
-            var user = await input.Factory.Users().Add
+            var adminRole = await app.AddRole(adminRoleName);
+            var factory = services.GetService<AppFactory>();
+            var clock = services.GetService<Clock>();
+            var user = await factory.Users().Add
             (
-                new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
+                new AppUserName("someone"), new FakeHashedPassword("Password"), clock.Now()
             );
             await user.AddRole(adminRole);
-            var userRoles = (await user.RolesForApp(input.App)).ToArray();
+            var userRoles = (await user.AssignedRoles(app)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
-            Assert.That(userRoles[0].IsRole(adminRole), Is.True, "Should add role to user");
+            Assert.That(userRoles[0].ID.Equals(adminRole.ID), Is.True, "Should add role to user");
         }
 
         [Test]
         public async Task ShouldNotAddRoleFromAppRoleNames_WhenTheRoleAlreadyExists()
         {
-            var input = await setup();
+            var services = await setup();
+            var app = await services.FakeApp();
             var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
-            await input.App.SetRoles(roleNames);
-            await input.App.SetRoles(roleNames);
-            var appRoles = await input.App.Roles();
+            await app.SetRoles(roleNames);
+            await app.SetRoles(roleNames);
+            var appRoles = await app.Roles();
             Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
         }
 
         [Test]
         public async Task ShouldRemoveRolesNotInAppRoleNames()
         {
-            var input = await setup();
+            var services = await setup();
+            var app = await services.FakeApp();
             var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
-            await input.App.SetRoles(roleNames);
+            await app.SetRoles(roleNames);
             roleNames = roleNames.Where(rn => !rn.Equals(FakeAppRoles.Instance.Manager)).ToArray();
-            await input.App.SetRoles(roleNames);
-            var appRoles = await input.App.Roles();
+            await app.SetRoles(roleNames);
+            var appRoles = await app.Roles();
             Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
         }
 
-        private async Task<TestInput> setup()
+        private async Task<IServiceProvider> setup()
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices
@@ -76,25 +83,9 @@ namespace XTI_App.Tests
             var scope = host.Services.CreateScope();
             var sp = scope.ServiceProvider;
             var factory = sp.GetService<AppFactory>();
-            var clock = sp.GetService<FakeClock>();
-            var setup = new FakeAppSetup(factory, clock);
-            await setup.Run();
-            var app = await factory.Apps().Add(new AppKey("Fake", AppType.Values.WebApp), "Fake", clock.Now());
-            return new TestInput(sp, app);
-        }
-
-        private sealed class TestInput
-        {
-            public TestInput(IServiceProvider sp, App app)
-            {
-                Factory = sp.GetService<AppFactory>();
-                Clock = sp.GetService<FakeClock>();
-                App = app;
-            }
-
-            public AppFactory Factory { get; }
-            public FakeClock Clock { get; }
-            public App App { get; }
+            var clock = sp.GetService<Clock>();
+            await factory.Apps().Add(FakeInfo.AppKey, "Fake", clock.Now());
+            return sp;
         }
     }
 }

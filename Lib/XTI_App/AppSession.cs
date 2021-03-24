@@ -1,22 +1,19 @@
-﻿using System;
+﻿using MainDB.Entities;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_App;
-using XTI_Core;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class AppSession
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppSessionRecord> repo;
         private readonly AppSessionRecord record;
 
-        internal AppSession(AppFactory factory, DataRepository<AppSessionRecord> repo, AppSessionRecord record)
+        internal AppSession(AppFactory factory, AppSessionRecord record)
         {
             this.factory = factory;
-            this.repo = repo;
             this.record = record ?? new AppSessionRecord();
             ID = new EntityID(this.record.ID);
         }
@@ -30,7 +27,6 @@ namespace XTI_App
         public Task<AppRequest> LogRequest
         (
             string requestKey,
-            AppVersion version,
             Resource resource,
             Modifier modifier,
             string path,
@@ -38,11 +34,13 @@ namespace XTI_App
         )
         {
             var requestRepo = factory.Requests();
-            return requestRepo.Add(this, requestKey, version, resource, modifier, path, timeRequested);
+            return requestRepo.Add(this, requestKey, resource, modifier, path, timeRequested);
         }
 
         public Task Edit(AppUser user, DateTimeOffset timeStarted, string requesterKey, string userAgent, string remoteAddress)
-            => repo.Update
+            => factory.DB
+                .Sessions
+                .Update
                 (
                     record,
                     r =>
@@ -56,32 +54,25 @@ namespace XTI_App
                 );
 
         public Task Authenticate(IAppUser user)
-        {
-            return repo.Update(record, r =>
-            {
-                r.UserID = user.ID.Value;
-            });
-        }
+            => factory.DB
+                .Sessions
+                .Update(record, r =>
+                {
+                    r.UserID = user.ID.Value;
+                });
 
         public Task End(DateTimeOffset timeEnded)
-        {
-            return repo.Update(record, r =>
-            {
-                r.TimeEnded = timeEnded;
-            });
-        }
+            => factory.DB
+                .Sessions
+                .Update(record, r =>
+                {
+                    r.TimeEnded = timeEnded;
+                });
 
-        public Task<IEnumerable<AppRequest>> Requests()
-        {
-            var requestRepo = factory.Requests();
-            return requestRepo.RetrieveBySession(this);
-        }
+        public Task<IEnumerable<AppRequest>> Requests() => factory.Requests().RetrieveBySession(this);
 
         public Task<IEnumerable<AppRequest>> MostRecentRequests(int howMany)
-        {
-            var requestRepo = factory.Requests();
-            return requestRepo.RetrieveMostRecent(this, howMany);
-        }
+            => factory.Requests().RetrieveMostRecent(this, howMany);
 
         public override string ToString() => $"{nameof(AppSession)} {ID.Value}";
     }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using XTI_App;
+using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_Credentials;
 using XTI_Secrets;
@@ -119,10 +120,10 @@ namespace XTI_UserApp
                     }
                 }
             }
-            var userRoles = (await user.RolesForApp(app)).ToArray();
+            var userRoles = (await user.AssignedRoles(app)).ToArray();
             foreach (var role in roles)
             {
-                if (!userRoles.Any(ur => ur.IsRole(role)))
+                if (!userRoles.Any(ur => ur.ID.Equals(role.ID)))
                 {
                     await user.AddRole(role);
                 }
@@ -181,7 +182,7 @@ namespace XTI_UserApp
             var modKeys = userOptions.ModKeys
                 .Split(',')
                 .Select(m => new ModifierKey(m));
-            var userModifiers = await user.Modifiers(modCategory);
+            var userModifiers = await user.AssignedModifiers(modCategory);
             foreach (var modKey in modKeys)
             {
                 if (!userModifiers.Any(um => um.ModKey().Equals(modKey)))

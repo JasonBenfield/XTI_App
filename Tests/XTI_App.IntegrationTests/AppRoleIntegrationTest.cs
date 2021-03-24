@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_App.Fakes;
 using XTI_Configuration.Extensions;
 using XTI_Core;
@@ -22,6 +23,17 @@ namespace XTI_App.IntegrationTests
         }
 
         [Test]
+        public async Task ShouldGetRoleByID()
+        {
+            var input = await setup();
+            var adminRoleName = new AppRoleName("Admin");
+            var adminRole = await input.App.Role(adminRoleName);
+            var role = await input.App.Role(adminRole.ID.Value);
+            Assert.That(role.ID.IsValid, Is.True, "Should get role by ID");
+            Assert.That(adminRole.ID, Is.EqualTo(role.ID), "Should get role by ID");
+        }
+
+        [Test]
         public async Task ShouldAddRoleToUser()
         {
             var input = await setup();
@@ -32,9 +44,9 @@ namespace XTI_App.IntegrationTests
                 new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
             );
             await user.AddRole(adminRole);
-            var userRoles = (await user.RolesForApp(input.App)).ToArray();
+            var userRoles = (await user.AssignedRoles(input.App)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
-            Assert.That(userRoles[0].IsRole(adminRole), Is.True, "Should add role to user");
+            Assert.That(userRoles[0].ID, Is.EqualTo(adminRole.ID), "Should add role to user");
         }
 
         [Test]
@@ -51,12 +63,12 @@ namespace XTI_App.IntegrationTests
             var app2 = await input.Factory.Apps().Add(new AppKey("app2", AppType.Values.WebApp), "App 2", input.Clock.Now());
             var role2 = await app2.AddRole(new AppRoleName("another role"));
             await user.AddRole(role2);
-            var userRoles = (await user.RolesForApp(input.App)).ToArray();
+            var userRoles = (await user.AssignedRoles(input.App)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
-            Assert.That(userRoles[0].IsRole(adminRole), Is.True, "Should add role to user");
-            var userRoles2 = (await user.RolesForApp(app2)).ToArray();
+            Assert.That(userRoles[0].ID, Is.EqualTo(adminRole.ID), "Should add role to user");
+            var userRoles2 = (await user.AssignedRoles(app2)).ToArray();
             Assert.That(userRoles2.Length, Is.EqualTo(1), "Should add role to user for a different app");
-            Assert.That(userRoles2[0].IsRole(role2), Is.True, "Should add role to user for a different app");
+            Assert.That(userRoles2[0].ID, Is.EqualTo(role2.ID), "Should add role to user for a different app");
         }
 
         private async Task<TestInput> setup()

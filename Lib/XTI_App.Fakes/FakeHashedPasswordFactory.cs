@@ -1,4 +1,6 @@
-﻿namespace XTI_App.Fakes
+﻿using XTI_App.Abstractions;
+
+namespace XTI_App.Fakes
 {
     public sealed class FakeHashedPasswordFactory : IHashedPasswordFactory
     {

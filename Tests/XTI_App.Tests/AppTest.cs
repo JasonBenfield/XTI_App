@@ -4,7 +4,6 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using XTI_App.TestFakes;
-using XTI_Core.Fakes;
 
 namespace XTI_App.Tests
 {
@@ -13,15 +12,16 @@ namespace XTI_App.Tests
         [Test]
         public async Task ShouldConvertToAppModel()
         {
-            var input = await setup();
-            var appModel = input.App.ToAppModel();
-            Assert.That(appModel.ID, Is.EqualTo(input.App.ID.Value));
+            var services = await setup();
+            var app = await services.FakeApp();
+            var appModel = app.ToAppModel();
+            Assert.That(appModel.ID, Is.EqualTo(app.ID.Value));
             Assert.That(appModel.AppName, Is.EqualTo("Fake"));
             Assert.That(appModel.Title, Is.EqualTo("Fake Title"));
             Assert.That(appModel.Type, Is.EqualTo(FakeInfo.AppKey.Type));
         }
 
-        private async Task<TestInput> setup()
+        private async Task<IServiceProvider> setup()
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices
@@ -35,25 +35,8 @@ namespace XTI_App.Tests
             var scope = host.Services.CreateScope();
             var sp = scope.ServiceProvider;
             var factory = sp.GetService<AppFactory>();
-            var clock = sp.GetService<FakeClock>();
-            var setup = new FakeAppSetup(factory, clock);
-            await setup.Run();
-            var app = await factory.Apps().App(FakeInfo.AppKey);
-            return new TestInput(sp, app);
-        }
-
-        private sealed class TestInput
-        {
-            public TestInput(IServiceProvider sp, App app)
-            {
-                Factory = sp.GetService<AppFactory>();
-                Clock = sp.GetService<FakeClock>();
-                App = app;
-            }
-
-            public AppFactory Factory { get; }
-            public FakeClock Clock { get; }
-            public App App { get; }
+            await sp.Setup();
+            return sp;
         }
     }
 }

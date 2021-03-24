@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_Configuration.Extensions;
 using XTI_Core;
 
@@ -116,14 +117,13 @@ namespace XTI_App.IntegrationTests
         {
             var app = await services.FakeApp();
             var version = await app.CurrentVersion();
-            var resourceGroup = await app.ResourceGroup(new ResourceGroupName("Employee"));
+            var resourceGroup = await version.ResourceGroup(new ResourceGroupName("Employee"));
             var resource = await resourceGroup.Resource(new ResourceName("AddEmployee"));
             var modCategory = await app.ModCategory(ModifierCategoryName.Default);
             var modifier = await modCategory.Modifier(ModifierKey.Default);
             var request = await createdSession.LogRequest
             (
                 "New-Request",
-                version,
                 resource,
                 modifier,
                 "/Fake/Current",

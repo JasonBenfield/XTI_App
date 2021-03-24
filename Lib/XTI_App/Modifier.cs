@@ -1,17 +1,17 @@
-﻿using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_Core;
+﻿using MainDB.Entities;
+using System.Threading.Tasks;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class Modifier
     {
-        private readonly DataRepository<ModifierRecord> repo;
+        private readonly AppFactory factory;
         private readonly ModifierRecord record;
 
-        internal Modifier(DataRepository<ModifierRecord> repo, ModifierRecord record)
+        internal Modifier(AppFactory factory, ModifierRecord record)
         {
-            this.repo = repo;
+            this.factory = factory;
             this.record = record ?? new ModifierRecord();
             ID = new EntityID(this.record.ID);
         }
@@ -25,7 +25,7 @@ namespace XTI_App
 
         public Task SetDisplayText(string displayText)
         {
-            return repo.Update(record, r =>
+            return factory.DB.Modifiers.Update(record, r =>
             {
                 r.DisplayText = displayText;
             });

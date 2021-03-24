@@ -1,15 +1,13 @@
 ﻿using MainDB.EF;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using MainDB.Extensions;
-using XTI_Core;
-using XTI_App.TestFakes;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Threading.Tasks;
+using XTI_App.Abstractions;
+using XTI_App.TestFakes;
+using XTI_Core;
 using XTI_Core.Extensions;
 
 namespace XTI_App.IntegrationTests
@@ -18,7 +16,7 @@ namespace XTI_App.IntegrationTests
     {
         public static void AddXtiTestServices(this IServiceCollection services, IConfiguration config)
         {
-            services.AddAppDbContextForSqlServer(config);
+            services.AddMainDbContextForSqlServer(config);
             services.AddSingleton<Clock, UtcClock>();
             services.AddSingleton(_ => FakeInfo.AppKey);
             services.AddScoped<AppFactory>();
@@ -41,7 +39,7 @@ namespace XTI_App.IntegrationTests
                 await mainDbReset.Run();
             }
             var setup = services.GetService<FakeAppSetup>();
-            await setup.Run();
+            await setup.Run(AppVersionKey.Current);
         }
 
         public static Task<App> FakeApp(this IServiceProvider services)

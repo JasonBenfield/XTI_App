@@ -1,19 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_Core;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class ModifierCategoryAdminRepository
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<ModifierCategoryAdminRecord> repo;
 
-        internal ModifierCategoryAdminRepository(AppFactory factory, DataRepository<ModifierCategoryAdminRecord> repo)
+        internal ModifierCategoryAdminRepository(AppFactory factory)
         {
             this.factory = factory;
-            this.repo = repo;
         }
 
         internal Task Add(ModifierCategory modCategory, AppUser user)
@@ -23,20 +21,24 @@ namespace XTI_App
                 ModCategoryID = modCategory.ID.Value,
                 UserID = user.ID.Value
             };
-            return repo.Create(record);
+            return factory.DB.ModifierCategoryAdmins.Create(record);
         }
 
         internal Task<bool> IsAdmin(IModifierCategory modCategory, IAppUser user)
-            => repo.Retrieve()
+            => factory.DB
+                .ModifierCategoryAdmins
+                .Retrieve()
                 .AnyAsync(a => a.ModCategoryID == modCategory.ID.Value && a.UserID == user.ID.Value);
 
         internal async Task Delete(ModifierCategory modCategory, AppUser user)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .ModifierCategoryAdmins
+                .Retrieve()
                 .FirstOrDefaultAsync(a => a.ModCategoryID == modCategory.ID.Value && a.UserID == user.ID.Value);
             if (record != null)
             {
-                await repo.Delete(record);
+                await factory.DB.ModifierCategoryAdmins.Delete(record);
             }
         }
     }

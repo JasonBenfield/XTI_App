@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using XTI_App;
+using XTI_App.Abstractions;
 
 namespace XTI_Version
 {
@@ -37,6 +38,12 @@ namespace XTI_Version
         {
             var match = branchNameRegex.Match(branchName);
             return match.Groups[5].Value;
+        }
+
+        public AppVersionType VersionType()
+        {
+            var match = branchNameRegex.Match(branchName);
+            return AppVersionType.Values.Value(match.Groups[1].Value);
         }
 
         public override string ToString() => $"{nameof(XtiVersionBranch)} {branchName}";

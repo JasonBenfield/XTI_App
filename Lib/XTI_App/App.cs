@@ -3,19 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XTI_Core;
+using XTI_App.Abstractions;
 
 namespace XTI_App
 {
     public sealed class App : IApp
     {
-        private readonly DataRepository<AppRecord> repo;
         private readonly AppFactory factory;
         private readonly AppRecord record;
 
-        internal App(DataRepository<AppRecord> repo, AppFactory factory, AppRecord record)
+        internal App(AppFactory factory, AppRecord record)
         {
-            this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppRecord();
             ID = new EntityID(this.record.ID);
@@ -35,7 +33,7 @@ namespace XTI_App
             return modCategory;
         }
 
-        public Task<IEnumerable<ModifierCategory>> ModCategories()
+        public Task<ModifierCategory[]> ModCategories()
             => factory.ModCategories().Categories(this);
 
         public Task<ModifierCategory> ModCategory(int modCategoryID)
@@ -44,47 +42,22 @@ namespace XTI_App
         public Task<ModifierCategory> ModCategory(ModifierCategoryName name)
             => factory.ModCategories().Category(this, name);
 
-        public async Task<ResourceGroup> AddOrUpdateResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
-        {
-            var resourceGroup = await ResourceGroup(name);
-            if (resourceGroup.Name().Equals(name))
-            {
-                await resourceGroup.SetModCategory(modCategory);
-            }
-            else
-            {
-                resourceGroup = await AddResourceGroup(name, modCategory);
-            }
-            return resourceGroup;
-        }
-
-        public Task<ResourceGroup> AddResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
-            => factory.Groups().Add(this, name, modCategory);
-
-        public Task<ResourceGroup> ResourceGroup(ResourceGroupName name)
-            => factory.Groups().Group(this, name);
-
-        public Task<ResourceGroup> ResourceGroup(int id)
-            => factory.Groups().Group(this, id);
-
-        public Task<IEnumerable<ResourceGroup>> ResourceGroups() => factory.Groups().Groups(this);
-
-        async Task<IResourceGroup> IApp.ResourceGroup(ResourceGroupName name) => await ResourceGroup(name);
-
-        public Task<Resource> Resource(int id)
-            => factory.Resources().Resource(this, id);
-
         public Task<AppRole> AddRole(AppRoleName name) =>
             factory.Roles().Add(this, name);
 
         async Task<IEnumerable<IAppRole>> IApp.Roles() =>
             await factory.Roles().RolesForApp(this);
 
-        public Task<IEnumerable<AppRole>> Roles() =>
-            factory.Roles().RolesForApp(this);
+        public Task<AppRole[]> Roles() => factory.Roles().RolesForApp(this);
+
+        public Task<AppRole> Role(int roleID) =>
+            factory.Roles().Role(this, roleID);
 
         public Task<AppRole> Role(AppRoleName roleName) =>
             factory.Roles().Role(this, roleName);
+
+        public Task<AppVersion> NewVersion(AppVersionKey versionKey, AppVersionType type, Version version, DateTimeOffset timeAdded)
+            => factory.Versions().Create(versionKey, this, type, version, timeAdded);
 
         public Task<AppVersion> StartNewPatch(DateTimeOffset timeAdded) =>
             startNewVersion(timeAdded, AppVersionType.Values.Patch);
@@ -106,7 +79,7 @@ namespace XTI_App
         public async Task SetRoles(IEnumerable<AppRoleName> roleNames)
         {
             var existingRoles = (await Roles()).ToArray();
-            await repo.Transaction(async () =>
+            await factory.DB.Apps.Transaction(async () =>
             {
                 await addRoles(roleNames, existingRoles);
                 var rolesToDelete = existingRoles
@@ -155,22 +128,29 @@ namespace XTI_App
             return version;
         }
 
-        public Task<IEnumerable<AppVersion>> Versions() =>
-            factory.Versions().VersionsByApp(this);
+        public Task<AppVersion[]> Versions() => factory.Versions().VersionsByApp(this);
 
         public Task SetTitle(string title)
         {
-            return repo.Update(record, r =>
+            return factory.DB.Apps.Update(record, r =>
             {
                 r.Title = title?.Trim() ?? "";
             });
         }
 
-        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
-            => factory.Requests().MostRecentForApp(this, howMany);
+        public async Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+        {
+            var version = await CurrentVersion();
+            var requests = await version.MostRecentRequests(howMany);
+            return requests;
+        }
 
-        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
-            => factory.Events().MostRecentErrorsForApp(this, howMany);
+        public async Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+        {
+            var version = await CurrentVersion();
+            var requests = await version.MostRecentErrorEvents(howMany);
+            return requests;
+        }
 
         public AppModel ToAppModel()
         {
