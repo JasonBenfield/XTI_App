@@ -4,19 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
-using XTI_Core;
 
 namespace XTI_App
 {
     public sealed class App : IApp
     {
-        private readonly DataRepository<AppRecord> repo;
         private readonly AppFactory factory;
         private readonly AppRecord record;
 
-        internal App(DataRepository<AppRecord> repo, AppFactory factory, AppRecord record)
+        internal App(AppFactory factory, AppRecord record)
         {
-            this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppRecord();
             ID = new EntityID(this.record.ID);
@@ -36,7 +33,7 @@ namespace XTI_App
             return modCategory;
         }
 
-        public Task<IEnumerable<ModifierCategory>> ModCategories()
+        public Task<ModifierCategory[]> ModCategories()
             => factory.ModCategories().Categories(this);
 
         public Task<ModifierCategory> ModCategory(int modCategoryID)
@@ -58,9 +55,6 @@ namespace XTI_App
 
         public Task<AppRole> Role(AppRoleName roleName) =>
             factory.Roles().Role(this, roleName);
-
-        public Task<AppUserRole> UserRole(int userRoleID) =>
-            factory.UserRoles().UserRole(this, userRoleID);
 
         public Task<AppVersion> NewVersion(AppVersionKey versionKey, AppVersionType type, Version version, DateTimeOffset timeAdded)
             => factory.Versions().Create(versionKey, this, type, version, timeAdded);
@@ -85,7 +79,7 @@ namespace XTI_App
         public async Task SetRoles(IEnumerable<AppRoleName> roleNames)
         {
             var existingRoles = (await Roles()).ToArray();
-            await repo.Transaction(async () =>
+            await factory.DB.Apps.Transaction(async () =>
             {
                 await addRoles(roleNames, existingRoles);
                 var rolesToDelete = existingRoles
@@ -134,12 +128,11 @@ namespace XTI_App
             return version;
         }
 
-        public Task<IEnumerable<AppVersion>> Versions() =>
-            factory.Versions().VersionsByApp(this);
+        public Task<AppVersion[]> Versions() => factory.Versions().VersionsByApp(this);
 
         public Task SetTitle(string title)
         {
-            return repo.Update(record, r =>
+            return factory.DB.Apps.Update(record, r =>
             {
                 r.Title = title?.Trim() ?? "";
             });

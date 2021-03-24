@@ -65,10 +65,10 @@ namespace XTI_App.Tests
             var appRoles = await app.Roles();
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Admin)));
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Manager)));
-            var userRoles = await user.AssignedRoles(app);
+            var assignedRoles = await user.AssignedRoles(app);
             Assert.That
             (
-                userRoles.Select(ur => new AppRoleName(ur.Role.Name)),
+                assignedRoles.Select(ur => ur.Name()),
                 Is.EquivalentTo(new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager }),
                 "Should get assigned roles"
             );
@@ -91,19 +91,6 @@ namespace XTI_App.Tests
                 Is.EquivalentTo(new[] { FakeInfo.Roles.Viewer }),
                 "Should get unassigned roles"
             );
-        }
-
-        [Test]
-        public async Task ShouldGetUserRoleByID()
-        {
-            var services = await setup();
-            var userName = new AppUserName("Test.User");
-            var user = await addUser(services, userName);
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(FakeInfo.Roles.Admin);
-            var addedUserRole = await user.AddRole(adminRole);
-            var userRole = await app.UserRole(addedUserRole.ID.Value);
-            Assert.That(userRole.IsRole(adminRole), Is.True, "Should get user role by ID");
         }
 
         private static async Task<AppUser> addUser(IServiceProvider services, AppUserName userName)

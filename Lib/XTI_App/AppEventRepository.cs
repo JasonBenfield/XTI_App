@@ -10,15 +10,11 @@ namespace XTI_App
 {
     public sealed class AppEventRepository
     {
-        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
-        private readonly DataRepository<AppEventRecord> repo;
 
-        public AppEventRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
+        public AppEventRepository(AppFactory factory)
         {
-            this.repoFactory = repoFactory;
             this.factory = factory;
-            repo = repoFactory.CreateEvents();
         }
 
         public async Task<AppEvent> LogEvent(AppRequest request, string eventKey, DateTimeOffset timeOccurred, AppEventSeverity severity, string caption, string message, string detail)
@@ -33,14 +29,14 @@ namespace XTI_App
                 Message = message,
                 Detail = detail
             };
-            await repo.Create(record);
+            await factory.DB.Events.Create(record);
             return factory.Event(record);
         }
 
         internal async Task<IEnumerable<AppEvent>> RetrieveByRequest(AppRequest request)
         {
             var eventRepo = factory.Events();
-            var records = await repo.Retrieve()
+            var records = await factory.DB.Events.Retrieve()
                 .Where(e => e.RequestID == request.ID.Value)
                 .ToArrayAsync();
             return records.Select(e => factory.Event(e));
@@ -48,12 +44,12 @@ namespace XTI_App
 
         internal Task<IEnumerable<AppEvent>> MostRecentErrorsForVersion(AppVersion version, int howMany)
         {
-            var requestIDs = repoFactory
-                .CreateRequests()
+            var requestIDs = factory.DB
+                .Requests
                 .Retrieve()
                 .Join
                 (
-                    repoFactory.CreateResources()
+                    factory.DB.Resources
                         .Retrieve(),
                     req => req.ResourceID,
                     res => res.ID,
@@ -61,7 +57,7 @@ namespace XTI_App
                 )
                 .Join
                 (
-                    repoFactory.CreateResourceGroups()
+                    factory.DB.ResourceGroups
                         .Retrieve(),
                     res => res.GroupID,
                     rg => rg.ID,
@@ -74,12 +70,13 @@ namespace XTI_App
 
         internal Task<IEnumerable<AppEvent>> MostRecentErrorsForResourceGroup(ResourceGroup group, int howMany)
         {
-            var requestIDs = repoFactory
-                .CreateRequests()
+            var requestIDs = factory.DB
+                .Requests
                 .Retrieve()
                 .Join
                 (
-                    repoFactory.CreateResources()
+                    factory.DB
+                        .Resources
                         .Retrieve(),
                     req => req.ResourceID,
                     res => res.ID,
@@ -92,8 +89,8 @@ namespace XTI_App
 
         internal Task<IEnumerable<AppEvent>> MostRecentErrorsForResource(Resource resource, int howMany)
         {
-            var requestIDs = repoFactory
-                .CreateRequests()
+            var requestIDs = factory.DB
+                .Requests
                 .Retrieve()
                 .Where(r => r.ResourceID == resource.ID.Value)
                 .Select(r => r.ResourceID);
@@ -102,7 +99,9 @@ namespace XTI_App
 
         private async Task<IEnumerable<AppEvent>> mostRecentErrors(int howMany, IQueryable<int> requestIDs)
         {
-            var events = await repo.Retrieve()
+            var events = await factory.DB
+                .Events
+                .Retrieve()
                 .Where
                 (
                     evt => evt.Severity >= AppEventSeverity.Values.ValidationFailed.Value

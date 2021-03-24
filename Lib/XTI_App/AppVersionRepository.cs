@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_Core;
 using XTI_App.Abstractions;
 
 namespace XTI_App
@@ -12,12 +10,10 @@ namespace XTI_App
     public sealed class AppVersionRepository
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppVersionRecord> repo;
 
-        internal AppVersionRepository(AppFactory factory, DataRepository<AppVersionRecord> repo)
+        internal AppVersionRepository(AppFactory factory)
         {
             this.factory = factory;
-            this.repo = repo;
         }
 
         internal async Task<AppVersion> Create(AppVersionKey key, App app, AppVersionType type, Version version, DateTimeOffset timeAdded)
@@ -34,14 +30,14 @@ namespace XTI_App
                 Status = AppVersionStatus.Values.New.Value,
                 Type = type.Value
             };
-            await repo.Create(record);
+            await factory.DB.Versions.Create(record);
             return factory.Version(record);
         }
 
         internal async Task<AppVersion> StartNewVersion(AppVersionKey key, App app, DateTimeOffset timeAdded, AppVersionType type)
         {
             AppVersionRecord record = null;
-            await repo.Transaction(async () =>
+            await factory.DB.Transaction(async () =>
             {
                 record = new AppVersionRecord
                 {
@@ -55,10 +51,10 @@ namespace XTI_App
                     Status = AppVersionStatus.Values.New.Value,
                     Type = type.Value
                 };
-                await repo.Create(record);
+                await factory.DB.Versions.Create(record);
                 if (key.Equals(AppVersionKey.None))
                 {
-                    await repo.Update(record, r => r.VersionKey = new AppVersionKey(r.ID).Value);
+                    await factory.DB.Versions.Update(record, r => r.VersionKey = new AppVersionKey(r.ID).Value);
                 }
             });
             return factory.Version(record);
@@ -66,7 +62,9 @@ namespace XTI_App
 
         public async Task<AppVersion> Version(int id)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .Versions
+                .Retrieve()
                 .FirstOrDefaultAsync(v => v.ID == id);
             return factory.Version(record);
         }
@@ -77,20 +75,28 @@ namespace XTI_App
             {
                 throw new ArgumentException("App is required when version key is current");
             }
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .Versions
+                .Retrieve()
                 .FirstOrDefaultAsync(v => v.VersionKey == versionKey.Value);
             return factory.Version(record);
         }
 
-        internal async Task<IEnumerable<AppVersion>> VersionsByApp(App app)
+        internal Task<AppVersion[]> VersionsByApp(App app)
         {
-            var records = await repo.Retrieve().Where(v => v.AppID == app.ID.Value).ToArrayAsync();
-            return records.Select(v => factory.Version(v));
+            return factory.DB
+                .Versions
+                .Retrieve()
+                .Where(v => v.AppID == app.ID.Value)
+                .Select(v => factory.Version(v))
+                .ToArrayAsync();
         }
 
         internal async Task<AppVersion> CurrentVersion(App app)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .Versions
+                .Retrieve()
                 .Where(v => v.AppID == app.ID.Value && v.Status == AppVersionStatus.Values.Current.Value)
                 .FirstOrDefaultAsync();
             return factory.Version(record);

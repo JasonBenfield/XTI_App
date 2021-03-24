@@ -10,15 +10,11 @@ namespace XTI_App
 {
     public sealed class ResourceRepository
     {
-        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
-        private readonly DataRepository<ResourceRecord> repo;
 
-        internal ResourceRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
+        internal ResourceRepository(AppFactory factory)
         {
             this.factory = factory;
-            this.repoFactory = repoFactory;
-            repo = repoFactory.CreateResources();
         }
 
         public async Task<Resource> Add(ResourceGroup group, ResourceName name, ResourceResultType resultType)
@@ -29,31 +25,37 @@ namespace XTI_App
                 Name = name.Value,
                 ResultType = resultType.Value
             };
-            await repo.Create(record);
+            await factory.DB.Resources.Create(record);
             return factory.Resource(record);
         }
 
-        public async Task<IEnumerable<Resource>> Resources(ResourceGroup group)
-        {
-            var records = await repo.Retrieve()
+        public Task<Resource[]> Resources(ResourceGroup group)
+            => factory.DB
+                .Resources
+                .Retrieve()
                 .Where(r => r.GroupID == group.ID.Value)
                 .OrderBy(r => r.ResultType)
                 .ThenBy(r => r.Name)
+                .Select(r => factory.Resource(r))
                 .ToArrayAsync();
-            return records.Select(r => factory.Resource(r));
-        }
 
         public async Task<Resource> Resource(ResourceGroup group, ResourceName name)
         {
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .Resources
+                .Retrieve()
                 .FirstOrDefaultAsync(r => r.GroupID == group.ID.Value && r.Name == name.Value);
             if (record == null)
             {
-                record = await repo.Retrieve()
+                record = await factory.DB
+                    .Resources
+                    .Retrieve()
                    .FirstOrDefaultAsync(r => r.GroupID == group.ID.Value && r.Name == ResourceName.Unknown.Value);
                 if (record == null)
                 {
-                    record = await repo.Retrieve()
+                    record = await factory.DB
+                        .Resources
+                        .Retrieve()
                        .FirstOrDefaultAsync(r => r.Name == ResourceName.Unknown.Value);
                 }
             }
@@ -62,11 +64,14 @@ namespace XTI_App
 
         internal async Task<Resource> Resource(AppVersion version, int id)
         {
-            var groupIDs = repoFactory.CreateResourceGroups()
+            var groupIDs = factory.DB
+                .ResourceGroups
                 .Retrieve()
                 .Where(rg => rg.VersionID == version.ID.Value)
                 .Select(rg => rg.ID);
-            var record = await repo.Retrieve()
+            var record = await factory.DB
+                .Resources
+                .Retrieve()
                 .FirstOrDefaultAsync(r => r.ID == id && groupIDs.Any(gID => gID == r.GroupID));
             return factory.Resource(record);
         }

@@ -1,23 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using MainDB.Entities;
+﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using XTI_App.Abstractions;
-using XTI_Core;
 
 namespace XTI_App
 {
     public sealed class AppUser : IAppUser
     {
-        private readonly IMainDataRepositoryFactory repoFactory;
-        private readonly DataRepository<AppUserRecord> repo;
         private readonly AppFactory factory;
         private readonly AppUserRecord record;
 
-        internal AppUser(IMainDataRepositoryFactory repoFactory, AppFactory factory, AppUserRecord record)
+        internal AppUser(AppFactory factory, AppUserRecord record)
         {
-            this.repoFactory = repoFactory;
-            this.repo = repoFactory.CreateUsers();
             this.factory = factory;
             this.record = record ?? new AppUserRecord();
             ID = new EntityID(this.record.ID);
@@ -30,27 +26,42 @@ namespace XTI_App
         public bool IsPasswordCorrect(IHashedPassword hashedPassword) =>
             hashedPassword.Equals(record.Password);
 
-        public Task<AppUserRole> AddRole(AppRole role) =>
-            factory.UserRoles().Add(this, role);
+        public Task AddRole(AppRole role)
+        {
+            var record = new AppUserRoleRecord
+            {
+                UserID = ID.Value,
+                RoleID = role.ID.Value
+            };
+            return factory.DB.UserRoles.Create(record);
+        }
 
-        public Task RemoveRole(AppUserRole userRole) => userRole.Delete();
+        public async Task RemoveRole(AppRole role)
+        {
+            var userRole = await factory.DB
+                .UserRoles
+                .Retrieve()
+                .Where(ur => ur.UserID == ID.Value && ur.RoleID == role.ID.Value)
+                .FirstOrDefaultAsync();
+            if (userRole != null)
+            {
+                await factory.DB.UserRoles.Delete(userRole);
+            }
+        }
 
-        public Task<AppRole[]> Roles(IApp app) =>
-            factory.Roles().RolesForUser(this, app);
+        async Task<IEnumerable<IAppRole>> IAppUser.Roles(IApp app) => await AssignedRoles(app);
 
-        async Task<IEnumerable<IAppRole>> IAppUser.Roles(IApp app) => await Roles(app);
-
-        public Task<AppRole[]> UnassignedRoles(App app)
+        public Task<AppRole[]> UnassignedRoles(IApp app)
             => factory.Roles().RolesNotAssignedToUser(this, app);
 
-        public Task<AppUserRoleModel[]> AssignedRoles(App app)
-            => factory.UserRoles().AssignedRoles(this, app);
+        public Task<AppRole[]> AssignedRoles(IApp app)
+            => factory.Roles().RolesAssignedToUser(this, app);
 
         public Task ChangePassword(IHashedPassword password)
-            => repo.Update(record, u => u.Password = password.Value());
+            => factory.DB.Users.Update(record, u => u.Password = password.Value());
 
         public Task Edit(PersonName name, EmailAddress email)
-            => repo.Update
+            => factory.DB.Users.Update
             (
                 record,
                 u =>
@@ -64,7 +75,21 @@ namespace XTI_App
             => factory.ModCategoryAdmins().IsAdmin(modCategory, this);
 
         public Task GrantFullAccessToModCategory(ModifierCategory modCategory)
-            => factory.ModCategoryAdmins().Add(modCategory, this);
+        {
+            return factory.DB.Transaction(async () =>
+            {
+                await factory.ModCategoryAdmins().Add(modCategory, this);
+                var userModifiers = await factory.DB
+                    .UserModifiers
+                    .Retrieve()
+                    .Where(um => um.UserID == ID.Value)
+                    .ToArrayAsync();
+                foreach (var userModifier in userModifiers)
+                {
+                    await factory.DB.UserModifiers.Delete(userModifier);
+                }
+            });
+        }
 
         public Task RevokeFullAccessToModCategory(ModifierCategory modCategory)
             => factory.ModCategoryAdmins().Delete(modCategory, this);
@@ -76,13 +101,13 @@ namespace XTI_App
                 UserID = ID.Value,
                 ModifierID = modifier.ID.Value
             };
-            return repoFactory.CreateUserModifiers().Create(record);
+            return factory.DB.UserModifiers.Create(record);
         }
 
         public async Task RemoveModifier(Modifier modifier)
         {
-            var userModRepo = repoFactory.CreateUserModifiers();
-            var record = await userModRepo
+            var record = await factory.DB
+                .UserModifiers
                 .Retrieve()
                 .FirstOrDefaultAsync
                 (
@@ -90,22 +115,28 @@ namespace XTI_App
                 );
             if (record != null)
             {
-                await userModRepo.Delete(record);
+                await factory.DB.UserModifiers.Delete(record);
             }
         }
 
-        public async Task<bool> HasModifier(ModifierKey modKey)
+        public Task<bool> HasModifier(ModifierKey modKey)
         {
-            var modifier = await factory.Modifiers().Modifier(modKey);
-            var hasModifier = await repoFactory
-                .CreateUserModifiers()
+            var modifierIDs = factory.DB
+                .Modifiers
                 .Retrieve()
-                .AnyAsync(um => um.UserID == ID.Value && um.ModifierID == modifier.ID.Value);
-            return hasModifier;
+                .Where(m => m.ModKey == modKey.Value)
+                .Select(m => m.ID);
+            return factory.DB
+                .UserModifiers
+                .Retrieve()
+                .AnyAsync(um => um.UserID == ID.Value && modifierIDs.Any(id => id == um.ModifierID));
         }
 
-        public Task<IEnumerable<Modifier>> Modifiers(ModifierCategory modCategory)
-            => factory.Modifiers().ModifiersForUser(this, modCategory);
+        public Task<IEnumerable<Modifier>> UnassignedModifiers(ModifierCategory modCategory)
+            => factory.Modifiers().ModifiersNotAssignedToUser(this, modCategory);
+
+        public Task<IEnumerable<Modifier>> AssignedModifiers(ModifierCategory modCategory)
+            => factory.Modifiers().ModifiersAssignedToUser(this, modCategory);
 
         public AppUserModel ToModel() => new AppUserModel
         {

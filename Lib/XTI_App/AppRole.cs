@@ -1,18 +1,17 @@
-﻿using System.Threading.Tasks;
-using MainDB.Entities;
+﻿using MainDB.Entities;
+using System.Threading.Tasks;
 using XTI_App.Abstractions;
-using XTI_Core;
 
 namespace XTI_App
 {
     public sealed class AppRole : IAppRole
     {
-        private readonly DataRepository<AppRoleRecord> repo;
+        private readonly AppFactory factory;
         private readonly AppRoleRecord record;
 
-        internal AppRole(DataRepository<AppRoleRecord> repo, AppRoleRecord record)
+        internal AppRole(AppFactory factory, AppRoleRecord record)
         {
-            this.repo = repo;
+            this.factory = factory;
             this.record = record ?? new AppRoleRecord();
             ID = new EntityID(this.record.ID);
         }
@@ -22,7 +21,7 @@ namespace XTI_App
 
         public bool Exists() => ID.IsValid();
 
-        internal Task Delete() => repo.Delete(record);
+        internal Task Delete() => factory.DB.Roles.Delete(record);
 
         public AppRoleModel ToModel() => new AppRoleModel
         {

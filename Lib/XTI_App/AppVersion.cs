@@ -10,13 +10,11 @@ namespace XTI_App
     public sealed class AppVersion : IAppVersion
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppVersionRecord> repo;
         private readonly AppVersionRecord record;
 
-        internal AppVersion(AppFactory factory, DataRepository<AppVersionRecord> repo, AppVersionRecord record)
+        internal AppVersion(AppFactory factory, AppVersionRecord record)
         {
             this.factory = factory;
-            this.repo = repo;
             this.record = record ?? new AppVersionRecord();
             ID = new EntityID(this.record.ID);
         }
@@ -54,7 +52,7 @@ namespace XTI_App
         public async Task Publishing()
         {
             var current = await Current();
-            await repo.Update(record, r =>
+            await factory.DB.Versions.Update(record, r =>
             {
                 r.Status = AppVersionStatus.Values.Publishing.Value;
                 var type = Type();
@@ -93,7 +91,7 @@ namespace XTI_App
             {
                 await current.Archive();
             }
-            await repo.Update(record, r =>
+            await factory.DB.Versions.Update(record, r =>
             {
                 r.Status = AppVersionStatus.Values.Current.Value;
             });
@@ -101,7 +99,7 @@ namespace XTI_App
 
         private Task Archive()
         {
-            return repo.Update(record, r =>
+            return factory.DB.Versions.Update(record, r =>
             {
                 r.Status = AppVersionStatus.Values.Old.Value;
             });
@@ -130,8 +128,7 @@ namespace XTI_App
         public Task<ResourceGroup> AddResourceGroup(ResourceGroupName name, ModifierCategory modCategory)
             => factory.Groups().Add(this, name, modCategory);
 
-        public Task<IEnumerable<ResourceGroup>> ResourceGroups()
-            => factory.Groups().Groups(this);
+        public Task<ResourceGroup[]> ResourceGroups() => factory.Groups().Groups(this);
 
         async Task<IResourceGroup> IAppVersion.ResourceGroup(ResourceGroupName name)
             => await ResourceGroup(name);

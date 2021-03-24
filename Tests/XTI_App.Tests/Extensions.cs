@@ -13,7 +13,7 @@ namespace XTI_App.Tests
     {
         public static void AddServicesForTests(this IServiceCollection services)
         {
-            services.AddAppDbContextForInMemory();
+            services.AddMainDbContextForInMemory();
             services.AddSingleton<AppFactory>();
             services.AddSingleton<FakeClock>();
             services.AddSingleton<Clock>(sp => sp.GetService<FakeClock>());

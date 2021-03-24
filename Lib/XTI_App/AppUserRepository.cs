@@ -12,17 +12,16 @@ namespace XTI_App
     public sealed class AppUserRepository
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppUserRecord> repo;
 
-        public AppUserRepository(AppFactory factory, DataRepository<AppUserRecord> repo)
+        public AppUserRepository(AppFactory factory)
         {
             this.factory = factory;
-            this.repo = repo;
         }
 
         public async Task<IEnumerable<AppUser>> Users()
         {
-            var records = await repo
+            var records = await factory.DB
+                .Users
                 .Retrieve()
                 .OrderBy(u => u.UserName)
                 .ToArrayAsync();
@@ -31,7 +30,9 @@ namespace XTI_App
 
         public async Task<AppUser> User(int id)
         {
-            var userRecord = await repo.Retrieve()
+            var userRecord = await factory.DB
+                .Users
+                .Retrieve()
                 .FirstOrDefaultAsync(u => u.ID == id);
             return factory.User(userRecord);
         }
@@ -47,7 +48,10 @@ namespace XTI_App
         }
 
         private Task<AppUserRecord> user(AppUserName userName)
-            => repo.Retrieve().FirstOrDefaultAsync(u => u.UserName == userName.Value);
+            => factory.DB
+                .Users
+                .Retrieve()
+                .FirstOrDefaultAsync(u => u.UserName == userName.Value);
 
         public Task<AppUser> Add
         (
@@ -73,7 +77,7 @@ namespace XTI_App
                 Email = email.Value,
                 TimeAdded = timeAdded
             };
-            await repo.Create(newUser);
+            await factory.DB.Users.Create(newUser);
             return factory.User(newUser);
         }
     }

@@ -5,21 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
-using XTI_Core;
 
 namespace XTI_App
 {
     public sealed class AppRequestRepository
     {
-        private readonly IMainDataRepositoryFactory repoFactory;
         private readonly AppFactory factory;
-        private readonly DataRepository<AppRequestRecord> repo;
 
-        internal AppRequestRepository(IMainDataRepositoryFactory repoFactory, AppFactory factory)
+        internal AppRequestRepository(AppFactory factory)
         {
-            this.repoFactory = repoFactory;
             this.factory = factory;
-            repo = repoFactory.CreateRequests();
         }
 
         internal async Task<AppRequest> Add(AppSession session, string requestKey, Resource resource, Modifier modifier, string path, DateTimeOffset timeRequested)
@@ -33,20 +28,20 @@ namespace XTI_App
                 Path = path ?? "",
                 TimeStarted = timeRequested
             };
-            await repo.Create(record);
+            await factory.DB.Requests.Create(record);
             return factory.Request(record);
         }
 
         public async Task<AppRequest> Request(string requestKey)
         {
-            var requestRecord = await repo.Retrieve()
+            var requestRecord = await factory.DB.Requests.Retrieve()
                 .FirstOrDefaultAsync(r => r.RequestKey == requestKey);
             return factory.Request(requestRecord);
         }
 
         internal async Task<IEnumerable<AppRequest>> RetrieveBySession(AppSession session)
         {
-            var requests = await repo.Retrieve()
+            var requests = await factory.DB.Requests.Retrieve()
                 .Where(r => r.SessionID == session.ID.Value)
                 .ToArrayAsync();
             return requests.Select(r => factory.Request(r));
@@ -54,7 +49,7 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppRequest>> RetrieveMostRecent(AppSession session, int howMany)
         {
-            var requests = await repo.Retrieve()
+            var requests = await factory.DB.Requests.Retrieve()
                 .Where(r => r.SessionID == session.ID.Value)
                 .OrderByDescending(r => r.TimeStarted)
                 .Take(howMany)
@@ -64,13 +59,13 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForVersion(AppVersion version, int howMany)
         {
-            var resources = repoFactory
-                .CreateResources()
+            var resources = factory.DB
+                .Resources
                 .Retrieve()
                 .Join
                 (
-                    repoFactory
-                        .CreateResourceGroups()
+                    factory.DB
+                        .ResourceGroups
                         .Retrieve()
                         .Where(rg => rg.VersionID == version.ID.Value),
                     res => res.GroupID,
@@ -90,13 +85,13 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForResourceGroup(ResourceGroup group, int howMany)
         {
-            var resources = repoFactory
-                .CreateResources()
+            var resources = factory.DB
+                .Resources
                 .Retrieve()
                 .Join
                 (
-                    repoFactory
-                        .CreateResourceGroups()
+                    factory.DB
+                        .ResourceGroups
                         .Retrieve()
                         .Where(rg => rg.ID == group.ID.Value),
                     res => res.GroupID,
@@ -116,14 +111,14 @@ namespace XTI_App
 
         internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForResource(Resource resource, int howMany)
         {
-            var resources = repoFactory
-                .CreateResources()
+            var resources = factory.DB
+                .Resources
                 .Retrieve()
                 .Where(r => r.ID == resource.ID.Value)
                 .Join
                 (
-                    repoFactory
-                        .CreateResourceGroups()
+                    factory.DB
+                        .ResourceGroups
                         .Retrieve(),
                     res => res.GroupID,
                     rg => rg.ID,
@@ -142,7 +137,9 @@ namespace XTI_App
 
         private Task<AppRequestExpandedModel[]> requestsWithResources(int howMany, IQueryable<ResourceWithGroupRecord> resources)
         {
-            return repo.Retrieve()
+            return factory.DB
+                .Requests
+                .Retrieve()
                 .Join
                 (
                     resources,
@@ -160,13 +157,13 @@ namespace XTI_App
                 )
                 .Join
                 (
-                    repoFactory
-                        .CreateSessions()
+                    factory.DB
+                        .Sessions
                         .Retrieve()
                         .Join
                         (
-                            repoFactory
-                                .CreateUsers()
+                            factory.DB
+                                .Users
                                 .Retrieve(),
                             s => s.UserID,
                             u => u.ID,

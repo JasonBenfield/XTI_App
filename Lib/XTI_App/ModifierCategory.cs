@@ -53,7 +53,7 @@ namespace XTI_App
 
         public Task<IEnumerable<Modifier>> Modifiers() => factory.Modifiers().Modifiers(this);
 
-        public Task<IEnumerable<ResourceGroup>> ResourceGroups() => factory.Groups().Groups(this);
+        public Task<ResourceGroup[]> ResourceGroups() => factory.Groups().Groups(this);
 
         public ModifierCategoryModel ToModel() => new ModifierCategoryModel
         {

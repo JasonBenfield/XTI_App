@@ -10,17 +10,14 @@ namespace XTI_App
     public sealed class AppRequest
     {
         private readonly AppFactory factory;
-        private readonly DataRepository<AppRequestRecord> repo;
         private readonly AppRequestRecord record;
 
         internal AppRequest
         (
             AppFactory factory,
-            DataRepository<AppRequestRecord> repo,
             AppRequestRecord record
         )
         {
-            this.repo = repo;
             this.factory = factory;
             this.record = record ?? new AppRequestRecord();
             ID = new EntityID(this.record.ID);
@@ -54,26 +51,28 @@ namespace XTI_App
         }
 
         public Task End(DateTimeOffset timeEnded)
-        {
-            return repo.Update(record, r =>
-            {
-                r.TimeEnded = timeEnded;
-            });
-        }
+            => factory.DB
+                .Requests
+                .Update(record, r =>
+                {
+                    r.TimeEnded = timeEnded;
+                });
 
         public Task Edit(AppSession session, Resource resource, Modifier modifier, string path, DateTimeOffset timeStarted)
-            => repo.Update
-            (
-                record,
-                r =>
-                {
-                    r.SessionID = session.ID.Value;
-                    r.ResourceID = resource.ID.Value;
-                    r.ModifierID = modifier.ID.Value;
-                    r.Path = path ?? "";
-                    r.TimeStarted = timeStarted;
-                }
-            );
+            => factory.DB
+                .Requests
+                .Update
+                (
+                    record,
+                    r =>
+                    {
+                        r.SessionID = session.ID.Value;
+                        r.ResourceID = resource.ID.Value;
+                        r.ModifierID = modifier.ID.Value;
+                        r.Path = path ?? "";
+                        r.TimeStarted = timeStarted;
+                    }
+                );
 
         public AppRequestModel ToModel() => new AppRequestModel
         {
