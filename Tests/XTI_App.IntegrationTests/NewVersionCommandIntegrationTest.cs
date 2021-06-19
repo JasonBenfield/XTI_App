@@ -7,6 +7,7 @@ using XTI_App.Abstractions;
 using XTI_App.TestFakes;
 using XTI_Configuration.Extensions;
 using XTI_Version;
+using XTI_VersionToolApi;
 
 namespace XTI_App.IntegrationTests
 {
@@ -75,7 +76,7 @@ namespace XTI_App.IntegrationTests
             {
                 Services = sp;
                 Factory = sp.GetService<AppFactory>();
-                Options = new ManageVersionOptions
+                Options = new VersionToolOptions
                 {
                     Command = "New",
                     AppName = FakeInfo.AppKey.Name.Value,
@@ -85,7 +86,7 @@ namespace XTI_App.IntegrationTests
             }
 
             public AppFactory Factory { get; }
-            public ManageVersionOptions Options { get; }
+            public VersionToolOptions Options { get; }
             public IServiceProvider Services { get; }
 
             public ManageVersionCommand Command() => Services.GetService<ManageVersionCommand>();

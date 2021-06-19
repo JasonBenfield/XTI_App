@@ -1,40 +1,50 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using System.IO;
-using System.Text.Json;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using XTI_Tool;
+using XTI_VersionToolApi;
 using XTI_Version;
 
 namespace XTI_VersionTool
 {
     public sealed class VersionManager : IHostedService
     {
-        private readonly IHostApplicationLifetime lifetime;
-        private readonly ManageVersionCommand manageVersionCommand;
-        private readonly ManageVersionOptions manageVersionOptions;
+        private readonly IServiceProvider services;
 
-        public VersionManager
-        (
-            IHostApplicationLifetime lifetime,
-            ManageVersionCommand manageVersionCommand,
-            IOptions<ManageVersionOptions> manageVersionOptions
-        )
+        public VersionManager(IServiceProvider services)
         {
-            this.lifetime = lifetime;
-            this.manageVersionCommand = manageVersionCommand;
-            this.manageVersionOptions = manageVersionOptions.Value;
+            this.services = services;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var version = await manageVersionCommand.Execute(manageVersionOptions);
+            using var scope = services.CreateScope();
+            try
+            {
+                var manageVersionCommand = scope.ServiceProvider.GetService<ManageVersionCommand>();
+                var options = scope.ServiceProvider.GetService<IOptions<VersionToolOptions>>().Value;
+                var version = await manageVersionCommand.Execute(options);
+                var output = new VersionToolOutput
+                {
+                    VersionKey = version.Key().DisplayText,
+                    VersionType = version.Type().DisplayText,
+                    VersionNumber = version.Version().ToString(),
+                    DevVersionNumber = version.NextPatch().ToString()
+                };
+                new XtiProcessData().Output(output);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Environment.ExitCode = 999;
+            }
+            var lifetime = scope.ServiceProvider.GetService<IHostApplicationLifetime>();
             lifetime.StopApplication();
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

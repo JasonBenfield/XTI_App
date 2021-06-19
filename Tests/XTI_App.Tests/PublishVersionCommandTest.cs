@@ -7,12 +7,12 @@ namespace XTI_App.Tests
     public sealed class PublishVersionCommandTest
     {
         [Test]
-        public async Task ShouldRequireValidBranchName()
+        public async Task ShouldRequireValidVersionType()
         {
             var tester = await setup();
             var newVersion = await tester.Command().Execute(tester.Options);
             tester.Options.Command = "BeginPublish";
-            tester.Options.BranchName = $"something/whatever/{newVersion.ID}";
+            tester.Options.VersionType = "Whatever";
             Assert.ThrowsAsync<InvalidBranchException>(() => tester.Execute());
         }
 
@@ -22,7 +22,8 @@ namespace XTI_App.Tests
             var tester = await setup();
             var newVersion = await tester.Command().Execute(tester.Options);
             tester.Options.Command = "BeginPublish";
-            tester.Options.BranchName = new XtiVersionBranch(newVersion).BranchName();
+            tester.Options.VersionType = newVersion.Type().DisplayText;
+            tester.Options.VersionKey = newVersion.Key().DisplayText;
             var publishedVersion = await tester.Execute();
             Assert.That(publishedVersion.IsPublishing(), Is.True, "Should begin publishing the new version");
         }
@@ -33,7 +34,8 @@ namespace XTI_App.Tests
             var tester = await setup();
             var newVersion = await tester.Command().Execute(tester.Options);
             tester.Options.Command = "BeginPublish";
-            tester.Options.BranchName = new XtiVersionBranch(newVersion).BranchName();
+            tester.Options.VersionType = newVersion.Type().DisplayText;
+            tester.Options.VersionKey = newVersion.Key().DisplayText;
             await tester.Command().Execute(tester.Options);
             tester.Options.Command = "EndPublish";
             var publishedVersion = await tester.Execute();
@@ -46,13 +48,12 @@ namespace XTI_App.Tests
             var tester = await setup();
             var newVersion = await tester.Command().Execute(tester.Options);
             tester.Options.Command = "BeginPublish";
-            tester.Options.BranchName = new XtiVersionBranch(newVersion).BranchName();
+            tester.Options.VersionType = newVersion.Type().DisplayText;
+            tester.Options.VersionKey = newVersion.Key().DisplayText;
             await tester.Execute();
             tester.Options.Command = "EndPublish";
-            tester.Options.BranchName = new XtiVersionBranch(newVersion).BranchName();
             await tester.Execute();
             tester.Options.Command = "BeginPublish";
-            tester.Options.BranchName = new XtiVersionBranch(newVersion).BranchName();
             Assert.ThrowsAsync<PublishVersionException>(() => tester.Execute());
         }
 

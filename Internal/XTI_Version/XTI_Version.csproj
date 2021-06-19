@@ -10,6 +10,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\Lib\XTI_App\XTI_App.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_VersionToolApi\XTI_VersionToolApi.csproj" />
   </ItemGroup>
 
 </Project>
