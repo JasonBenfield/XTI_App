@@ -6,6 +6,7 @@ using XTI_App.Abstractions;
 using XTI_App.TestFakes;
 using XTI_Core;
 using XTI_Secrets.Fakes;
+using XTI_VersionToolApi;
 using XTI_Version;
 
 namespace XTI_App.Tests
@@ -14,7 +15,7 @@ namespace XTI_App.Tests
     {
         private IServiceProvider sp;
 
-        public ManageVersionOptions Options { get; private set; }
+        public VersionToolOptions Options { get; private set; }
 
         public async Task Setup()
         {
@@ -36,13 +37,13 @@ namespace XTI_App.Tests
             var setup = new FakeAppSetup(factory, clock);
             await setup.Run(AppVersionKey.Current);
             var appKey = setup.App.Key();
-            Options = new ManageVersionOptions
+            Options = new VersionToolOptions
             {
                 Command = "New",
-                BranchName = "",
                 AppName = appKey.Name.Value,
                 AppType = appKey.Type.DisplayText,
-                VersionType = AppVersionType.Values.Patch.DisplayText,
+                VersionKey = "",
+                VersionType = AppVersionType.Values.Patch.DisplayText
             };
         }
 
