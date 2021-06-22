@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
@@ -31,13 +32,17 @@ namespace XTI_App.EfApi
         {
             var allAppSetup = new AllAppSetup(appFactory, clock);
             await allAppSetup.Run();
+            var roleNames = appTemplate.RoleNames
+                .Union(AppRoleName.DefaultRoles())
+                .Distinct()
+                .ToArray();
             var appSetup = new SingleAppSetup
             (
                 appFactory,
                 clock,
                 appTemplate.AppKey,
                 appTitle,
-                appTemplate.RoleNames
+                roleNames
             );
             await appSetup.Run();
             var app = await appFactory.Apps().App(appTemplate.AppKey);
