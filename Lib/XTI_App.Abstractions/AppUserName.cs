@@ -8,6 +8,9 @@ namespace XTI_App.Abstractions
         public static readonly AppUserName Anon = new AppUserName("xti_anon");
         public static readonly AppUserName SuperUser = new AppUserName("xti_superuser");
 
+        public static AppUserName SystemUser(AppKey appKey, string machineName)
+            => new AppUserName($"xti_{appKey.Type.DisplayText}_{appKey.Name.DisplayText}_{machineName}".Replace(" ", ""));
+
         public AppUserName(string value) : base(value?.Trim().ToLower() ?? "")
         {
         }

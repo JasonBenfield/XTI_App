@@ -5,10 +5,11 @@ namespace XTI_App.Abstractions
 {
     public sealed class AppRoleName : TextKeyValue, IEquatable<AppRoleName>
     {
+        public static AppRoleName General = new AppRoleName(nameof(General));
         public static AppRoleName Admin = new AppRoleName(nameof(Admin));
         public static AppRoleName System = new AppRoleName(nameof(System));
 
-        public static AppRoleName[] DefaultRoles() => new[] { Admin, System };
+        public static AppRoleName[] DefaultRoles() => new[] { General, Admin, System };
 
         public AppRoleName(string value) : base(value)
         {

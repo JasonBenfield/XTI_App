@@ -33,6 +33,10 @@ namespace XTI_UserApp
                 {
                     await addUser(scope.ServiceProvider, userOptions);
                 }
+                else if (userOptions.Command.Equals("systemUser", StringComparison.OrdinalIgnoreCase))
+                {
+                    await addSystemUser(scope.ServiceProvider, userOptions);
+                }
                 else if (userOptions.Command.Equals("userroles", StringComparison.OrdinalIgnoreCase))
                 {
                     await addUserRoles(scope.ServiceProvider, userOptions);
@@ -90,6 +94,46 @@ namespace XTI_UserApp
             else
             {
                 await appFactory.Users().Add(userName, hashedPassword, clock.Now());
+            }
+        }
+
+        private static async Task addSystemUser(IServiceProvider sp, UserOptions userOptions)
+        {
+            if (string.IsNullOrWhiteSpace(userOptions.AppName)) { throw new ArgumentException("App name is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.AppType)) { throw new ArgumentException("App type is required"); }
+            if (string.IsNullOrWhiteSpace(userOptions.MachineName)) { throw new ArgumentException("Machine name is required"); }
+            var appFactory = sp.GetService<AppFactory>();
+            var clock = sp.GetService<Clock>();
+            var hashedPasswordFactory = sp.GetService<IHashedPasswordFactory>();
+            string password;
+            if (string.IsNullOrWhiteSpace(userOptions.Password))
+            {
+                password = Guid.NewGuid().ToString("N") + "!?";
+            }
+            else
+            {
+                password = userOptions.Password;
+            }
+            var hashedPassword = hashedPasswordFactory.Create(password);
+            var appKey = new AppKey
+            (
+                new AppName(userOptions.AppName),
+                AppType.Values.Value(userOptions.AppType)
+            );
+            var user = await appFactory.Users().SystemUser(appKey, userOptions.MachineName);
+            if (user.Exists())
+            {
+                await user.ChangePassword(hashedPassword);
+            }
+            else
+            {
+                await appFactory.Users().AddSystemUser
+                (
+                    appKey,
+                    userOptions.MachineName,
+                    hashedPassword,
+                    clock.Now()
+                );
             }
         }
 
