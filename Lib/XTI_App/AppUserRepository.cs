@@ -47,11 +47,36 @@ namespace XTI_App
             return factory.User(record);
         }
 
+        public Task<AppUser> SystemUser(AppKey appKey, string machineName)
+            => User(AppUserName.SystemUser(appKey, machineName));
+
         private Task<AppUserRecord> user(AppUserName userName)
-            => factory.DB
-                .Users
-                .Retrieve()
-                .FirstOrDefaultAsync(u => u.UserName == userName.Value);
+        => factory.DB
+            .Users
+            .Retrieve()
+            .FirstOrDefaultAsync(u => u.UserName == userName.Value);
+
+        public async Task<AppUser> AddSystemUser
+        (
+            AppKey appKey,
+            string machineName,
+            IHashedPassword password,
+            DateTimeOffset timeAdded
+        )
+        {
+            var user = await Add
+            (
+                AppUserName.SystemUser(appKey, machineName),
+                password,
+                new PersonName($"{appKey.Type.DisplayText.Replace(" ", "")} {appKey.Name.DisplayText.Replace(" ", "")} {machineName}"),
+                new EmailAddress(""),
+                timeAdded
+            );
+            var app = await factory.Apps().App(appKey);
+            var role = await app.Role(AppRoleName.System);
+            await user.AddRole(role);
+            return user;
+        }
 
         public Task<AppUser> Add
         (
