@@ -23,6 +23,7 @@ namespace XTI_App.TestFakes
                 actions.Action
                 (
                     nameof(Employee),
+                    source.Access.WithAllowed(FakeAppRoles.Instance.Viewer),
                     () => new EmployeeAction(),
                     "Get Employee Information"
                 )

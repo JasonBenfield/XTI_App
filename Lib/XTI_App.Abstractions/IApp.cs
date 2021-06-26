@@ -9,5 +9,6 @@ namespace XTI_App.Abstractions
         string Title { get; }
         Task<IAppVersion> Version(AppVersionKey versionKey);
         Task<IEnumerable<IAppRole>> Roles();
+        Task<IModifier> DefaultModifier();
     }
 }

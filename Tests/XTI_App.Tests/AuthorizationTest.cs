@@ -19,7 +19,7 @@ namespace XTI_App.Tests
         public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole()
         {
             var input = await setup("/Fake/Current/Product/AddProduct");
-            var adminRole = await input.App.Role(FakeAppRoles.Instance.Admin);
+            var adminRole = await input.App.Role(AppRoleName.Admin);
             await addRolesToUser(input, adminRole);
             var hasAccess = await input.Api.Product.AddProduct.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role");
@@ -46,14 +46,29 @@ namespace XTI_App.Tests
         }
 
         [Test]
-        public async Task ShouldNotHaveAccess_WhenUserBelongsToADeniedRoleEvenIfTheyBelongToAnAllowedRole()
+        public async Task ShouldHaveAccessToModifiedAction_WhenUserBelongsToAnAllowedRoleForTheDefaultModifier()
         {
-            var input = await setup("/Fake/Current/Product/AddProduct");
-            var adminRole = await input.App.Role(FakeAppRoles.Instance.Admin);
+            var input = await setup("/Fake/Current/Employee/AddEmployee", "IT");
+            var user = await input.User();
+            var adminRole = await input.App.Role(AppRoleName.Admin);
+            await user.AddRole(adminRole);
+            var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
+            Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
+        }
+
+        [Test]
+        public async Task ShouldNotHaveAccessToModifiedAction_WhenUserDoesNotBelongsToAnAllowedRoleForTheModifier_IfTheyBelongToAnAllowedRoleForTheDefaultModifier()
+        {
+            var input = await setup("/Fake/Current/Employee/AddEmployee", "IT");
+            var user = await input.User();
+            var adminRole = await input.App.Role(AppRoleName.Admin);
+            await user.AddRole(adminRole);
+            var modCategory = await input.App.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier("IT");
             var viewerRole = await input.App.Role(FakeAppRoles.Instance.Viewer);
-            await addRolesToUser(input, adminRole, viewerRole);
-            var hasAccess = await input.Api.Product.AddProduct.HasAccess();
-            Assert.That(hasAccess, Is.False, "Should not have access when user belongs to a denied role even if they belong to an allowed role");
+            await user.AddRole(viewerRole, modifier);
+            var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
+            Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role for modified action");
         }
 
         [Test]
@@ -63,9 +78,8 @@ namespace XTI_App.Tests
             var user = await input.User();
             var modCategory = await input.App.ModCategory(new ModifierCategoryName("Department"));
             var modifier = await modCategory.Modifier("IT");
-            await user.AddModifier(modifier);
-            var adminRole = await input.App.Role(FakeAppRoles.Instance.Admin);
-            await addRolesToUser(input, adminRole);
+            var adminRole = await input.App.Role(AppRoleName.Admin);
+            await user.AddRole(adminRole, modifier);
             var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
         }
@@ -76,8 +90,9 @@ namespace XTI_App.Tests
             var input = await setup("/Fake/Current/Employee/AddEmployee", "IT");
             var user = await input.User();
             var modCategory = await input.App.ModCategory(new ModifierCategoryName("Department"));
+            var viewerRole = await input.App.Role(FakeAppRoles.Instance.Viewer);
             var modifier = await modCategory.Modifier("IT");
-            await user.AddModifier(modifier);
+            await user.AddRole(viewerRole, modifier);
             var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role even if they have access to the modified action");
         }
@@ -86,7 +101,7 @@ namespace XTI_App.Tests
         public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndTheActionHasTheDefaultModifier()
         {
             var input = await setup("/Fake/Current/Employee/AddEmployee");
-            var adminRole = await input.App.Role(FakeAppRoles.Instance.Admin);
+            var adminRole = await input.App.Role(AppRoleName.Admin);
             await addRolesToUser(input, adminRole);
             var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role and the action has the default modifier");
@@ -96,29 +111,13 @@ namespace XTI_App.Tests
         public async Task ShouldNotHaveAccess_WhenUserBelongsToAnAllowedRole_ButDoesNotHaveAccessToTheModifiedAction()
         {
             var input = await setup("/Fake/Current/Employee/AddEmployee", "HR");
-            var adminRole = await input.App.Role(FakeAppRoles.Instance.Admin);
-            await addRolesToUser(input, adminRole);
             var user = await input.User();
+            var adminRole = await input.App.Role(AppRoleName.Admin);
             var modCategory = await input.App.ModCategory(new ModifierCategoryName("Department"));
             var modifier = await modCategory.Modifier("IT");
-            await user.AddModifier(modifier);
-            var viewerRole = await input.App.Role(FakeAppRoles.Instance.Viewer);
-            await addRolesToUser(input, viewerRole);
+            await user.AddRole(adminRole, modifier);
             var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role for modified action");
-        }
-
-        [Test]
-        public async Task ShouldHaveAccess_WhenUserHasFullAccessToTheModCategory()
-        {
-            var input = await setup("/Fake/Current/Employee/AddEmployee", "IT");
-            var adminRole = await input.App.Role(FakeAppRoles.Instance.Admin);
-            await addRolesToUser(input, adminRole);
-            var category = await input.App.ModCategory(new ModifierCategoryName("Department"));
-            var user = await input.User();
-            await user.GrantFullAccessToModCategory(category);
-            var hasAccess = await input.Api.Employee.AddEmployee.HasAccess();
-            Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
         }
 
         [Test]
@@ -159,24 +158,6 @@ namespace XTI_App.Tests
             Assert.That(hasAccess, Is.False, "User should not have access to app when they are not authenticated and the resource allows authenticated users");
         }
 
-        [Test]
-        public async Task ShouldHaveAccessToApp_WhenTheUserBelongsToAnyAppRoles()
-        {
-            var input = await setup("/Fake/Current/Home");
-            var viewerRole = await input.App.Role(FakeAppRoles.Instance.Viewer);
-            await addRolesToUser(input, viewerRole);
-            var hasAccess = await input.Api.HasAccess();
-            Assert.That(hasAccess, Is.True, "User should have access to app when they belong to any app roles");
-        }
-
-        [Test]
-        public async Task ShouldNotHaveAccessToApp_WhenTheUserDoesNotBelongToAnyAppRoles()
-        {
-            var input = await setup("/Fake/Current/Home");
-            var hasAccess = await input.Api.HasAccess();
-            Assert.That(hasAccess, Is.False, "User should not have access to app when they do not belong to any app roles");
-        }
-
         private async Task addRolesToUser(TestInput input, params AppRole[] roles)
         {
             var user = await input.User();
@@ -202,7 +183,7 @@ namespace XTI_App.Tests
                         });
                         services.AddScoped<IAppContext, DefaultAppContext>();
                         services.AddScoped<IUserContext, FakeUserContext>();
-                        services.AddScoped<IAppApiUser, XtiAppApiUser>();
+                        services.AddScoped<IAppApiUser, AppApiUser>();
                         services.AddSingleton(sp => FakeInfo.AppKey);
                         services.AddSingleton(_ => AppVersionKey.Current);
                         services.AddScoped<FakeAppApi>();

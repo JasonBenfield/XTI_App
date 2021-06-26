@@ -63,13 +63,14 @@ namespace XTI_App.Tests
             var user = await addUser(services, userName);
             var app = await services.FakeApp();
             var appRoles = await app.Roles();
-            await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Admin)));
+            await user.AddRole(appRoles.First(ar => ar.Name().Equals(AppRoleName.Admin)));
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Manager)));
-            var assignedRoles = await user.AssignedRoles(app);
+            var defaultModifer = await app.DefaultModifier();
+            var assignedRoles = await user.AssignedRoles(app, defaultModifer);
             Assert.That
             (
                 assignedRoles.Select(ur => ur.Name()),
-                Is.EquivalentTo(new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager }),
+                Is.EquivalentTo(new[] { AppRoleName.Admin, FakeInfo.Roles.Manager }),
                 "Should get assigned roles"
             );
         }
@@ -82,13 +83,14 @@ namespace XTI_App.Tests
             var user = await addUser(services, userName);
             var app = await services.FakeApp();
             var appRoles = await app.Roles();
-            await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Admin)));
+            await user.AddRole(appRoles.First(ar => ar.Name().Equals(AppRoleName.Admin)));
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Manager)));
-            var unassignedRoles = await user.UnassignedRoles(app);
+            var defaultModifier = await app.DefaultModifier();
+            var unassignedRoles = await user.ExplicitlyUnassignedRoles(app, defaultModifier);
             Assert.That
             (
                 unassignedRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { FakeInfo.Roles.Viewer }),
+                Is.EquivalentTo(new[] { AppRoleName.General, AppRoleName.System, FakeInfo.Roles.Viewer }),
                 "Should get unassigned roles"
             );
         }

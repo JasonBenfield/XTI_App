@@ -55,11 +55,6 @@ namespace XTI_App
         internal Modifier Modifier(ModifierRecord record)
             => new Modifier(this, record);
 
-        private ModifierCategoryAdminRepository modCategoryAdmins;
-        internal ModifierCategoryAdminRepository ModCategoryAdmins()
-            => modCategoryAdmins
-                ?? (modCategoryAdmins = new ModifierCategoryAdminRepository(this));
-
         private AppSessionRepository sessions;
         public AppSessionRepository Sessions()
             => sessions ?? (sessions = new AppSessionRepository(this));

@@ -33,6 +33,15 @@ namespace XTI_App
             return modCategory;
         }
 
+        async Task<IModifier> IApp.DefaultModifier() => await DefaultModifier();
+
+        public async Task<Modifier> DefaultModifier()
+        {
+            var modCategory = await ModCategory(ModifierCategoryName.Default);
+            var modifier = await modCategory.Modifier(ModifierKey.Default);
+            return modifier;
+        }
+
         public Task<ModifierCategory[]> ModCategories()
             => factory.ModCategories().Categories(this);
 
