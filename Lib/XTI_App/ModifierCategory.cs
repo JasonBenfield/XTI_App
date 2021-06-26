@@ -47,9 +47,14 @@ namespace XTI_App
         private Task<Modifier> addModifier(ModifierKey modKey, string targetKey, string displayText)
             => factory.Modifiers().Add(this, modKey, targetKey, displayText);
 
-        public Task<Modifier> Modifier(ModifierKey modKey) => factory.Modifiers().Modifier(modKey);
+        async Task<IModifier> IModifierCategory.Modifier(ModifierKey modKey)
+            => await Modifier(modKey);
+
+        public Task<Modifier> Modifier(ModifierKey modKey) => factory.Modifiers().Modifier(this, modKey);
         public Task<Modifier> Modifier(int targetID) => Modifier(targetID.ToString());
         public Task<Modifier> Modifier(string targetKey) => factory.Modifiers().Modifier(this, targetKey);
+
+        public Task<App> App() => factory.Apps().App(record.AppID);
 
         public Task<IEnumerable<Modifier>> Modifiers() => factory.Modifiers().Modifiers(this);
 

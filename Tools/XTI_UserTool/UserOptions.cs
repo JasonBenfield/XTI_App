@@ -11,6 +11,6 @@
         public string Password { get; set; }
         public string RoleNames { get; set; }
         public string ModCategoryName { get; set; }
-        public string ModKeys { get; set; }
+        public string ModKey { get; set; }
     }
 }

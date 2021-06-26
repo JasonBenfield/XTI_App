@@ -40,7 +40,12 @@ namespace XTI_App.Tests
             var input = setup();
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
+            var roleNames = new[]
+            {
+                FakeInfo.Roles.Manager,
+                FakeInfo.Roles.Viewer
+            }
+            .Union(AppRoleName.DefaultRoles());
             var appRoles = await app.Roles();
             Assert.That(appRoles.Select(r => r.Name()), Is.EquivalentTo(roleNames), "Should add role names from app role names");
         }
@@ -116,25 +121,8 @@ namespace XTI_App.Tests
             Assert.That
             (
                 allowedRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Admin }),
+                Is.EquivalentTo(new[] { AppRoleName.Admin }),
                 "Should add allowed group roles from group template"
-            );
-        }
-
-        [Test]
-        public async Task ShouldAddDeniedGroupRoleFromAppGroupTemplate()
-        {
-            var input = setup();
-            await execute(input);
-            var app = await input.Factory.Apps().App(input.Options.AppKey);
-            var version = await app.CurrentVersion();
-            var productGroup = (await version.ResourceGroups()).First(g => g.Name().Equals("Product"));
-            var deniedRoles = await productGroup.DeniedRoles();
-            Assert.That
-            (
-                deniedRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Viewer }),
-                "Should add denied group roles from group template"
             );
         }
 
@@ -168,7 +156,7 @@ namespace XTI_App.Tests
             Assert.That
             (
                 allowedRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Admin, FakeAppRoles.Instance.Manager }),
+                Is.EquivalentTo(new[] { AppRoleName.Admin, FakeAppRoles.Instance.Manager }),
                 "Should add allowed resource roles from action template"
             );
         }

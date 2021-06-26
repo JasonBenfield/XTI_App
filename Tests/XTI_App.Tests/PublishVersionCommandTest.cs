@@ -13,7 +13,7 @@ namespace XTI_App.Tests
             var newVersion = await tester.Command().Execute(tester.Options);
             tester.Options.Command = "BeginPublish";
             tester.Options.VersionType = "Whatever";
-            Assert.ThrowsAsync<InvalidBranchException>(() => tester.Execute());
+            Assert.ThrowsAsync<PublishVersionException>(() => tester.Execute());
         }
 
         [Test]

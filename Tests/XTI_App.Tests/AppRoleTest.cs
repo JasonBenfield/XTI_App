@@ -39,7 +39,8 @@ namespace XTI_App.Tests
                 new AppUserName("someone"), new FakeHashedPassword("Password"), clock.Now()
             );
             await user.AddRole(adminRole);
-            var userRoles = (await user.AssignedRoles(app)).ToArray();
+            var defaultModifier = await app.DefaultModifier();
+            var userRoles = (await user.AssignedRoles(app, defaultModifier)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
             Assert.That(userRoles[0].ID.Equals(adminRole.ID), Is.True, "Should add role to user");
         }
@@ -49,7 +50,7 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var app = await services.FakeApp();
-            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
+            var roleNames = new[] { AppRoleName.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
             await app.SetRoles(roleNames);
             await app.SetRoles(roleNames);
             var appRoles = await app.Roles();
@@ -61,7 +62,7 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var app = await services.FakeApp();
-            var roleNames = new[] { FakeInfo.Roles.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
+            var roleNames = new[] { AppRoleName.Admin, FakeInfo.Roles.Manager, FakeInfo.Roles.Viewer };
             await app.SetRoles(roleNames);
             roleNames = roleNames.Where(rn => !rn.Equals(FakeAppRoles.Instance.Manager)).ToArray();
             await app.SetRoles(roleNames);

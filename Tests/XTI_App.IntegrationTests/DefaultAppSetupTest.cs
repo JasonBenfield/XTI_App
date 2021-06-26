@@ -33,7 +33,7 @@ namespace XTI_App.IntegrationTests
             Assert.That
             (
                 allowedGroupRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Admin })
+                Is.EquivalentTo(new[] { AppRoleName.Admin })
             );
             var resources = await employeeGroup.Resources();
             Assert.That
@@ -46,7 +46,7 @@ namespace XTI_App.IntegrationTests
             Assert.That
             (
                 allowedResourceRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { FakeAppRoles.Instance.Admin, FakeAppRoles.Instance.Manager })
+                Is.EquivalentTo(new[] { AppRoleName.Admin, FakeAppRoles.Instance.Manager })
             );
         }
 

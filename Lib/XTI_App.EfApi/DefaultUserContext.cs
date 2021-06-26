@@ -10,14 +10,17 @@ namespace XTI_App.EfApi
         private readonly AppFactory appFactory;
         private readonly Func<int> getUserID;
 
+        public DefaultUserContext(AppFactory appFactory, int userID)
+            : this(appFactory, () => userID)
+        {
+        }
+
         public DefaultUserContext(AppFactory appFactory, Func<int> getUserID)
         {
             this.appFactory = appFactory;
             this.getUserID = getUserID;
         }
 
-        public Task<IAppUser> User() => User(getUserID());
-
-        public async Task<IAppUser> User(int userID) => await appFactory.Users().User(userID);
+        public async Task<IAppUser> User() => await appFactory.Users().User(getUserID());
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using XTI_App.Abstractions;
 
 namespace XTI_App.Api
@@ -18,7 +17,6 @@ namespace XTI_App.Api
         public ResourceAccess Access { get => source.Access; }
         public IAppApiGroup Group(string groupName) => source.Group(groupName);
         public IEnumerable<IAppApiGroup> Groups() => source.Groups();
-        public Task<bool> HasAccess() => source.HasAccess();
         public AppApiTemplate Template() => source.Template();
     }
 }

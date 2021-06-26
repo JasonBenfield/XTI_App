@@ -23,6 +23,8 @@ namespace XTI_App
 
         internal Task Delete() => factory.DB.Roles.Delete(record);
 
+        internal Task<App> App() => factory.Apps().App(record.AppID);
+
         public AppRoleModel ToModel() => new AppRoleModel
         {
             ID = ID.Value,
