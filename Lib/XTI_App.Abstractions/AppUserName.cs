@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using XTI_Core;
 
 namespace XTI_App.Abstractions
@@ -6,10 +7,22 @@ namespace XTI_App.Abstractions
     public sealed class AppUserName : TextValue, IEquatable<AppUserName>
     {
         public static readonly AppUserName Anon = new AppUserName("xti_anon");
-        public static readonly AppUserName SuperUser = new AppUserName("xti_superuser");
 
         public static AppUserName SystemUser(AppKey appKey, string machineName)
-            => new AppUserName($"xti_{appKey.Type.DisplayText}_{appKey.Name.DisplayText}_{machineName}".Replace(" ", ""));
+        {
+            var parts = new[]
+            {
+                "xti",
+                "sys",
+                appKey.Name.DisplayText,
+                appKey.Type.DisplayText,
+                machineName
+            }
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => p.Replace(" ", "").Replace("_", ""));
+            var userName = string.Join("_", parts);
+            return new AppUserName(userName);
+        }
 
         public AppUserName(string value) : base(value?.Trim().ToLower() ?? "")
         {

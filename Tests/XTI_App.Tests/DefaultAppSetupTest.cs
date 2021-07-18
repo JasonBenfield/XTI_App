@@ -8,7 +8,6 @@ using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.TestFakes;
 using XTI_Core;
-using XTI_Core.Fakes;
 
 namespace XTI_App.Tests
 {
@@ -116,7 +115,8 @@ namespace XTI_App.Tests
             await execute(input);
             var app = await input.Factory.Apps().App(input.Options.AppKey);
             var version = await app.CurrentVersion();
-            var employeeGroup = (await version.ResourceGroups()).First(g => g.Name().Equals("Employee"));
+            var employeeGroup = (await version.ResourceGroups())
+                .First(g => g.Name().Equals("Employee"));
             var allowedRoles = await employeeGroup.AllowedRoles();
             Assert.That
             (
@@ -255,11 +255,10 @@ namespace XTI_App.Tests
             Assert.That(resourceModel.IsAnonymousAllowed, Is.False, "Should deny anonymous");
         }
 
-        private async Task execute(TestInput input)
+        private Task execute(TestInput input)
         {
-            using var scope = input.Services.CreateScope();
-            var setup = scope.ServiceProvider.GetService<IAppSetup>();
-            await setup.Run(AppVersionKey.Current);
+            var setup = input.Services.GetService<IAppSetup>();
+            return setup.Run(AppVersionKey.Current);
         }
 
         private TestInput setup()

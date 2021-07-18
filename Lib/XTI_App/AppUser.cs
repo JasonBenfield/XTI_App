@@ -68,7 +68,8 @@ namespace XTI_App
             var roles = await ExplicitlyAssignedRoles(app, modifier);
             if (!roles.Any() && !modifier.ModKey().Equals(ModifierKey.Default))
             {
-                var defaultModifier = await app.DefaultModifier();
+                var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
+                var defaultModifier = await defaultModCategory.Modifier(ModifierKey.Default);
                 roles = await ExplicitlyAssignedRoles(app, defaultModifier);
             }
             return roles;

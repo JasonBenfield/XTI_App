@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MainDB.Entities;
 using XTI_Core;
 
 namespace XTI_App
@@ -33,16 +32,15 @@ namespace XTI_App
             return factory.Event(record);
         }
 
-        internal async Task<IEnumerable<AppEvent>> RetrieveByRequest(AppRequest request)
+        internal Task<AppEvent[]> RetrieveByRequest(AppRequest request)
         {
-            var eventRepo = factory.Events();
-            var records = await factory.DB.Events.Retrieve()
+            return factory.DB.Events.Retrieve()
                 .Where(e => e.RequestID == request.ID.Value)
+                .Select(e => factory.Event(e))
                 .ToArrayAsync();
-            return records.Select(e => factory.Event(e));
         }
 
-        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForVersion(AppVersion version, int howMany)
+        internal Task<AppEvent[]> MostRecentErrorsForVersion(AppVersion version, int howMany)
         {
             var requestIDs = factory.DB
                 .Requests
@@ -68,7 +66,7 @@ namespace XTI_App
             return mostRecentErrors(howMany, requestIDs);
         }
 
-        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForResourceGroup(ResourceGroup group, int howMany)
+        internal Task<AppEvent[]> MostRecentErrorsForResourceGroup(ResourceGroup group, int howMany)
         {
             var requestIDs = factory.DB
                 .Requests
@@ -87,7 +85,7 @@ namespace XTI_App
             return mostRecentErrors(howMany, requestIDs);
         }
 
-        internal Task<IEnumerable<AppEvent>> MostRecentErrorsForResource(Resource resource, int howMany)
+        internal Task<AppEvent[]> MostRecentErrorsForResource(Resource resource, int howMany)
         {
             var requestIDs = factory.DB
                 .Requests
@@ -97,9 +95,8 @@ namespace XTI_App
             return mostRecentErrors(howMany, requestIDs);
         }
 
-        private async Task<IEnumerable<AppEvent>> mostRecentErrors(int howMany, IQueryable<int> requestIDs)
-        {
-            var events = await factory.DB
+        private Task<AppEvent[]> mostRecentErrors(int howMany, IQueryable<int> requestIDs)
+            => factory.DB
                 .Events
                 .Retrieve()
                 .Where
@@ -109,9 +106,8 @@ namespace XTI_App
                 )
                 .OrderByDescending(evt => evt.TimeOccurred)
                 .Take(howMany)
+                .Select(evt => factory.Event(evt))
                 .ToArrayAsync();
-            return events.Select(evt => factory.Event(evt));
-        }
 
     }
 }

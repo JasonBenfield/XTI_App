@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace XTI_App.Abstractions
 {
@@ -8,7 +7,7 @@ namespace XTI_App.Abstractions
         EntityID ID { get; }
         string Title { get; }
         Task<IAppVersion> Version(AppVersionKey versionKey);
-        Task<IEnumerable<IAppRole>> Roles();
-        Task<IModifier> DefaultModifier();
+        Task<IAppRole[]> Roles();
+        Task<IModifierCategory> ModCategory(ModifierCategoryName name);
     }
 }

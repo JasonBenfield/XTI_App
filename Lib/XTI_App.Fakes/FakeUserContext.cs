@@ -5,7 +5,7 @@ using XTI_App.EfApi;
 
 namespace XTI_App.Fakes
 {
-    public sealed class FakeUserContext : IUserContext
+    public sealed class FakeUserContext : ISourceUserContext
     {
         private readonly DefaultUserContext userContext;
 
@@ -19,6 +19,8 @@ namespace XTI_App.Fakes
         private int getUserID() => userID;
 
         public Task<IAppUser> User() => userContext.User();
+
+        public Task<string> GetKey() => Task.FromResult(getUserID().ToString());
 
         public void SetUser(IAppUser user)
         {

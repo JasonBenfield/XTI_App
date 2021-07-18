@@ -21,6 +21,21 @@ namespace XTI_App.EfApi
             this.getUserID = getUserID;
         }
 
-        public async Task<IAppUser> User() => await appFactory.Users().User(getUserID());
+        public Task<string> GetKey() => Task.FromResult(getUserID().ToString());
+
+        public async Task<IAppUser> User()
+        {
+            var userID = getUserID();
+            AppUser user;
+            if (userID > 0)
+            {
+                user = await appFactory.Users().User(userID);
+            }
+            else
+            {
+                user = await appFactory.Users().User(AppUserName.Anon);
+            }
+            return user;
+        }
     }
 }

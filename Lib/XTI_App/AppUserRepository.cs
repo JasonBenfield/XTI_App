@@ -1,11 +1,9 @@
 ﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
-using XTI_Core;
 
 namespace XTI_App
 {
@@ -18,15 +16,13 @@ namespace XTI_App
             this.factory = factory;
         }
 
-        public async Task<IEnumerable<AppUser>> Users()
-        {
-            var records = await factory.DB
+        public Task<AppUser[]> Users()
+            => factory.DB
                 .Users
                 .Retrieve()
                 .OrderBy(u => u.UserName)
+                .Select(u => factory.User(u))
                 .ToArrayAsync();
-            return records.Select(u => factory.User(u));
-        }
 
         public async Task<AppUser> User(int id)
         {
@@ -47,14 +43,30 @@ namespace XTI_App
             return factory.User(record);
         }
 
+        public Task<AppUser[]> SystemUsers()
+            => factory.DB
+            .Users
+            .Retrieve()
+            .Where(u => u.UserName.StartsWith("xti_sys_"))
+            .Select(u => factory.User(u))
+            .ToArrayAsync();
+
+        public Task<AppUser[]> SystemUsers(AppKey appKey)
+            => factory.DB
+            .Users
+            .Retrieve()
+            .Where(u => u.UserName.StartsWith(AppUserName.SystemUser(appKey, "").Value))
+            .Select(u => factory.User(u))
+            .ToArrayAsync();
+
         public Task<AppUser> SystemUser(AppKey appKey, string machineName)
             => User(AppUserName.SystemUser(appKey, machineName));
 
         private Task<AppUserRecord> user(AppUserName userName)
-        => factory.DB
-            .Users
-            .Retrieve()
-            .FirstOrDefaultAsync(u => u.UserName == userName.Value);
+            => factory.DB
+                .Users
+                .Retrieve()
+                .FirstOrDefaultAsync(u => u.UserName == userName.Value);
 
         public async Task<AppUser> AddSystemUser
         (
@@ -68,7 +80,7 @@ namespace XTI_App
             (
                 AppUserName.SystemUser(appKey, machineName),
                 password,
-                new PersonName($"{appKey.Type.DisplayText.Replace(" ", "")} {appKey.Name.DisplayText.Replace(" ", "")} {machineName}"),
+                new PersonName($"{appKey.Name.DisplayText.Replace(" ", "")} {appKey.Type.DisplayText.Replace(" ", "")} {machineName}"),
                 new EmailAddress(""),
                 timeAdded
             );

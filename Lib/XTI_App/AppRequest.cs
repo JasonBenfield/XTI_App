@@ -40,7 +40,7 @@ namespace XTI_App
             return date <= before;
         }
 
-        public Task<IEnumerable<AppEvent>> Events() => factory.Events().RetrieveByRequest(this);
+        public Task<AppEvent[]> Events() => factory.Events().RetrieveByRequest(this);
 
         public Task<AppEvent> LogEvent(string eventKey, AppEventSeverity severity, DateTimeOffset timeOccurred, string caption, string message, string detail)
         {

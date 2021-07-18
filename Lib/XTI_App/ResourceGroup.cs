@@ -142,10 +142,10 @@ namespace XTI_App
                     }
                 );
 
-        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+        public Task<AppRequestExpandedModel[]> MostRecentRequests(int howMany)
             => factory.Requests().MostRecentForResourceGroup(this, howMany);
 
-        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+        public Task<AppEvent[]> MostRecentErrorEvents(int howMany)
             => factory.Events().MostRecentErrorsForResourceGroup(this, howMany);
 
         public ResourceGroupModel ToModel()

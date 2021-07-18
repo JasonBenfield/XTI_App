@@ -1,7 +1,6 @@
 ﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
@@ -39,25 +38,25 @@ namespace XTI_App
             return factory.Request(requestRecord);
         }
 
-        internal async Task<IEnumerable<AppRequest>> RetrieveBySession(AppSession session)
-        {
-            var requests = await factory.DB.Requests.Retrieve()
+        internal Task<AppRequest[]> RetrieveBySession(AppSession session)
+            => factory.DB.Requests
+                .Retrieve()
                 .Where(r => r.SessionID == session.ID.Value)
+                .Select(r => factory.Request(r))
                 .ToArrayAsync();
-            return requests.Select(r => factory.Request(r));
-        }
 
-        internal async Task<IEnumerable<AppRequest>> RetrieveMostRecent(AppSession session, int howMany)
+        internal Task<AppRequest[]> RetrieveMostRecent(AppSession session, int howMany)
         {
-            var requests = await factory.DB.Requests.Retrieve()
+            return factory.DB.Requests
+                .Retrieve()
                 .Where(r => r.SessionID == session.ID.Value)
                 .OrderByDescending(r => r.TimeStarted)
                 .Take(howMany)
+                .Select(r => factory.Request(r))
                 .ToArrayAsync();
-            return requests.Select(r => factory.Request(r));
         }
 
-        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForVersion(AppVersion version, int howMany)
+        internal async Task<AppRequestExpandedModel[]> MostRecentForVersion(AppVersion version, int howMany)
         {
             var resources = factory.DB
                 .Resources
@@ -83,7 +82,7 @@ namespace XTI_App
             return requests;
         }
 
-        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForResourceGroup(ResourceGroup group, int howMany)
+        internal async Task<AppRequestExpandedModel[]> MostRecentForResourceGroup(ResourceGroup group, int howMany)
         {
             var resources = factory.DB
                 .Resources
@@ -109,7 +108,7 @@ namespace XTI_App
             return requests;
         }
 
-        internal async Task<IEnumerable<AppRequestExpandedModel>> MostRecentForResource(Resource resource, int howMany)
+        internal async Task<AppRequestExpandedModel[]> MostRecentForResource(Resource resource, int howMany)
         {
             var resources = factory.DB
                 .Resources

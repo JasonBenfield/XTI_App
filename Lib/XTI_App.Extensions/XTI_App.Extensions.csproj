@@ -7,13 +7,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    <PackageReference Include="MainDB.EF.SqlServer" Version="1.10.9" />
+    <PackageReference Include="MainDB.EF.SqlServer" Version="1.10.12" />
     <PackageReference Include="XTI_Secrets.Extensions" Version="1.7.7" />
+    <PackageReference Include="XTI_TempLog.Extensions" Version="1.2.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\XTI_App.Api\XTI_App.Api.csproj" />
     <ProjectReference Include="..\XTI_App.EfApi\XTI_App.EfApi.csproj" />
+    <ProjectReference Include="..\XTI_App.Secrets\XTI_App.Secrets.csproj" />
     <ProjectReference Include="..\XTI_App\XTI_App.csproj" />
   </ItemGroup>
 

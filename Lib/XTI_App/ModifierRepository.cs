@@ -1,6 +1,5 @@
 ﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
@@ -29,10 +28,11 @@ namespace XTI_App
             return factory.Modifier(record);
         }
 
-        internal async Task<IEnumerable<Modifier>> Modifiers(ModifierCategory category)
+        internal Task<Modifier[]> Modifiers(ModifierCategory category)
         {
-            var records = await modifiersForCategory(category).ToArrayAsync();
-            return records.Select(m => factory.Modifier(m));
+            return modifiersForCategory(category)
+                .Select(m => factory.Modifier(m))
+                .ToArrayAsync();
         }
 
         internal async Task<Modifier> Modifier(int modifierID)

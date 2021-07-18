@@ -1,4 +1,6 @@
 ﻿using MainDB.Entities;
+using System;
+using System.Threading.Tasks;
 
 namespace XTI_App
 {
@@ -71,5 +73,7 @@ namespace XTI_App
         public AppEventRepository Events()
             => events ?? (events = new AppEventRepository(this));
         internal AppEvent Event(AppEventRecord record) => new AppEvent(record);
+
+        public Task Transaction(Func<Task> action) => DB.Transaction(action);
     }
 }

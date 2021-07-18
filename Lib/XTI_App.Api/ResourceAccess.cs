@@ -27,9 +27,10 @@ namespace XTI_App.Api
         public bool IsAnonymousAllowed { get; }
 
         public ResourceAccess WithAllowed(params AppRoleName[] allowed)
-        {
-            return new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }));
-        }
+            => new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }));
+
+        public ResourceAccess WithoutAllowed(params AppRoleName[] allowed)
+            => new ResourceAccess(Allowed.Except(allowed ?? new AppRoleName[] { }));
 
         public override string ToString()
         {

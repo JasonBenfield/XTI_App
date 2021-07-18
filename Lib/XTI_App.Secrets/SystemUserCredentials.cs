@@ -3,9 +3,9 @@ using XTI_App.Abstractions;
 using XTI_Credentials;
 using XTI_Secrets;
 
-namespace XTI_App.Extensions
+namespace XTI_App.Secrets
 {
-    public sealed class SystemUserCredentials
+    public sealed class SystemUserCredentials : ISystemUserCredentials
     {
         private readonly ISecretCredentialsFactory secretCredentialsFactory;
         private readonly AppKey appKey;

@@ -56,7 +56,7 @@ namespace XTI_App
 
         public Task<App> App() => factory.Apps().App(record.AppID);
 
-        public Task<IEnumerable<Modifier>> Modifiers() => factory.Modifiers().Modifiers(this);
+        public Task<Modifier[]> Modifiers() => factory.Modifiers().Modifiers(this);
 
         public Task<ResourceGroup[]> ResourceGroups() => factory.Groups().Groups(this);
 

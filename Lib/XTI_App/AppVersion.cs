@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MainDB.Entities;
+using System;
 using System.Threading.Tasks;
-using MainDB.Entities;
 using XTI_App.Abstractions;
-using XTI_Core;
 
 namespace XTI_App
 {
@@ -42,9 +40,11 @@ namespace XTI_App
         public Version NextMinor() => new Version(Major, Minor + 1, 0);
         public Version NextPatch() => new Version(Major, Minor, Patch + 1);
 
+        public Task<App> App() => factory.Apps().App(record.AppID);
+
         public async Task<AppVersion> Current()
         {
-            var app = await factory.Apps().App(record.AppID);
+            var app = await App();
             var current = await app.CurrentVersion();
             return current;
         }
@@ -85,7 +85,7 @@ namespace XTI_App
             {
                 throw new ArgumentException($"Cannot publish when status is '{Status().DisplayText}'");
             }
-            var app = await factory.Apps().App(record.AppID);
+            var app = await App();
             var current = await app.CurrentVersion();
             if (current.IsCurrent())
             {
@@ -105,10 +105,10 @@ namespace XTI_App
             });
         }
 
-        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+        public Task<AppRequestExpandedModel[]> MostRecentRequests(int howMany)
             => factory.Requests().MostRecentForVersion(this, howMany);
 
-        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+        public Task<AppEvent[]> MostRecentErrorEvents(int howMany)
             => factory.Events().MostRecentErrorsForVersion(this, howMany);
 
         public async Task<ResourceGroup> AddOrUpdateResourceGroup(ResourceGroupName name, ModifierCategory modCategory)

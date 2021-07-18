@@ -6,39 +6,75 @@
         public string AppName { get; set; }
         public string AppType { get; set; }
         public string VersionType { get; set; }
-        public string VersionKey { get; set; }
+        public string RepoOwner { get; set; }
+        public string RepoName { get; set; }
+        public string IssueTitle { get; set; }
+        public int IssueNumber { get; set; }
+        public string OutputPath { get; set; }
+        public bool StartIssue { get; set; }
 
-        public void CommandNew(string appName, string appType, string versionType)
+        public void CommandNewVersion(string appName, string appType, string versionType, string repoOwner, string repoName)
         {
-            Command = "New";
+            Command = "NewVersion";
             AppName = appName;
             AppType = appType;
             VersionType = versionType;
+            RepoOwner = repoOwner;
+            RepoName = repoName;
         }
 
-        public void CommandBeginPublish(string versionKey)
+        public void CommandBeginPublish()
         {
             Command = "BeginPublish";
-            VersionKey = versionKey;
         }
 
-        public void CommandEndPublish(string versionKey)
+        public void CommandCompleteVersion(string repoOwner, string repoName)
         {
-            Command = "EndPublish";
-            VersionKey = versionKey;
+            Command = "CompleteVersion";
+            RepoOwner = repoOwner;
+            RepoName = repoName;
         }
 
-        public void CommandGetCurrent(string appName, string appType)
+        public void CommandGetCurrentVersion(string appName, string appType)
         {
-            Command = "GetCurrent";
+            Command = "GetCurrentVersion";
             AppName = appName;
             AppType = appType;
         }
 
-        public void CommandGetVersion(string versionKey)
+        public void CommandGetVersion()
         {
             Command = "GetVersion";
-            VersionKey = versionKey;
+        }
+
+        public void CommandNewIssue(string repoOwner, string repoName, string title)
+        {
+            Command = "NewIssue";
+            RepoOwner = repoOwner;
+            RepoName = repoName;
+            IssueTitle = title;
+        }
+
+        public void CommandIssues(string repoOwner, string repoName)
+        {
+            Command = "Issues";
+            RepoOwner = repoOwner;
+            RepoName = repoName;
+        }
+
+        public void CommandStartIssue(string repoOwner, string repoName, int issueNumber)
+        {
+            Command = "StartIssue";
+            RepoOwner = repoOwner;
+            RepoName = repoName;
+            IssueNumber = issueNumber;
+        }
+
+        public void CommandCompleteIssue(string repoOwner, string repoName)
+        {
+            Command = "CompleteIssue";
+            RepoOwner = repoOwner;
+            RepoName = repoName;
         }
     }
 }

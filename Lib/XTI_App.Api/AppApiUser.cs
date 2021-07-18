@@ -8,13 +8,13 @@ namespace XTI_App.Api
     {
         private readonly IAppContext appContext;
         private readonly IUserContext userContext;
-        private readonly XtiPath path;
+        private readonly IXtiPathAccessor pathAccessor;
 
-        public AppApiUser(IAppContext appContext, IUserContext userContext, XtiPath path)
+        public AppApiUser(IAppContext appContext, IUserContext userContext, IXtiPathAccessor pathAccessor)
         {
             this.appContext = appContext;
             this.userContext = userContext;
-            this.path = path;
+            this.pathAccessor = pathAccessor;
         }
 
         public async Task<bool> HasAccess(ResourceAccess resourceAccess)
@@ -35,6 +35,7 @@ namespace XTI_App.Api
             }
             else
             {
+                var path = pathAccessor.Value();
                 var version = await app.Version(path.Version);
                 var group = await version.ResourceGroup(path.Group);
                 var modCategory = await group.ModCategory();

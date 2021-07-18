@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
+using System.Linq;
 using System.Threading.Tasks;
+using XTI_App.Abstractions;
 using XTI_Version;
 
 namespace XTI_App.Tests
@@ -10,8 +12,6 @@ namespace XTI_App.Tests
         public async Task ShouldRequireValidVersionType()
         {
             var tester = await setup();
-            var newVersion = await tester.Command().Execute(tester.Options);
-            tester.Options.Command = "BeginPublish";
             tester.Options.VersionType = "Whatever";
             Assert.ThrowsAsync<PublishVersionException>(() => tester.Execute());
         }
@@ -20,40 +20,46 @@ namespace XTI_App.Tests
         public async Task ShouldBeginPublishingTheVersion()
         {
             var tester = await setup();
-            var newVersion = await tester.Command().Execute(tester.Options);
-            tester.Options.Command = "BeginPublish";
-            tester.Options.VersionType = newVersion.Type().DisplayText;
-            tester.Options.VersionKey = newVersion.Key().DisplayText;
-            var publishedVersion = await tester.Execute();
-            Assert.That(publishedVersion.IsPublishing(), Is.True, "Should begin publishing the new version");
+            await tester.Execute();
+            var versions = await tester.App.Versions();
+            var newVersion = versions.First(v => !v.IsCurrent());
+            await tester.Checkout(newVersion);
+            tester.Options.CommandBeginPublish();
+            await tester.Execute();
+            newVersion = await tester.App.Version(newVersion.Key());
+            Assert.That(newVersion.IsPublishing(), Is.True, "Should begin publishing the new version");
         }
 
         [Test]
         public async Task EndPublishShouldMakeTheVersionCurrent()
         {
             var tester = await setup();
-            var newVersion = await tester.Command().Execute(tester.Options);
-            tester.Options.Command = "BeginPublish";
-            tester.Options.VersionType = newVersion.Type().DisplayText;
-            tester.Options.VersionKey = newVersion.Key().DisplayText;
+            await tester.Execute();
+            var versions = await tester.App.Versions();
+            var newVersion = versions.First(v => !v.IsCurrent());
+            await tester.Checkout(newVersion);
+            tester.Options.CommandBeginPublish();
             await tester.Command().Execute(tester.Options);
-            tester.Options.Command = "EndPublish";
-            var publishedVersion = await tester.Execute();
-            Assert.That(publishedVersion.IsCurrent(), Is.True, "Should make the new version the current version");
+            tester.Options.CommandCompleteVersion("JasonBenfield", "XTI_App");
+            await tester.Execute();
+            newVersion = await tester.App.Version(newVersion.Key());
+            Assert.That(newVersion.IsCurrent(), Is.True, "Should make the new version the current version");
         }
 
         [Test]
         public async Task ShouldNotAllowAPublishedVersionToGoBackToPublishing()
         {
             var tester = await setup();
-            var newVersion = await tester.Command().Execute(tester.Options);
-            tester.Options.Command = "BeginPublish";
-            tester.Options.VersionType = newVersion.Type().DisplayText;
-            tester.Options.VersionKey = newVersion.Key().DisplayText;
             await tester.Execute();
-            tester.Options.Command = "EndPublish";
+            var versions = await tester.App.Versions();
+            var newVersion = versions.First(v => !v.IsCurrent());
+            await tester.Checkout(newVersion);
+            tester.Options.CommandBeginPublish();
             await tester.Execute();
-            tester.Options.Command = "BeginPublish";
+            tester.Options.CommandCompleteVersion("JasonBenfield", "XTI_App");
+            await tester.Execute();
+            await tester.Checkout(newVersion);
+            tester.Options.CommandBeginPublish();
             Assert.ThrowsAsync<PublishVersionException>(() => tester.Execute());
         }
 
@@ -61,7 +67,15 @@ namespace XTI_App.Tests
         {
             var tester = new ManageVersionTester();
             await tester.Setup();
-            tester.Options.Command = "New";
+            var appKey = tester.App.Key();
+            tester.Options.CommandNewVersion
+            (
+                appKey.Name.DisplayText,
+                appKey.Type.DisplayText,
+                AppVersionType.Values.Patch.DisplayText,
+                "JasonBenfield",
+                "XTI_App"
+            );
             return tester;
         }
     }

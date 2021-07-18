@@ -3,8 +3,9 @@ using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using XTI_Configuration.Extensions;
 using XTI_Tool.Extensions;
-using XTI_VersionToolApi;
 using XTI_Version;
+using XTI_VersionToolApi;
+using XTI_Secrets.Extensions;
 
 namespace XTI_VersionTool
 {
@@ -19,8 +20,10 @@ namespace XTI_VersionTool
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddConsoleAppServices(hostContext.HostingEnvironment, hostContext.Configuration);
+                    services.AddFileSecretCredentials();
                     services.Configure<VersionToolOptions>(hostContext.Configuration);
-                    services.AddScoped<ManageVersionCommand>();
+                    services.AddScoped<GitFactory, DefaultGitFactory>();
+                    services.AddScoped<VersionCommandFactory>();
                     services.AddHostedService<VersionManager>();
                 })
                 .RunConsoleAsync();

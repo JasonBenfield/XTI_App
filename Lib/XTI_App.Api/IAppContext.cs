@@ -8,7 +8,4 @@ namespace XTI_App.Api
         Task<IApp> App();
         Task<IAppVersion> Version();
     }
-    public interface ISourceAppContext : IAppContext
-    {
-    }
 }

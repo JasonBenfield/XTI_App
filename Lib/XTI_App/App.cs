@@ -33,8 +33,6 @@ namespace XTI_App
             return modCategory;
         }
 
-        async Task<IModifier> IApp.DefaultModifier() => await DefaultModifier();
-
         public async Task<Modifier> DefaultModifier()
         {
             var modCategory = await ModCategory(ModifierCategoryName.Default);
@@ -48,16 +46,24 @@ namespace XTI_App
         public Task<ModifierCategory> ModCategory(int modCategoryID)
             => factory.ModCategories().Category(this, modCategoryID);
 
+        async Task<IModifierCategory> IApp.ModCategory(ModifierCategoryName name)
+            => await ModCategory(name);
+
         public Task<ModifierCategory> ModCategory(ModifierCategoryName name)
             => factory.ModCategories().Category(this, name);
 
         public Task<AppRole> AddRole(AppRoleName name) =>
             factory.Roles().Add(this, name);
 
-        async Task<IEnumerable<IAppRole>> IApp.Roles() =>
-            await factory.Roles().RolesForApp(this);
+        async Task<IAppRole[]> IApp.Roles() => await Roles();
 
-        public Task<AppRole[]> Roles() => factory.Roles().RolesForApp(this);
+        public async Task<AppRole[]> Roles()
+        {
+            var roles = await factory.Roles().RolesForApp(this);
+            return roles
+                .Where(r => !r.IsDeactivated())
+                .ToArray();
+        }
 
         public Task<AppRole> Role(int roleID) =>
             factory.Roles().Role(this, roleID);
@@ -87,7 +93,7 @@ namespace XTI_App
 
         public async Task SetRoles(IEnumerable<AppRoleName> roleNames)
         {
-            var existingRoles = (await Roles()).ToArray();
+            var existingRoles = await factory.Roles().RolesForApp(this);
             await factory.DB.Apps.Transaction(async () =>
             {
                 await addRoles(roleNames, existingRoles);
@@ -102,9 +108,14 @@ namespace XTI_App
         {
             foreach (var roleName in roleNames)
             {
-                if (!existingRoles.Any(r => r.Name().Equals(roleName)))
+                var existingRole = existingRoles.FirstOrDefault(r => r.Name().Equals(roleName));
+                if (existingRole == null)
                 {
                     await AddRole(roleName);
+                }
+                else if (existingRole.IsDeactivated())
+                {
+                    await existingRole.Activate();
                 }
             }
         }
@@ -113,7 +124,7 @@ namespace XTI_App
         {
             foreach (var role in rolesToDelete)
             {
-                await role.Delete();
+                await role.Deactivate(DateTimeOffset.Now);
             }
         }
 
@@ -147,14 +158,14 @@ namespace XTI_App
             });
         }
 
-        public async Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+        public async Task<AppRequestExpandedModel[]> MostRecentRequests(int howMany)
         {
             var version = await CurrentVersion();
             var requests = await version.MostRecentRequests(howMany);
             return requests;
         }
 
-        public async Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+        public async Task<AppEvent[]> MostRecentErrorEvents(int howMany)
         {
             var version = await CurrentVersion();
             var requests = await version.MostRecentErrorEvents(howMany);

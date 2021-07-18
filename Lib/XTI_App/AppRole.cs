@@ -1,4 +1,5 @@
 ﻿using MainDB.Entities;
+using System;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
 
@@ -21,7 +22,15 @@ namespace XTI_App
 
         public bool Exists() => ID.IsValid();
 
-        internal Task Delete() => factory.DB.Roles.Delete(record);
+        public bool IsDeactivated() => record.TimeDeactivated < DateTimeOffset.MaxValue;
+
+        internal Task Deactivate(DateTimeOffset timeDeactivated)
+            => updateTimeDeactivated(timeDeactivated);
+
+        internal Task Activate() => updateTimeDeactivated(DateTimeOffset.MaxValue);
+
+        private Task updateTimeDeactivated(DateTimeOffset timeDeactivated)
+            => factory.DB.Roles.Update(record, r => r.TimeDeactivated = timeDeactivated);
 
         internal Task<App> App() => factory.Apps().App(record.AppID);
 
