@@ -83,14 +83,12 @@ namespace XTI_App
         }
 
         internal Task<AppVersion[]> VersionsByApp(App app)
-        {
-            return factory.DB
+            => factory.DB
                 .Versions
                 .Retrieve()
                 .Where(v => v.AppID == app.ID.Value)
                 .Select(v => factory.Version(v))
                 .ToArrayAsync();
-        }
 
         internal async Task<AppVersion> CurrentVersion(App app)
         {

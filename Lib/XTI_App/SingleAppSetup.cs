@@ -34,6 +34,7 @@ namespace XTI_App
             }
             await app.SetRoles(roleNames);
             var defaultModCategory = await app.TryAddModCategory(ModifierCategoryName.Default);
+            await defaultModCategory.TryAddDefaultModifier();
             var group = await currentVersion.AddOrUpdateResourceGroup(ResourceGroupName.Unknown, defaultModCategory);
             await group.TryAddResource(ResourceName.Unknown, ResourceResultType.Values.None);
         }

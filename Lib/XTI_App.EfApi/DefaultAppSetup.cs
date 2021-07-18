@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
@@ -31,13 +32,17 @@ namespace XTI_App.EfApi
         {
             var allAppSetup = new AllAppSetup(appFactory, clock);
             await allAppSetup.Run();
+            var roleNames = appTemplate.RoleNames
+                .Union(AppRoleName.DefaultRoles())
+                .Distinct()
+                .ToArray();
             var appSetup = new SingleAppSetup
             (
                 appFactory,
                 clock,
                 appTemplate.AppKey,
                 appTitle,
-                appTemplate.RoleNames
+                roleNames
             );
             await appSetup.Run();
             var app = await appFactory.Apps().App(appTemplate.AppKey);
@@ -62,8 +67,7 @@ namespace XTI_App.EfApi
                 await resourceGroup.DenyAnonymous();
             }
             var allowedGroupRoles = await rolesFromNames(app, groupTemplate.Access.Allowed);
-            var deniedGroupRoles = await rolesFromNames(app, groupTemplate.Access.Denied);
-            await resourceGroup.SetRoleAccess(allowedGroupRoles, deniedGroupRoles);
+            await resourceGroup.SetRoleAccess(allowedGroupRoles);
             foreach (var actionTemplate in groupTemplate.ActionTemplates)
             {
                 await updateResourceFromTemplate(app, resourceGroup, actionTemplate);
@@ -83,8 +87,7 @@ namespace XTI_App.EfApi
                 await resource.DenyAnonymous();
             }
             var allowedResourceRoles = await rolesFromNames(app, actionTemplate.Access.Allowed);
-            var deniedResourceRoles = await rolesFromNames(app, actionTemplate.Access.Denied);
-            await resource.SetRoleAccess(allowedResourceRoles, deniedResourceRoles);
+            await resource.SetRoleAccess(allowedResourceRoles);
         }
 
         private static async Task<IEnumerable<AppRole>> rolesFromNames(App app, IEnumerable<AppRoleName> roleNames)

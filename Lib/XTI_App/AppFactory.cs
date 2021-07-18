@@ -1,4 +1,6 @@
 ﻿using MainDB.Entities;
+using System;
+using System.Threading.Tasks;
 
 namespace XTI_App
 {
@@ -55,11 +57,6 @@ namespace XTI_App
         internal Modifier Modifier(ModifierRecord record)
             => new Modifier(this, record);
 
-        private ModifierCategoryAdminRepository modCategoryAdmins;
-        internal ModifierCategoryAdminRepository ModCategoryAdmins()
-            => modCategoryAdmins
-                ?? (modCategoryAdmins = new ModifierCategoryAdminRepository(this));
-
         private AppSessionRepository sessions;
         public AppSessionRepository Sessions()
             => sessions ?? (sessions = new AppSessionRepository(this));
@@ -76,5 +73,7 @@ namespace XTI_App
         public AppEventRepository Events()
             => events ?? (events = new AppEventRepository(this));
         internal AppEvent Event(AppEventRecord record) => new AppEvent(record);
+
+        public Task Transaction(Func<Task> action) => DB.Transaction(action);
     }
 }

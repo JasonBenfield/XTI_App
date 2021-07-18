@@ -69,9 +69,9 @@ namespace XTI_App
                     r.TimeEnded = timeEnded;
                 });
 
-        public Task<IEnumerable<AppRequest>> Requests() => factory.Requests().RetrieveBySession(this);
+        public Task<AppRequest[]> Requests() => factory.Requests().RetrieveBySession(this);
 
-        public Task<IEnumerable<AppRequest>> MostRecentRequests(int howMany)
+        public Task<AppRequest[]> MostRecentRequests(int howMany)
             => factory.Requests().RetrieveMostRecent(this, howMany);
 
         public override string ToString() => $"{nameof(AppSession)} {ID.Value}";

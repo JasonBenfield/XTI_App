@@ -71,5 +71,52 @@ namespace XTI_App
             }
             return factory.App(record);
         }
+
+        public Task<App[]> WebAppsWithOpenSessions(IAppUser user)
+        {
+            var sessionIDs = factory.DB
+                .Sessions
+                .Retrieve()
+                .Where(s => s.UserID == user.ID.Value && s.TimeEnded > DateTimeOffset.Now.AddDays(1))
+                .Select(s => s.ID);
+            var appIDs = factory.DB
+                .Requests
+                .Retrieve()
+                .Where(r => sessionIDs.Any(id => id == r.SessionID))
+                .Join
+                (
+                    factory.DB.Resources.Retrieve(),
+                    req => req.ResourceID,
+                    res => res.ID,
+                    (req, res) => new
+                    {
+                        GroupID = res.GroupID
+                    }
+                )
+                .Join
+                (
+                    factory.DB.ResourceGroups.Retrieve(),
+                    res => res.GroupID,
+                    grp => grp.ID,
+                    (res, grp) => new
+                    {
+                        VersionID = grp.VersionID
+                    }
+                )
+                .Join
+                (
+                    factory.DB.Versions.Retrieve(),
+                    grp => grp.VersionID,
+                    v => v.ID,
+                    (grp, v) => v.AppID
+                )
+                .Distinct();
+            return factory.DB
+                .Apps
+                .Retrieve()
+                .Where(a => a.Type == AppType.Values.WebApp && appIDs.Any(id => id == a.ID))
+                .Select(a => factory.App(a))
+                .ToArrayAsync();
+        }
     }
 }

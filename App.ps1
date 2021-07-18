@@ -5,69 +5,44 @@ $script:appConfig = [PSCustomObject]@{
     RepoName = "XTI_App"
     AppName = "XTI_App"
     AppType = "Package"
-    ProjectDir = ""
 }
 
-function App-New-XtiIssue {
+function App-NewVersion {
+    param(
+        [Parameter(Position=0)]
+        [ValidateSet("major", "minor", "patch")]
+        $VersionType = "minor"
+    )
+    $script:appConfig | New-XtiVersion @PsBoundParameters
+}
+
+function App-NewIssue {
     param(
         [Parameter(Mandatory, Position=0)]
         [string] $IssueTitle,
-        $Labels = @(),
-        [string] $Body = "",
         [switch] $Start
     )
     $script:appConfig | New-XtiIssue @PsBoundParameters
 }
 
-function App-Xti-StartIssue {
+function App-StartIssue {
     param(
         [Parameter(Position=0)]
-        [long]$IssueNumber = 0,
-        $IssueBranchTitle = "",
-        $AssignTo = ""
+        [long]$IssueNumber = 0
     )
     $script:appConfig | Xti-StartIssue @PsBoundParameters
 }
 
-function App-New-XtiVersion {
-    param(
-        [Parameter(Position=0)]
-        [ValidateSet("major", "minor", "patch")]
-        $VersionType = "minor",
-        [ValidateSet("Development", "Production", "Staging", "Test")]
-        $EnvName = "Production"
-    )
-    $script:appConfig | New-XtiVersion @PsBoundParameters
-}
-
-function App-Xti-Merge {
-    param(
-        [Parameter(Position=0)]
-        [string] $CommitMessage
-    )
-    $script:appConfig | Xti-Merge
-}
-
-function App-New-XtiPullRequest {
-    param(
-        [Parameter(Position=0)]
-        [string] $CommitMessage
-    )
-    $script:appConfig | New-XtiPullRequest @PsBoundParameters
-}
-
-function App-Xti-PostMerge {
+function App-CompleteIssue {
     param(
     )
-    $script:appConfig | Xti-PostMerge @PsBoundParameters
+    $script:appConfig | Xti-CompleteIssue @PsBoundParameters
 }
 
 function App-Publish {
     param(
-        [switch] $Prod
+        [ValidateSet("Development", "Production", "Staging", "Test")]
+        $EnvName = "Development"
     )
-    $script:appConfig | Xti-PublishPackage @PsBoundParameters
-    if($Prod){
-        $script:appConfig | Xti-Merge
-    }
+    $script:appConfig | Xti-Publish @PsBoundParameters
 }

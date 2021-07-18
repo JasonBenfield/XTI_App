@@ -1,5 +1,6 @@
 ﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
@@ -78,9 +79,9 @@ namespace XTI_App
                 .ToArrayAsync();
         }
 
-        internal Task<AppRole[]> RolesNotAssignedToUser(IAppUser user, IApp app)
+        internal Task<AppRole[]> RolesNotAssignedToUser(IAppUser user, IApp app, IModifier modifier)
         {
-            var roleIDs = userRoleIDs(user);
+            var roleIDs = userRoleIDs(user, modifier);
             return factory.DB
                 .Roles
                 .Retrieve()
@@ -89,9 +90,9 @@ namespace XTI_App
                 .ToArrayAsync();
         }
 
-        internal Task<AppRole[]> RolesAssignedToUser(IAppUser user, IApp app)
+        internal Task<AppRole[]> RolesAssignedToUser(IAppUser user, IApp app, IModifier modifier)
         {
-            var roleIDs = userRoleIDs(user);
+            var roleIDs = userRoleIDs(user, modifier);
             return factory.DB
                 .Roles
                 .Retrieve()
@@ -100,12 +101,12 @@ namespace XTI_App
                 .ToArrayAsync();
         }
 
-        private IQueryable<int> userRoleIDs(IAppUser user)
+        private IQueryable<int> userRoleIDs(IAppUser user, IModifier modifier)
         {
             return factory.DB
                 .UserRoles
                 .Retrieve()
-                .Where(ur => ur.UserID == user.ID.Value)
+                .Where(ur => ur.UserID == user.ID.Value && ur.ModifierID == modifier.ID.Value)
                 .Select(ur => ur.RoleID);
         }
 

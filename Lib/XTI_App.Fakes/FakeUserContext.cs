@@ -1,31 +1,26 @@
 ﻿using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_App.EfApi;
 
 namespace XTI_App.Fakes
 {
-    public sealed class FakeUserContext : IUserContext
+    public sealed class FakeUserContext : ISourceUserContext
     {
-        private readonly AppFactory appFactory;
+        private readonly DefaultUserContext userContext;
 
         private int userID;
 
         public FakeUserContext(AppFactory appFactory)
         {
-            this.appFactory = appFactory;
+            userContext = new DefaultUserContext(appFactory, getUserID);
         }
 
-        public Task<IAppUser> User() => User(userID);
+        private int getUserID() => userID;
 
-        public async Task<IAppUser> User(int userID)
-        {
-            var user = await appFactory.Users().User(userID);
-            if (!user.Exists())
-            {
-                user = await appFactory.Users().User(AppUserName.Anon);
-            }
-            return user;
-        }
+        public Task<IAppUser> User() => userContext.User();
+
+        public Task<string> GetKey() => Task.FromResult(getUserID().ToString());
 
         public void SetUser(IAppUser user)
         {

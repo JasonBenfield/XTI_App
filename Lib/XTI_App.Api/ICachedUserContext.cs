@@ -1,11 +1,10 @@
-﻿using System.Threading.Tasks;
-using XTI_App.Abstractions;
+﻿using XTI_App.Abstractions;
 
 namespace XTI_App.Api
 {
-    public interface IUserContext
+    public interface ICachedUserContext : IUserContext
     {
-        Task<IAppUser> User();
-        Task<IAppUser> User(int userID);
+        void ClearCache(int userID);
+        void ClearCache(AppUserName userName);
     }
 }

@@ -51,15 +51,12 @@ namespace XTI_App
         public Task<AppRole[]> AllowedRoles()
             => factory.Roles().AllowedRolesForResource(this);
 
-        public Task<AppRole[]> DeniedRoles()
-            => factory.Roles().DeniedRolesForResource(this);
+        public Task SetRoleAccess(IEnumerable<AppRole> allowedRoles)
+            => factory.DB.Transaction(() => setRoleAccess(allowedRoles));
 
-        public Task SetRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
-            => factory.DB.Transaction(() => setRoleAccess(allowedRoles, deniedRoles));
-
-        private async Task setRoleAccess(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
+        private async Task setRoleAccess(IEnumerable<AppRole> allowedRoles)
         {
-            await deleteExistingRoles(allowedRoles, deniedRoles);
+            await deleteExistingRoles(allowedRoles);
             var existingAllowedRoles = await AllowedRoles();
             foreach (var allowedRole in allowedRoles)
             {
@@ -68,29 +65,20 @@ namespace XTI_App
                     await addResourceRole(allowedRole, true);
                 }
             }
-            var existingDeniedRoles = await DeniedRoles();
-            foreach (var deniedRole in deniedRoles)
-            {
-                if (!existingDeniedRoles.Any(r => r.ID.Equals(deniedRole.ID.Value)))
-                {
-                    await addResourceRole(deniedRole, false);
-                }
-            }
         }
 
-        private async Task deleteExistingRoles(IEnumerable<AppRole> allowedRoles, IEnumerable<AppRole> deniedRoles)
+        private async Task deleteExistingRoles(IEnumerable<AppRole> allowedRoles)
         {
             var allowedRoleIDs = allowedRoles.Select(r => r.ID.Value);
-            var deniedRoleIDs = deniedRoles.Select(r => r.ID.Value);
             var rolesToDelete = await factory.DB
                 .ResourceRoles
                 .Retrieve()
                 .Where
                 (
                     rr => rr.ResourceID == ID.Value
-                        && (
-                            (!allowedRoleIDs.Any(id => id == rr.RoleID) && rr.IsAllowed)
-                            || (!deniedRoleIDs.Any(id => id == rr.RoleID) && !rr.IsAllowed)
+                        &&
+                        (
+                            !allowedRoleIDs.Any(id => id == rr.RoleID) && rr.IsAllowed
                         )
                 )
                 .ToArrayAsync();
@@ -113,10 +101,10 @@ namespace XTI_App
                     }
                 );
 
-        public Task<IEnumerable<AppRequestExpandedModel>> MostRecentRequests(int howMany)
+        public Task<AppRequestExpandedModel[]> MostRecentRequests(int howMany)
             => factory.Requests().MostRecentForResource(this, howMany);
 
-        public Task<IEnumerable<AppEvent>> MostRecentErrorEvents(int howMany)
+        public Task<AppEvent[]> MostRecentErrorEvents(int howMany)
             => factory.Events().MostRecentErrorsForResource(this, howMany);
 
         public ResourceModel ToModel()

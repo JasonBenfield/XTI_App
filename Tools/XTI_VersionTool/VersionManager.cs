@@ -4,9 +4,8 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using XTI_Tool;
-using XTI_VersionToolApi;
 using XTI_Version;
+using XTI_VersionToolApi;
 
 namespace XTI_VersionTool
 {
@@ -24,17 +23,11 @@ namespace XTI_VersionTool
             using var scope = services.CreateScope();
             try
             {
-                var manageVersionCommand = scope.ServiceProvider.GetService<ManageVersionCommand>();
+                var commandFactory = scope.ServiceProvider.GetService<VersionCommandFactory>();
                 var options = scope.ServiceProvider.GetService<IOptions<VersionToolOptions>>().Value;
-                var version = await manageVersionCommand.Execute(options);
-                var output = new VersionToolOutput
-                {
-                    VersionKey = version.Key().DisplayText,
-                    VersionType = version.Type().DisplayText,
-                    VersionNumber = version.Version().ToString(),
-                    DevVersionNumber = version.NextPatch().ToString()
-                };
-                new XtiProcessData().Output(output);
+                var commandName = VersionCommandName.FromValue(options.Command);
+                var command = commandFactory.Create(commandName);
+                await command.Execute(options);
             }
             catch (Exception ex)
             {

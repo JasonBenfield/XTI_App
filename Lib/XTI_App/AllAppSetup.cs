@@ -27,16 +27,6 @@ namespace XTI_App
                     clock.Now()
                 );
             }
-            var superUser = await appFactory.Users().User(AppUserName.SuperUser);
-            if (!superUser.UserName().Equals(AppUserName.SuperUser))
-            {
-                await appFactory.Users().Add
-                (
-                    AppUserName.SuperUser,
-                    new SystemHashedPassword(),
-                    clock.Now()
-                );
-            }
             var setup = new SingleAppSetup
             (
                 appFactory,

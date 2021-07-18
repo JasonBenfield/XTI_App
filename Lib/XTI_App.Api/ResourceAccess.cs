@@ -7,42 +7,35 @@ namespace XTI_App.Api
     public sealed class ResourceAccess
     {
         public static ResourceAccess AllowAnonymous()
-            => new ResourceAccess(new AppRoleName[] { }, new AppRoleName[] { }, true);
+            => new ResourceAccess(new AppRoleName[] { }, true);
 
         public static ResourceAccess AllowAuthenticated()
-            => new ResourceAccess(new AppRoleName[] { }, new AppRoleName[] { }, false);
+            => new ResourceAccess(new AppRoleName[] { }, false);
 
-        public ResourceAccess(IEnumerable<AppRoleName> allowed, IEnumerable<AppRoleName> denied)
-            : this(allowed, denied, false)
+        public ResourceAccess(IEnumerable<AppRoleName> allowed)
+            : this(allowed, false)
         {
         }
 
-        private ResourceAccess(IEnumerable<AppRoleName> allowed, IEnumerable<AppRoleName> denied, bool isAnonAllowed)
+        private ResourceAccess(IEnumerable<AppRoleName> allowed, bool isAnonAllowed)
         {
             Allowed = (allowed ?? new AppRoleName[] { });
-            Denied = (denied ?? new AppRoleName[] { });
             IsAnonymousAllowed = isAnonAllowed;
         }
 
         public IEnumerable<AppRoleName> Allowed { get; }
-        public IEnumerable<AppRoleName> Denied { get; }
         public bool IsAnonymousAllowed { get; }
 
         public ResourceAccess WithAllowed(params AppRoleName[] allowed)
-        {
-            return new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }), Denied.ToArray());
-        }
+            => new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }));
 
-        public ResourceAccess WithDenied(params AppRoleName[] denied)
-        {
-            return new ResourceAccess(Allowed.ToArray(), Denied.Union(denied ?? new AppRoleName[] { }));
-        }
+        public ResourceAccess WithoutAllowed(params AppRoleName[] allowed)
+            => new ResourceAccess(Allowed.Except(allowed ?? new AppRoleName[] { }));
 
         public override string ToString()
         {
             var allowed = string.Join(",", Allowed.Select(r => r.DisplayText));
-            var denied = string.Join(",", Denied.Select(r => r.DisplayText));
-            return $"{nameof(ResourceAccess)}\r\nAllowed: {allowed}\r\nDenied: {denied}";
+            return $"{nameof(ResourceAccess)}\r\nAllowed: {allowed}";
         }
     }
 }

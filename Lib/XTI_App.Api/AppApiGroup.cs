@@ -56,9 +56,8 @@ namespace XTI_App.Api
         {
             var roleNames = new List<AppRoleName>();
             roleNames.AddRange(Access.Allowed);
-            roleNames.AddRange(Access.Denied);
             var actionRoleNames = Actions()
-                .SelectMany(a => a.Access.Allowed.Union(a.Access.Denied))
+                .SelectMany(a => a.Access.Allowed)
                 .Distinct();
             roleNames.AddRange(actionRoleNames);
             return roleNames.Distinct();

@@ -29,8 +29,6 @@ namespace XTI_App.Api
 
         public ResourceAccess Access { get; }
 
-        public Task<bool> HasAccess() => user.HasAccessToApp();
-
         public AppApiGroup AddGroup(string name)
             => AddGroup(name, ModifierCategoryName.Default, Access);
 
@@ -59,7 +57,6 @@ namespace XTI_App.Api
         {
             var roleNames = new List<AppRoleName>();
             roleNames.AddRange(Access.Allowed);
-            roleNames.AddRange(Access.Denied);
             var groupRoleNames = groups
                 .Values
                 .SelectMany(g => g.RoleNames())

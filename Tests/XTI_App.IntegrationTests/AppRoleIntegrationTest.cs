@@ -44,7 +44,8 @@ namespace XTI_App.IntegrationTests
                 new AppUserName("someone"), new FakeHashedPassword("Password"), input.Clock.Now()
             );
             await user.AddRole(adminRole);
-            var userRoles = (await user.AssignedRoles(input.App)).ToArray();
+            var defaultModifier = await input.App.DefaultModifier();
+            var userRoles = (await user.AssignedRoles(input.App, defaultModifier)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
             Assert.That(userRoles[0].ID, Is.EqualTo(adminRole.ID), "Should add role to user");
         }
@@ -63,10 +64,11 @@ namespace XTI_App.IntegrationTests
             var app2 = await input.Factory.Apps().Add(new AppKey("app2", AppType.Values.WebApp), "App 2", input.Clock.Now());
             var role2 = await app2.AddRole(new AppRoleName("another role"));
             await user.AddRole(role2);
-            var userRoles = (await user.AssignedRoles(input.App)).ToArray();
+            var defaultModifier = await input.App.DefaultModifier();
+            var userRoles = (await user.AssignedRoles(input.App, defaultModifier)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
             Assert.That(userRoles[0].ID, Is.EqualTo(adminRole.ID), "Should add role to user");
-            var userRoles2 = (await user.AssignedRoles(app2)).ToArray();
+            var userRoles2 = (await user.AssignedRoles(app2, defaultModifier)).ToArray();
             Assert.That(userRoles2.Length, Is.EqualTo(1), "Should add role to user for a different app");
             Assert.That(userRoles2[0].ID, Is.EqualTo(role2.ID), "Should add role to user for a different app");
         }

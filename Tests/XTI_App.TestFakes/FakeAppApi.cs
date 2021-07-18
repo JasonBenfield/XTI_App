@@ -1,4 +1,5 @@
-﻿using XTI_App.Api;
+﻿using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.TestFakes
 {
@@ -12,7 +13,7 @@ namespace XTI_App.TestFakes
                     FakeInfo.AppKey,
                     user,
                     ResourceAccess.AllowAuthenticated()
-                        .WithAllowed(FakeAppRoles.Instance.Admin)
+                        .WithAllowed(AppRoleName.Admin)
                 )
             )
         {
@@ -44,8 +45,7 @@ namespace XTI_App.TestFakes
             (
                 source.AddGroup
                 (
-                    nameof(Product),
-                    Access.WithDenied(FakeAppRoles.Instance.Viewer)
+                    nameof(Product)
                 )
             );
         }

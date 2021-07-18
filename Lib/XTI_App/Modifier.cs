@@ -4,7 +4,7 @@ using XTI_App.Abstractions;
 
 namespace XTI_App
 {
-    public sealed class Modifier
+    public sealed class Modifier : IModifier
     {
         private readonly AppFactory factory;
         private readonly ModifierRecord record;

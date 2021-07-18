@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using MainDB.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
-using MainDB.Entities;
-using XTI_Core;
 using XTI_App.Abstractions;
 
 namespace XTI_App

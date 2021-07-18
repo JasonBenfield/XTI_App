@@ -1,6 +1,5 @@
 ﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
@@ -29,10 +28,11 @@ namespace XTI_App
             return factory.Modifier(record);
         }
 
-        internal async Task<IEnumerable<Modifier>> Modifiers(ModifierCategory category)
+        internal Task<Modifier[]> Modifiers(ModifierCategory category)
         {
-            var records = await modifiersForCategory(category).ToArrayAsync();
-            return records.Select(m => factory.Modifier(m));
+            return modifiersForCategory(category)
+                .Select(m => factory.Modifier(m))
+                .ToArrayAsync();
         }
 
         internal async Task<Modifier> Modifier(int modifierID)
@@ -45,12 +45,21 @@ namespace XTI_App
             return factory.Modifier(record);
         }
 
-        internal async Task<Modifier> Modifier(ModifierKey modKey)
+        internal async Task<Modifier> Modifier(ModifierCategory modCategory, ModifierKey modKey)
         {
+            if
+            (
+                !modCategory.Name().Equals(ModifierCategoryName.Default)
+                && modKey.Equals(ModifierKey.Default)
+            )
+            {
+                var app = await modCategory.App();
+                modCategory = await app.ModCategory(ModifierCategoryName.Default);
+            }
             var record = await factory.DB
                 .Modifiers
                 .Retrieve()
-                .Where(m => m.ModKey == modKey.Value)
+                .Where(m => m.CategoryID == modCategory.ID.Value && m.ModKey == modKey.Value)
                 .FirstOrDefaultAsync();
             if (record == null)
             {
@@ -71,24 +80,6 @@ namespace XTI_App
             return factory.Modifier(record);
         }
 
-        internal async Task<IEnumerable<Modifier>> ModifiersNotAssignedToUser(AppUser appUser, ModifierCategory modCategory)
-        {
-            var modIDs = modIDsForUser(appUser);
-            var records = await modifiersForCategory(modCategory)
-                .Where(m => !modIDs.Any(id => m.ID == id))
-                .ToArrayAsync();
-            return records.Select(r => factory.Modifier(r));
-        }
-
-        internal async Task<IEnumerable<Modifier>> ModifiersAssignedToUser(AppUser appUser, ModifierCategory modCategory)
-        {
-            var modIDs = modIDsForUser(appUser);
-            var records = await modifiersForCategory(modCategory)
-                .Where(m => modIDs.Any(id => m.ID == id))
-                .ToArrayAsync();
-            return records.Select(r => factory.Modifier(r));
-        }
-
         private IQueryable<ModifierRecord> modifiersForCategory(ModifierCategory modCategory)
         {
             return factory.DB
@@ -96,15 +87,5 @@ namespace XTI_App
                 .Retrieve()
                 .Where(m => m.CategoryID == modCategory.ID.Value);
         }
-
-        private IQueryable<int> modIDsForUser(AppUser appUser)
-        {
-            return factory.DB
-                .UserModifiers
-                .Retrieve()
-                .Where(um => um.UserID == appUser.ID.Value)
-                .Select(um => um.ModifierID);
-        }
-
     }
 }
