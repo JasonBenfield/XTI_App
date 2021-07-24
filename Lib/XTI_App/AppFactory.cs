@@ -52,7 +52,7 @@ namespace XTI_App
         internal ModifierCategory ModCategory(ModifierCategoryRecord record) => new ModifierCategory(this, record);
 
         private ModifierRepository modifiers;
-        internal ModifierRepository Modifiers()
+        public ModifierRepository Modifiers()
             => modifiers ?? (modifiers = new ModifierRepository(this));
         internal Modifier Modifier(ModifierRecord record)
             => new Modifier(this, record);

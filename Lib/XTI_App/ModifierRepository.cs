@@ -35,7 +35,7 @@ namespace XTI_App
                 .ToArrayAsync();
         }
 
-        internal async Task<Modifier> Modifier(int modifierID)
+        public async Task<Modifier> Modifier(int modifierID)
         {
             var record = await factory.DB
                 .Modifiers
