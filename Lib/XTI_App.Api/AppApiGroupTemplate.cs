@@ -16,7 +16,7 @@ namespace XTI_App.Api
         }
 
         public string Name { get; }
-        public ModifierCategoryName ModCategory { get; set; }
+        public ModifierCategoryName ModCategory { get; }
         public bool HasModifier { get => !ModCategory.Equals(ModifierCategoryName.Default); }
         public ResourceAccess Access { get; }
         public IEnumerable<AppApiActionTemplate> ActionTemplates { get; }

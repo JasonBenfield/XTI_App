@@ -45,7 +45,7 @@ namespace XTI_App.Extensions
                 var user = sp.GetService<IAppApiUser>();
                 return factory.Create(user);
             });
-            services.AddTempLogServices();
+            services.AddTempLogServices(configuration);
         }
     }
 }
