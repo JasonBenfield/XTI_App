@@ -43,7 +43,12 @@ namespace XTI_App.Api
                 if (modifier.ModKey().Equals(path.Modifier))
                 {
                     var userRoles = await user.Roles(app, modifier);
-                    if (userRoles.Any(ur => allowedRoles.Any(ar => ur.ID.Equals(ar.ID))))
+                    var denyAccessRole = roles.First(r => r.Name().Equals(AppRoleName.DenyAccess));
+                    if (userRoles.Any(ur => ur.ID.Equals(denyAccessRole.ID)))
+                    {
+                        hasAccess = false;
+                    }
+                    else if (userRoles.Any(ur => allowedRoles.Any(ar => ur.ID.Equals(ar.ID))))
                     {
                         hasAccess = true;
                     }
