@@ -9,8 +9,9 @@ namespace XTI_App.Abstractions
         public static AppRoleName Admin = new AppRoleName(nameof(Admin));
         public static AppRoleName System = new AppRoleName(nameof(System));
         public static AppRoleName ManageUserCache = new AppRoleName(nameof(ManageUserCache));
+        public static AppRoleName DenyAccess = new AppRoleName(nameof(DenyAccess));
 
-        public static AppRoleName[] DefaultRoles() => new[] { General, Admin, System, ManageUserCache };
+        public static AppRoleName[] DefaultRoles() => new[] { General, Admin, System, ManageUserCache, DenyAccess };
 
         public AppRoleName(string value) : base(value)
         {

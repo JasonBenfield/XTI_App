@@ -186,6 +186,24 @@ namespace XTI_App.Tests
             Assert.That(hasAccess, Is.False, "User should not have access to app when they are not authenticated and the resource allows authenticated users");
         }
 
+        [Test]
+        public async Task ShouldNotAllowAccess_WhenTheUserHasTheDenyAccessRole()
+        {
+            var services = await setup("/Fake/Current/Employee/AddEmployee", "IT");
+            var user = await retrieveCurrentUser(services);
+            var app = await services.FakeApp();
+            var adminRole = await app.Role(AppRoleName.Admin);
+            await user.AddRole(adminRole);
+            var denyAccessRole = await app.Role(AppRoleName.DenyAccess);
+            var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier("IT");
+            await user.AddRole(adminRole, modifier);
+            await user.AddRole(denyAccessRole, modifier);
+            var api = getApi(services);
+            var hasAccess = await api.Employee.AddEmployee.HasAccess();
+            Assert.That(hasAccess, Is.False, "User should not have access when user has the deny access role");
+        }
+
         private async Task addRolesToUser(IServiceProvider services, params AppRole[] roles)
         {
             var user = await retrieveCurrentUser(services);
