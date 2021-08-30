@@ -34,6 +34,6 @@ namespace XTI_App.Api
                 .SelectMany(g => g.NumericValueTemplates())
                 .Distinct();
 
-        public bool IsAuthenticator() => Name.Equals("Authenticator", StringComparison.OrdinalIgnoreCase);
+        public bool IsAuthenticator() => Name.Equals("Hub", StringComparison.OrdinalIgnoreCase);
     }
 }
