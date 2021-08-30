@@ -71,7 +71,7 @@ namespace XTI_App.Tests
             var user = await userContext.User();
             var app = await services.FakeApp();
             var modifier = await app.DefaultModifier();
-            var userRoles = await user.Roles(app, modifier);
+            var userRoles = await user.Roles(modifier);
             var viewerRole = await app.Role(FakeAppRoles.Instance.Viewer);
             Assert.That(userRoles.Select(ur => ur.ID), Is.EquivalentTo(new[] { viewerRole.ID }), "Should retrieve user roles from source");
         }
@@ -84,12 +84,12 @@ namespace XTI_App.Tests
             var user = await userContext.User();
             var app = await services.FakeApp();
             var modifier = await app.DefaultModifier();
-            var userRoles = await user.Roles(app, modifier);
+            var userRoles = await user.Roles(modifier);
             var adminRole = await app.Role(AppRoleName.Admin);
             var sourceUser = await testUser(services);
             await sourceUser.AddRole(adminRole);
             var cachedUser = await userContext.User();
-            var cachedUserRoles = await cachedUser.Roles(app, modifier);
+            var cachedUserRoles = await cachedUser.Roles(modifier);
             var viewerRole = await app.Role(FakeAppRoles.Instance.Viewer);
             Assert.That(userRoles.Select(ur => ur.ID), Is.EquivalentTo(new[] { viewerRole.ID }), "Should retrieve user roles from source");
         }

@@ -57,26 +57,25 @@ namespace XTI_App
             }
         }
 
-        async Task<IEnumerable<IAppRole>> IAppUser.Roles(IApp app, IModifier modifier)
-            => await AssignedRoles(app, modifier);
+        async Task<IEnumerable<IAppRole>> IAppUser.Roles(IModifier modifier)
+            => await AssignedRoles(modifier);
 
-        public Task<AppRole[]> ExplicitlyUnassignedRoles(App app, Modifier modifier)
-            => factory.Roles().RolesNotAssignedToUser(this, app, modifier);
+        public Task<AppRole[]> ExplicitlyUnassignedRoles(Modifier modifier)
+            => factory.Roles().RolesNotAssignedToUser(this, modifier);
 
-        public async Task<AppRole[]> AssignedRoles(IApp app, IModifier modifier)
+        public async Task<AppRole[]> AssignedRoles(IModifier modifier)
         {
-            var roles = await ExplicitlyAssignedRoles(app, modifier);
+            var roles = await ExplicitlyAssignedRoles(modifier);
             if (!roles.Any() && !modifier.ModKey().Equals(ModifierKey.Default))
             {
-                var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
-                var defaultModifier = await defaultModCategory.Modifier(ModifierKey.Default);
-                roles = await ExplicitlyAssignedRoles(app, defaultModifier);
+                var defaultModifier = await modifier.DefaultModifier();
+                roles = await ExplicitlyAssignedRoles(defaultModifier);
             }
             return roles;
         }
 
-        public Task<AppRole[]> ExplicitlyAssignedRoles(IApp app, IModifier modifier)
-            => factory.Roles().RolesAssignedToUser(this, app, modifier);
+        public Task<AppRole[]> ExplicitlyAssignedRoles(IModifier modifier)
+            => factory.Roles().RolesAssignedToUser(this, modifier);
 
         public Task ChangePassword(IHashedPassword password)
             => factory.DB.Users.Update(record, u => u.Password = password.Value());

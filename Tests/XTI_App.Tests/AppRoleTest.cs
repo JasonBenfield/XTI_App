@@ -18,11 +18,10 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var app = await services.FakeApp();
-            var adminRoleName = new AppRoleName("Admin");
-            await app.AddRole(adminRoleName);
+            var testRoleName = new AppRoleName("Test");
+            await app.AddRole(testRoleName);
             var roles = (await app.Roles()).ToArray();
-            Assert.That(roles.Length, Is.EqualTo(1), "Should add role to app");
-            Assert.That(roles[0].Name(), Is.EqualTo(adminRoleName), "Should add role to app");
+            Assert.That(roles.Select(r => r.Name()), Has.One.EqualTo(testRoleName), "Should add role to app");
         }
 
         [Test]
@@ -40,7 +39,7 @@ namespace XTI_App.Tests
             );
             await user.AddRole(adminRole);
             var defaultModifier = await app.DefaultModifier();
-            var userRoles = (await user.AssignedRoles(app, defaultModifier)).ToArray();
+            var userRoles = await user.AssignedRoles(defaultModifier);
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
             Assert.That(userRoles[0].ID.Equals(adminRole.ID), Is.True, "Should add role to user");
         }
@@ -85,7 +84,7 @@ namespace XTI_App.Tests
             var sp = scope.ServiceProvider;
             var factory = sp.GetService<AppFactory>();
             var clock = sp.GetService<Clock>();
-            await factory.Apps().Add(FakeInfo.AppKey, "Fake", clock.Now());
+            await sp.Setup();
             return sp;
         }
     }

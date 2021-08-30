@@ -31,7 +31,7 @@ namespace XTI_App.Extensions
                 var app = await appFromContext();
                 var modCategory = await app.ModCategory(name);
                 var modifier = await modCategory.Modifier(modKey);
-                cachedMod = new CachedModifier(modifier);
+                cachedMod = new CachedModifier(services, modifier);
                 modifiers.AddOrUpdate(modKey.Value, cachedMod, (key, mod) => cachedMod);
             }
             return cachedMod;

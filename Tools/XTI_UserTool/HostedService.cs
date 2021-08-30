@@ -164,7 +164,7 @@ namespace XTI_UserApp
                 var modCategory = await app.ModCategory(new ModifierCategoryName(userOptions.ModCategoryName));
                 modifier = await modCategory.Modifier(userOptions.ModKey);
             }
-            var userRoles = (await user.ExplicitlyAssignedRoles(app, modifier)).ToArray();
+            var userRoles = (await user.ExplicitlyAssignedRoles(modifier)).ToArray();
             foreach (var role in roles)
             {
                 if (!userRoles.Any(ur => ur.ID.Equals(role.ID)))

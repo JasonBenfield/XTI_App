@@ -66,7 +66,7 @@ namespace XTI_App.Tests
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(AppRoleName.Admin)));
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Manager)));
             var defaultModifer = await app.DefaultModifier();
-            var assignedRoles = await user.AssignedRoles(app, defaultModifer);
+            var assignedRoles = await user.AssignedRoles(defaultModifer);
             Assert.That
             (
                 assignedRoles.Select(ur => ur.Name()),
@@ -86,7 +86,7 @@ namespace XTI_App.Tests
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(AppRoleName.Admin)));
             await user.AddRole(appRoles.First(ar => ar.Name().Equals(FakeInfo.Roles.Manager)));
             var defaultModifier = await app.DefaultModifier();
-            var unassignedRoles = await user.ExplicitlyUnassignedRoles(app, defaultModifier);
+            var unassignedRoles = await user.ExplicitlyUnassignedRoles(defaultModifier);
             Assert.That
             (
                 unassignedRoles.Select(r => r.Name()),
