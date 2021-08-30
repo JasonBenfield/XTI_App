@@ -18,7 +18,7 @@ namespace XTI_App.IntegrationTests
         {
             var services = setup();
             var factory = services.GetService<AppFactory>();
-            var userName = AppUserName.SystemUser(new AppKey("Authenticator", AppType.Values.WebApp), "guinevere");
+            var userName = AppUserName.SystemUser(new AppKey("Hub", AppType.Values.WebApp), "guinevere");
             var user = await factory.Users().User(userName);
             Assert.That(user.UserName(), Is.EqualTo(userName), "Should retrieve system user");
         }
@@ -28,7 +28,7 @@ namespace XTI_App.IntegrationTests
         {
             var services = setup();
             var factory = services.GetService<AppFactory>();
-            var userName = AppUserName.SystemUser(new AppKey("Authenticator", AppType.Values.WebApp), "guinevere");
+            var userName = AppUserName.SystemUser(new AppKey("Hub", AppType.Values.WebApp), "guinevere");
             var hashedPasswordFactory = new Md5HashedPasswordFactory();
             var hashedPassword = hashedPasswordFactory.Create(Guid.NewGuid().ToString("N"));
             var user = await factory.Users().Add(userName, hashedPassword, new PersonName("Test"), new EmailAddress(""), DateTimeOffset.Now);
