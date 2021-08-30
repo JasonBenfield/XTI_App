@@ -1,6 +1,8 @@
 ﻿using MainDB.Entities;
+using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace XTI_App
 {
@@ -23,6 +25,37 @@ namespace XTI_App
 
         public bool IsForCategory(ModifierCategory modCategory) => modCategory.ID.Value == record.CategoryID;
 
+        async Task<IModifier> IModifier.DefaultModifier() => await DefaultModifier();
+
+        public async Task<Modifier> DefaultModifier()
+        {
+            Modifier defaultModifier;
+            if (ModKey().Equals(ModifierKey.Default))
+            {
+                defaultModifier = this;
+            }
+            else
+            {
+                var appID = factory.DB
+                    .ModifierCategories
+                    .Retrieve()
+                    .Where(modCat => modCat.ID == record.CategoryID)
+                    .Select(modCat => modCat.AppID);
+                var defaultCategoryID = factory.DB
+                    .ModifierCategories
+                    .Retrieve()
+                    .Where(modCat => appID.Any(id => modCat.AppID == id))
+                    .Select(modCat => modCat.ID);
+                var defaultModifierRecord = await factory.DB
+                    .Modifiers
+                    .Retrieve()
+                    .Where(m => defaultCategoryID.Any(id => id == m.CategoryID) && m.ModKey == ModifierKey.Default.Value)
+                    .FirstOrDefaultAsync();
+                defaultModifier = factory.Modifier(defaultModifierRecord);
+            }
+            return defaultModifier;
+        }
+
         public Task SetDisplayText(string displayText)
         {
             return factory.DB.Modifiers.Update(record, r =>
@@ -41,5 +74,6 @@ namespace XTI_App
         };
 
         public override string ToString() => $"{nameof(Modifier)} {ID.Value}";
+
     }
 }

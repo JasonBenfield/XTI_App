@@ -42,7 +42,7 @@ namespace XTI_App.Api
                 var modifier = await modCategory.Modifier(path.Modifier);
                 if (modifier.ModKey().Equals(path.Modifier))
                 {
-                    var userRoles = await user.Roles(app, modifier);
+                    var userRoles = await user.Roles(modifier);
                     var denyAccessRole = roles.First(r => r.Name().Equals(AppRoleName.DenyAccess));
                     if (userRoles.Any(ur => ur.ID.Equals(denyAccessRole.ID)))
                     {

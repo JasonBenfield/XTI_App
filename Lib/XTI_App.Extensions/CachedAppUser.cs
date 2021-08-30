@@ -26,14 +26,14 @@ namespace XTI_App.Extensions
 
         private readonly ConcurrentDictionary<string, CachedAppRole[]> cachedModRoles = new ConcurrentDictionary<string, CachedAppRole[]>();
 
-        public async Task<IEnumerable<IAppRole>> Roles(IApp app, IModifier modifier)
+        public async Task<IEnumerable<IAppRole>> Roles(IModifier modifier)
         {
-            var key = $"{app.ID.Value}|{modifier.ID.Value}";
+            var key = $"{modifier.ID.Value}";
             if (!cachedModRoles.TryGetValue(key, out var cachedAssignedRoles))
             {
                 var factory = services.GetService<AppFactory>();
                 var user = await factory.Users().User(ID.Value);
-                var assignedRoles = await user.AssignedRoles(app, modifier);
+                var assignedRoles = await user.AssignedRoles(modifier);
                 cachedAssignedRoles = assignedRoles
                     .Select(ur => new CachedAppRole(ur))
                     .ToArray();

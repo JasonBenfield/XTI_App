@@ -45,7 +45,7 @@ namespace XTI_App.IntegrationTests
             );
             await user.AddRole(adminRole);
             var defaultModifier = await input.App.DefaultModifier();
-            var userRoles = (await user.AssignedRoles(input.App, defaultModifier)).ToArray();
+            var userRoles = (await user.AssignedRoles(defaultModifier)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
             Assert.That(userRoles[0].ID, Is.EqualTo(adminRole.ID), "Should add role to user");
         }
@@ -64,11 +64,13 @@ namespace XTI_App.IntegrationTests
             var app2 = await input.Factory.Apps().Add(new AppKey("app2", AppType.Values.WebApp), "App 2", input.Clock.Now());
             var role2 = await app2.AddRole(new AppRoleName("another role"));
             await user.AddRole(role2);
-            var defaultModifier = await input.App.DefaultModifier();
-            var userRoles = (await user.AssignedRoles(input.App, defaultModifier)).ToArray();
+            var defaultModifier1 = await input.App.DefaultModifier();
+            var userRoles = (await user.AssignedRoles(defaultModifier1)).ToArray();
             Assert.That(userRoles.Length, Is.EqualTo(1), "Should add role to user");
             Assert.That(userRoles[0].ID, Is.EqualTo(adminRole.ID), "Should add role to user");
-            var userRoles2 = (await user.AssignedRoles(app2, defaultModifier)).ToArray();
+            var defaultModCategory2 = await app2.TryAddModCategory(ModifierCategoryName.Default);
+            var defaultModifier2 = await defaultModCategory2.TryAddDefaultModifier();
+            var userRoles2 = (await user.AssignedRoles(defaultModifier2)).ToArray();
             Assert.That(userRoles2.Length, Is.EqualTo(1), "Should add role to user for a different app");
             Assert.That(userRoles2[0].ID, Is.EqualTo(role2.ID), "Should add role to user for a different app");
         }

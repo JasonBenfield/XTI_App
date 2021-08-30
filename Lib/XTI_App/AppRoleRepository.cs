@@ -1,6 +1,5 @@
 ﻿using MainDB.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
@@ -79,26 +78,43 @@ namespace XTI_App
                 .ToArrayAsync();
         }
 
-        internal Task<AppRole[]> RolesNotAssignedToUser(IAppUser user, IApp app, IModifier modifier)
+        internal Task<AppRole[]> RolesNotAssignedToUser(IAppUser user, IModifier modifier)
         {
+            var appID = getAppID(modifier);
             var roleIDs = userRoleIDs(user, modifier);
             return factory.DB
                 .Roles
                 .Retrieve()
-                .Where(r => r.AppID == app.ID.Value && !roleIDs.Any(id => id == r.ID))
+                .Where(r => appID.Any(id => id == r.AppID) && !roleIDs.Any(id => id == r.ID))
                 .Select(r => factory.Role(r))
                 .ToArrayAsync();
         }
 
-        internal Task<AppRole[]> RolesAssignedToUser(IAppUser user, IApp app, IModifier modifier)
+        internal Task<AppRole[]> RolesAssignedToUser(IAppUser user, IModifier modifier)
         {
+            var appID = getAppID(modifier);
             var roleIDs = userRoleIDs(user, modifier);
             return factory.DB
                 .Roles
                 .Retrieve()
-                .Where(r => r.AppID == app.ID.Value && roleIDs.Any(id => id == r.ID))
+                .Where(r => appID.Any(id => id == r.AppID) && roleIDs.Any(id => id == r.ID))
                 .Select(r => factory.Role(r))
                 .ToArrayAsync();
+        }
+
+        private IQueryable<int> getAppID(IModifier modifier)
+        {
+            var modCategoryID = factory.DB
+                            .Modifiers
+                            .Retrieve()
+                            .Where(m => m.ID == modifier.ID.Value)
+                            .Select(m => m.CategoryID);
+            var appID = factory.DB
+                .ModifierCategories
+                .Retrieve()
+                .Where(mc => modCategoryID.Any(id => mc.ID == id))
+                .Select(mc => mc.AppID);
+            return appID;
         }
 
         private IQueryable<int> userRoleIDs(IAppUser user, IModifier modifier)
