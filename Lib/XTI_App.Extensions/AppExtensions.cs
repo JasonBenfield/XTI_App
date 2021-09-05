@@ -39,7 +39,11 @@ namespace XTI_App.Extensions
                 var memoryCache = sp.GetService<IMemoryCache>();
                 return new CachedAppContext(sp, memoryCache);
             });
-            services.AddScoped<CachedUserContext>();
+            services.AddScoped(sp =>
+            {
+                var memoryCache = sp.GetService<IMemoryCache>();
+                return new CachedUserContext(sp, memoryCache);
+            });
             services.AddScoped<IUserContext>(sp => sp.GetService<CachedUserContext>());
             services.AddScoped<ICachedUserContext>(sp => sp.GetService<CachedUserContext>());
             services.AddScoped<IAppApiUser, AppApiUser>();
