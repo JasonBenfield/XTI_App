@@ -34,7 +34,11 @@ namespace XTI_App.Extensions
             services.AddScoped<SystemUserContext>();
             services.AddScoped<CachedSystemUserContext>();
             services.AddScoped<ISourceAppContext, DefaultAppContext>();
-            services.AddScoped<IAppContext, CachedAppContext>();
+            services.AddScoped<IAppContext>(sp =>
+            {
+                var memoryCache = sp.GetService<IMemoryCache>();
+                return new CachedAppContext(sp, memoryCache);
+            });
             services.AddScoped<CachedUserContext>();
             services.AddScoped<IUserContext>(sp => sp.GetService<CachedUserContext>());
             services.AddScoped<ICachedUserContext>(sp => sp.GetService<CachedUserContext>());
