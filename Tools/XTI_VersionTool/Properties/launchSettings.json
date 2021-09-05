@@ -2,7 +2,7 @@
   "profiles": {
     "XTI_VersionApp": {
       "commandName": "Project",
-      "commandLineArgs": "--Command=NewVersion --AppName Shared --AppType WebApp --RepoOwner JasonBenfield --RepoName SharedWebApp --VersionType Patch",
+      "commandLineArgs": "--Command \"GetCurrentVersion\" --AppName \"hub\" --AppType \"Web App\" --VersionType \"\" --RepoOwner \"\" --RepoName \"\" --IssueTitle \"\" --IssueNumber \"0\" --OutputPath \"\" --StartIssue \"False\"",
       "workingDirectory": "C:\\XTI\\src\\SharedWebApp",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Production"
