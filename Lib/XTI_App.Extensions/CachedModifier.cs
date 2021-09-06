@@ -47,8 +47,6 @@ namespace XTI_App.Extensions
             return defaultMod;
         }
 
-        public Task<IApp> App() => Task.FromResult(app);
-
         private sealed record CacheData(EntityID ID, ModifierKey ModKey);
 
     }
