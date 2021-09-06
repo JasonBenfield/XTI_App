@@ -49,18 +49,16 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var userContext = getUserContext(services);
-            await userContext.User();
-            var db = getMainDbContext(services);
+            var user = await userContext.User();
+            var app = await services.FakeApp();
+            var modifier = await app.DefaultModifier();
+            await user.Roles(modifier);
+            var adminRole = await app.Role(AppRoleName.Admin);
             var sourceUser = await testUser(services);
-            var userRecord = await db.Users
-                .Retrieve()
-                .FirstAsync(u => u.ID == sourceUser.ID.Value);
-            await db.Users.Update(userRecord, r => r.UserName = "changed.user");
-            var factory = getAppFactory(services);
-            var user = await factory.Users().User(new AppUserName("changed.user"));
-            userContext.ClearCache(user.ID.Value);
-            var cachedUser = await userContext.User();
-            Assert.That(cachedUser.UserName(), Is.EqualTo(new AppUserName("changed.user")), "Should refresh user");
+            await sourceUser.AddRole(adminRole);
+            userContext.ClearCache(user.UserName());
+            var userRoles = await user.Roles(modifier);
+            Assert.That(userRoles.Select(r => r.Name()), Has.One.EqualTo(AppRoleName.Admin), "Should clear cache");
         }
 
         [Test]

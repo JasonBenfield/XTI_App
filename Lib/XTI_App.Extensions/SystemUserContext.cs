@@ -5,7 +5,7 @@ using XTI_App.Secrets;
 
 namespace XTI_App.Extensions
 {
-    public sealed class SystemUserContext : ISourceUserContext
+    public sealed class SystemUserContext : ISourceUserContext, ISystemUserContext
     {
         private readonly AppFactory appFactory;
         private readonly ISystemUserCredentials systemUserCredentials;

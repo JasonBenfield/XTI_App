@@ -7,5 +7,6 @@ namespace XTI_App.Abstractions
         EntityID ID { get; }
         ModifierKey ModKey();
         Task<IModifier> DefaultModifier();
+        Task<IApp> App();
     }
 }

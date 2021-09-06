@@ -1,5 +1,4 @@
 ﻿using MainDB.Extensions;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
@@ -24,26 +23,15 @@ namespace XTI_App.Extensions
             services.AddSingleton<Clock, UtcClock>();
             services.AddScoped<AppFactory>();
             services.AddFileSecretCredentials();
+            services.AddScoped(sp => sp.GetService<IXtiPathAccessor>().Value());
+            services.AddScoped(sp => sp.GetService<XtiPath>().Version);
             services.AddScoped<SystemUserCredentials>();
-            services.AddScoped<ISystemUserCredentials>(sp =>
-            {
-                var cache = sp.GetService<IMemoryCache>();
-                var source = sp.GetService<SystemUserCredentials>();
-                return new CachedSystemUserCredentials(cache, source);
-            });
+            services.AddScoped<ISystemUserCredentials, CachedSystemUserCredentials>();
             services.AddScoped<SystemUserContext>();
-            services.AddScoped<CachedSystemUserContext>();
+            services.AddScoped<ISystemUserContext, CachedSystemUserContext>();
             services.AddScoped<ISourceAppContext, DefaultAppContext>();
-            services.AddScoped<IAppContext>(sp =>
-            {
-                var memoryCache = sp.GetService<IMemoryCache>();
-                return new CachedAppContext(sp, memoryCache);
-            });
-            services.AddScoped(sp =>
-            {
-                var memoryCache = sp.GetService<IMemoryCache>();
-                return new CachedUserContext(sp, memoryCache);
-            });
+            services.AddScoped<IAppContext, CachedAppContext>();
+            services.AddScoped<CachedUserContext>();
             services.AddScoped<IUserContext>(sp => sp.GetService<CachedUserContext>());
             services.AddScoped<ICachedUserContext>(sp => sp.GetService<CachedUserContext>());
             services.AddScoped<IAppApiUser, AppApiUser>();

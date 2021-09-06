@@ -57,7 +57,7 @@ namespace XTI_App
             }
         }
 
-        async Task<IEnumerable<IAppRole>> IAppUser.Roles(IModifier modifier)
+        async Task<IAppRole[]> IAppUser.Roles(IModifier modifier)
             => await AssignedRoles(modifier);
 
         public Task<AppRole[]> ExplicitlyUnassignedRoles(Modifier modifier)

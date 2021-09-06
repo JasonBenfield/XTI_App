@@ -26,7 +26,7 @@ namespace XTI_App
             return factory.ModCategory(record);
         }
 
-        internal async Task<ModifierCategory> Category(int id)
+        public async Task<ModifierCategory> Category(int id)
         {
             var record = await factory.DB
                 .ModifierCategories
