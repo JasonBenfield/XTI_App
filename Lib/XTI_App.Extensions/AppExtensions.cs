@@ -1,4 +1,5 @@
 ﻿using MainDB.Extensions;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
@@ -26,7 +27,12 @@ namespace XTI_App.Extensions
             services.AddScoped(sp => sp.GetService<IXtiPathAccessor>().Value());
             services.AddScoped(sp => sp.GetService<XtiPath>().Version);
             services.AddScoped<SystemUserCredentials>();
-            services.AddScoped<ISystemUserCredentials, CachedSystemUserCredentials>();
+            services.AddScoped<ISystemUserCredentials>(sp =>
+            {
+                var cache = sp.GetService<IMemoryCache>();
+                var sourceCredentials = sp.GetService<SystemUserCredentials>();
+                return new CachedSystemUserCredentials(cache, sourceCredentials);
+            });
             services.AddScoped<SystemUserContext>();
             services.AddScoped<ISystemUserContext, CachedSystemUserContext>();
             services.AddScoped<ISourceAppContext, DefaultAppContext>();
