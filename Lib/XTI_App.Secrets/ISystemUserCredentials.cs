@@ -1,10 +1,6 @@
-﻿using System.Threading.Tasks;
-using XTI_Credentials;
-
-namespace XTI_App.Secrets
+﻿namespace XTI_App.Secrets
 {
-    public interface ISystemUserCredentials
+    public interface ISystemUserCredentials : ICredentialsAccessor
     {
-        Task<CredentialValue> Value();
     }
 }
