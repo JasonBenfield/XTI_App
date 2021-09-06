@@ -69,7 +69,6 @@ namespace XTI_App.Extensions
             var cachedUserRoles = new List<CachedAppRole>();
             var rolesKey = $"xti_user_roles_{modifier.ID.Value}";
             var cachedRoleNames = cache.Get<AppRoleName[]>(rolesKey);
-            var app = await modifier.App();
             if (cachedRoleNames == null)
             {
                 cacheData.AddCacheKey(rolesKey);
