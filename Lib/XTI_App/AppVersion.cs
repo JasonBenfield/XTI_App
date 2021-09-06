@@ -134,7 +134,7 @@ namespace XTI_App
             => await ResourceGroup(name);
 
         public Task<ResourceGroup> ResourceGroup(int id)
-            => factory.Groups().Group(this, id);
+            => factory.Groups().GroupForVersion(this, id);
 
         public Task<ResourceGroup> ResourceGroup(ResourceGroupName name)
             => factory.Groups().Group(this, name);

@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using System;
+using XTI_App.Api;
 
 namespace XTI_App.Extensions
 {
-    public sealed class CachedSystemUserContext : CachedUserContext<SystemUserContext>
+    public sealed class CachedSystemUserContext : CachedUserContext<SystemUserContext>, ISystemUserContext
     {
-        public CachedSystemUserContext(IServiceProvider services, IMemoryCache cache)
-            : base(services, cache)
+        public CachedSystemUserContext(IMemoryCache cache, AppFactory appFactory, SystemUserContext sourceUserContext)
+            : base(cache, appFactory, sourceUserContext)
         {
         }
     }

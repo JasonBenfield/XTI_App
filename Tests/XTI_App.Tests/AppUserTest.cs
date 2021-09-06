@@ -90,7 +90,7 @@ namespace XTI_App.Tests
             Assert.That
             (
                 unassignedRoles.Select(r => r.Name()),
-                Is.EquivalentTo(new[] { AppRoleName.General, AppRoleName.System, AppRoleName.ManageUserCache, AppRoleName.DenyAccess, FakeInfo.Roles.Viewer }),
+                Is.EquivalentTo(new[] { AppRoleName.System, AppRoleName.ManageUserCache, AppRoleName.DenyAccess, FakeInfo.Roles.Viewer }),
                 "Should get unassigned roles"
             );
         }

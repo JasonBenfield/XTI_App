@@ -62,12 +62,22 @@ namespace XTI_App
             return factory.Group(record);
         }
 
-        internal async Task<ResourceGroup> Group(AppVersion version, int id)
+        internal async Task<ResourceGroup> GroupForVersion(AppVersion version, int id)
         {
             var record = await factory.DB
                 .ResourceGroups
                 .Retrieve()
                 .Where(g => g.VersionID == version.ID.Value && g.ID == id)
+                .FirstOrDefaultAsync();
+            return factory.Group(record);
+        }
+
+        public async Task<ResourceGroup> Group(int id)
+        {
+            var record = await factory.DB
+                .ResourceGroups
+                .Retrieve()
+                .Where(g => g.ID == id)
                 .FirstOrDefaultAsync();
             return factory.Group(record);
         }

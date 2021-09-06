@@ -9,26 +9,22 @@ namespace XTI_App.Fakes
     {
         private readonly DefaultUserContext userContext;
 
-        private int userID;
+        private string userName;
 
         public FakeUserContext(AppFactory appFactory)
         {
-            userContext = new DefaultUserContext(appFactory, getUserID);
+            userContext = new DefaultUserContext(appFactory, getUserName);
         }
 
-        private int getUserID() => userID;
+        private string getUserName() => userName;
 
         public Task<IAppUser> User() => userContext.User();
 
-        public Task<string> GetKey() => Task.FromResult(getUserID().ToString());
+        public Task<string> GetKey() => Task.FromResult(getUserName().ToString());
 
         public void SetUser(IAppUser user)
         {
-            userID = user?.ID.Value ?? 0;
-        }
-
-        public void RefreshUser(IAppUser user)
-        {
+            userName = user?.UserName().Value ?? "";
         }
     }
 }
