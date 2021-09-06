@@ -33,6 +33,9 @@ namespace XTI_App
             return modCategory;
         }
 
+        public Task<Modifier> Modifier(int modifierID)
+            => factory.Modifiers().ModifierForApp(this, modifierID);
+
         public async Task<Modifier> DefaultModifier()
         {
             var modCategory = await ModCategory(ModifierCategoryName.Default);
