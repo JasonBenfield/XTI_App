@@ -4,23 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.Extensions
 {
     internal sealed class CachedAppUser : IAppUser
     {
         private readonly IMemoryCache cache;
-        private readonly AppFactory appFactory;
-        private readonly AppUserName userName;
+        private readonly ISourceAppContext sourceAppContext;
+        private readonly ISourceUserContext sourceUserContext;
         private readonly string cacheKey;
         private CacheData cacheData = new CacheData(new EntityID(), AppUserName.Anon);
 
-        public CachedAppUser(IMemoryCache cache, AppFactory appFactory, AppUserName userName)
+        public CachedAppUser(IMemoryCache cache, ISourceAppContext sourceAppContext, ISourceUserContext sourceUserContext)
         {
             this.cache = cache;
-            this.appFactory = appFactory;
-            this.userName = userName;
-            cacheKey = $"xti_user_{userName.Value}";
+            this.sourceAppContext = sourceAppContext;
+            this.sourceUserContext = sourceUserContext;
+            cacheKey = "xti_current_user";
         }
 
         public EntityID ID { get => cacheData.ID; }
@@ -44,7 +45,7 @@ namespace XTI_App.Extensions
             cacheData = cache.Get<CacheData>(cacheKey);
             if (cacheData == null)
             {
-                var user = await appFactory.Users().User(userName);
+                var user = await sourceUserContext.User();
                 cacheData = new CacheData(user.ID, user.UserName());
                 store();
             }
@@ -66,15 +67,15 @@ namespace XTI_App.Extensions
         public async Task<IAppRole[]> Roles(IModifier modifier)
         {
             var cachedUserRoles = new List<CachedAppRole>();
-            var rolesKey = $"xti_user_roles_{userName.Value}_{modifier.ID.Value}";
+            var rolesKey = $"xti_user_roles_{modifier.ID.Value}";
             var cachedRoleNames = cache.Get<AppRoleName[]>(rolesKey);
             var app = await modifier.App();
             if (cachedRoleNames == null)
             {
                 cacheData.AddCacheKey(rolesKey);
                 store();
-                var user = await appFactory.Users().User(userName);
-                var assignedRoles = await user.AssignedRoles(modifier);
+                var user = await sourceUserContext.User();
+                var assignedRoles = await user.Roles(modifier);
                 cachedRoleNames = assignedRoles.Select(r => r.Name()).ToArray();
                 cache.Set
                 (
@@ -87,7 +88,7 @@ namespace XTI_App.Extensions
                 );
                 foreach (var assignedRole in assignedRoles)
                 {
-                    var cachedRole = new CachedAppRole(cache, appFactory, app, assignedRole);
+                    var cachedRole = new CachedAppRole(cache, sourceAppContext, assignedRole);
                     cachedUserRoles.Add(cachedRole);
                 }
             }
@@ -95,7 +96,7 @@ namespace XTI_App.Extensions
             {
                 foreach (var roleName in cachedRoleNames)
                 {
-                    var cachedRole = new CachedAppRole(cache, appFactory, app, roleName);
+                    var cachedRole = new CachedAppRole(cache, sourceAppContext, roleName);
                     await cachedRole.Load();
                     cachedUserRoles.Add(cachedRole);
                 }

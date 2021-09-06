@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.Extensions
 {
@@ -10,13 +11,13 @@ namespace XTI_App.Extensions
         private readonly AppContextCache<CacheData> versionCache;
         private readonly IApp app;
         private readonly AppVersionKey versionKey;
-        private readonly AppFactory appFactory;
+        private readonly ISourceAppContext sourceAppContext;
         private CacheData cacheData = new CacheData(new EntityID(), AppVersionKey.None);
 
-        public CachedAppVersion(IMemoryCache cache, AppFactory appFactory, IApp app, AppVersionKey versionKey)
+        public CachedAppVersion(IMemoryCache cache, ISourceAppContext sourceAppContext, IApp app, AppVersionKey versionKey)
         {
             this.cache = cache;
-            this.appFactory = appFactory;
+            this.sourceAppContext = sourceAppContext;
             this.app = app;
             this.versionKey = versionKey;
             versionCache = new AppContextCache<CacheData>(cache, $"xti_version_{app.ID.Value}_{versionKey.Value}");
@@ -36,16 +37,16 @@ namespace XTI_App.Extensions
             }
         }
 
-        private async Task<AppVersion> getSourceVersion()
+        private async Task<IAppVersion> getSourceVersion()
         {
-            var sourceApp = await appFactory.Apps().App(app.ID.Value);
+            var sourceApp = await sourceAppContext.App();
             var version = await sourceApp.Version(versionKey);
             return version;
         }
 
         public async Task<IResourceGroup> ResourceGroup(ResourceGroupName name)
         {
-            var cachedGroup = new CachedResourceGroup(cache, appFactory, app, this, name);
+            var cachedGroup = new CachedResourceGroup(cache, sourceAppContext, app, name);
             await cachedGroup.Load();
             return cachedGroup;
         }

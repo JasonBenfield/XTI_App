@@ -21,16 +21,15 @@ namespace XTI_App.EfApi
             this.getUserName = getUserName;
         }
 
-        public Task<string> GetKey() => Task.FromResult(getUserName());
-
-        public async Task<IAppUser> User()
+        public Task<IAppUser> User()
         {
             var userNameValue = getUserName();
             var userName = string.IsNullOrWhiteSpace(userNameValue)
                 ? AppUserName.Anon
                 : new AppUserName(userNameValue);
-            var user = await appFactory.Users().User(userName);
-            return user;
+            return User(userName);
         }
+
+        public async Task<IAppUser> User(AppUserName userName) => await appFactory.Users().User(userName);
     }
 }

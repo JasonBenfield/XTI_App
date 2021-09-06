@@ -7,28 +7,30 @@ namespace XTI_App.Extensions
 {
     public sealed class SystemUserContext : ISourceUserContext, ISystemUserContext
     {
-        private readonly AppFactory appFactory;
+        private readonly ISourceUserContext sourceUserContext;
         private readonly ISystemUserCredentials systemUserCredentials;
 
-        public SystemUserContext(AppFactory appFactory, ISystemUserCredentials systemUserCredentials)
+        public SystemUserContext(ISourceUserContext sourceUserContext, ISystemUserCredentials systemUserCredentials)
         {
-            this.appFactory = appFactory;
+            this.sourceUserContext = sourceUserContext;
             this.systemUserCredentials = systemUserCredentials;
         }
 
         public async Task<IAppUser> User()
         {
             var userName = await getUserName();
-            var user = await appFactory.Users().User(new AppUserName(userName));
+            var user = await User(userName);
             return user;
         }
 
-        public Task<string> GetKey() => getUserName();
+        public Task<IAppUser> User(AppUserName userName) => sourceUserContext.User(userName);
 
-        private async Task<string> getUserName()
+        private async Task<AppUserName> getUserName()
         {
             var credentials = await systemUserCredentials.Value();
-            return credentials.UserName;
+            return string.IsNullOrWhiteSpace(credentials.UserName)
+                ? AppUserName.Anon
+                : new AppUserName(credentials.UserName);
         }
     }
 }

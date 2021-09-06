@@ -1,25 +1,26 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.Extensions
 {
     internal sealed class CachedModifier : IModifier
     {
         private readonly AppContextCache<CacheData> modCache;
-        private readonly AppFactory appFactory;
+        private readonly ISourceAppContext sourceAppContext;
         private readonly IApp app;
-        private readonly int modCategoryID;
+        private readonly ModifierCategoryName modCategoryName;
         private readonly ModifierKey modKey;
         private CacheData cacheData = new CacheData(new EntityID(), ModifierKey.Default);
 
-        public CachedModifier(IMemoryCache cache, AppFactory appFactory, IApp app, IModifierCategory modCategory, ModifierKey modKey)
+        public CachedModifier(IMemoryCache cache, ISourceAppContext sourceAppContext, IApp app, IModifierCategory modCategory, ModifierKey modKey)
         {
-            this.appFactory = appFactory;
+            this.sourceAppContext = sourceAppContext;
             this.app = app;
-            modCategoryID = modCategory.ID.Value;
+            modCategoryName = modCategory.Name();
             this.modKey = modKey;
-            modCache = new AppContextCache<CacheData>(cache, $"xti_modifier_{modCategory.ID.Value}_{modKey.Value}");
+            modCache = new AppContextCache<CacheData>(cache, $"xti_modifier_{modCategoryName.Value}_{modKey.Value}");
         }
 
         public EntityID ID { get => cacheData.ID; }
@@ -31,7 +32,8 @@ namespace XTI_App.Extensions
             cacheData = modCache.Get();
             if (cacheData == null)
             {
-                var modCategory = await appFactory.ModCategories().Category(modCategoryID);
+                var app = await sourceAppContext.App();
+                var modCategory = await app.ModCategory(modCategoryName);
                 var modifier = await modCategory.Modifier(modKey);
                 cacheData = new CacheData(modifier.ID, modifier.ModKey());
                 modCache.Set(cacheData);

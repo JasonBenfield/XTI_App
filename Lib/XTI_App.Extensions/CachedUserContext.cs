@@ -7,8 +7,8 @@ namespace XTI_App.Extensions
 {
     public sealed class CachedUserContext : CachedUserContext<ISourceUserContext>
     {
-        public CachedUserContext(IMemoryCache cache, AppFactory appFactory, ISourceUserContext sourceUserContext)
-            : base(cache, appFactory, sourceUserContext)
+        public CachedUserContext(IMemoryCache cache, ISourceAppContext sourceAppContext, ISourceUserContext sourceUserContext)
+            : base(cache, sourceAppContext, sourceUserContext)
         {
         }
     }
@@ -17,26 +17,25 @@ namespace XTI_App.Extensions
         where TUserContext : ISourceUserContext
     {
         private readonly IMemoryCache cache;
-        private readonly AppFactory appFactory;
+        private readonly ISourceAppContext sourceAppContext;
         private readonly ISourceUserContext sourceUserContext;
 
-        public CachedUserContext(IMemoryCache cache, AppFactory appFactory, TUserContext sourceUserContext)
+        public CachedUserContext(IMemoryCache cache, ISourceAppContext sourceAppContext, TUserContext sourceUserContext)
         {
             this.cache = cache;
-            this.appFactory = appFactory;
+            this.sourceAppContext = sourceAppContext;
             this.sourceUserContext = sourceUserContext;
         }
 
         public void ClearCache(AppUserName userName)
         {
-            var cachedUser = new CachedAppUser(cache, appFactory, userName);
+            var cachedUser = new CachedAppUser(cache, sourceAppContext, sourceUserContext);
             cachedUser.ClearCache();
         }
 
         public async Task<IAppUser> User()
         {
-            var userContextKey = await sourceUserContext.GetKey();
-            var cachedUser = new CachedAppUser(cache, appFactory, new AppUserName(userContextKey));
+            var cachedUser = new CachedAppUser(cache, sourceAppContext, sourceUserContext);
             await cachedUser.Load();
             return cachedUser;
         }

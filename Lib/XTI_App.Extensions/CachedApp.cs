@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.Extensions
 {
@@ -11,14 +12,14 @@ namespace XTI_App.Extensions
     {
         private readonly IMemoryCache cache;
         private readonly AppContextCache<CacheData> appCache;
-        private readonly AppFactory appFactory;
+        private readonly ISourceAppContext sourceAppContext;
         private readonly AppKey appKey;
         private CacheData cacheData = new CacheData(new EntityID(), "");
 
-        public CachedApp(IMemoryCache cache, AppFactory appFactory, AppKey appKey)
+        public CachedApp(IMemoryCache cache, ISourceAppContext sourceAppContext, AppKey appKey)
         {
             this.cache = cache;
-            this.appFactory = appFactory;
+            this.sourceAppContext = sourceAppContext;
             this.appKey = appKey;
             appCache = new AppContextCache<CacheData>(cache, $"xti_{appKey.Type.Value}_{appKey.Name.Value}");
         }
@@ -28,7 +29,7 @@ namespace XTI_App.Extensions
             cacheData = appCache.Get();
             if (cacheData == null)
             {
-                var app = await appFactory.Apps().App(appKey);
+                var app = await sourceAppContext.App();
                 cacheData = new CacheData(app.ID, app.Title);
                 appCache.Set(cacheData);
             }
@@ -41,7 +42,7 @@ namespace XTI_App.Extensions
 
         public async Task<IAppVersion> Version(AppVersionKey versionKey)
         {
-            var cachedVersion = new CachedAppVersion(cache, appFactory, this, versionKey);
+            var cachedVersion = new CachedAppVersion(cache, sourceAppContext, this, versionKey);
             await cachedVersion.Load();
             return cachedVersion;
         }
@@ -53,7 +54,7 @@ namespace XTI_App.Extensions
             var cachedRoleNames = cache.Get<AppRoleName[]>(rolesKey);
             if (cachedRoleNames == null)
             {
-                var app = await appFactory.Apps().App(appKey);
+                var app = await sourceAppContext.App();
                 var roles = await app.Roles();
                 cachedRoleNames = roles.Select(r => r.Name()).ToArray();
                 cache.Set
@@ -67,7 +68,7 @@ namespace XTI_App.Extensions
                 );
                 foreach (var role in roles)
                 {
-                    var cachedRole = new CachedAppRole(cache, appFactory, this, role);
+                    var cachedRole = new CachedAppRole(cache, sourceAppContext, role);
                     cachedRoles.Add(cachedRole);
                 }
             }
@@ -75,7 +76,7 @@ namespace XTI_App.Extensions
             {
                 foreach (var roleName in cachedRoleNames)
                 {
-                    var cachedRole = new CachedAppRole(cache, appFactory, this, roleName);
+                    var cachedRole = new CachedAppRole(cache, sourceAppContext, roleName);
                     await cachedRole.Load();
                     cachedRoles.Add(cachedRole);
                 }
@@ -83,9 +84,16 @@ namespace XTI_App.Extensions
             return cachedRoles.ToArray();
         }
 
+        public async Task<IAppRole> Role(AppRoleName roleName)
+        {
+            var cachedRole = new CachedAppRole(cache, sourceAppContext, roleName);
+            await cachedRole.Load();
+            return cachedRole;
+        }
+
         public async Task<IModifierCategory> ModCategory(ModifierCategoryName name)
         {
-            var cachedModCategory = new CachedModifierCategory(cache, appFactory, this, name);
+            var cachedModCategory = new CachedModifierCategory(cache, sourceAppContext, this, name);
             await cachedModCategory.Load();
             return cachedModCategory;
         }

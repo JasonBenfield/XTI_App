@@ -20,7 +20,7 @@ namespace XTI_App.Fakes
 
         public Task<IAppUser> User() => userContext.User();
 
-        public Task<string> GetKey() => Task.FromResult(getUserName().ToString());
+        public Task<IAppUser> User(AppUserName userName) => userContext.User(userName);
 
         public void SetUser(IAppUser user)
         {
