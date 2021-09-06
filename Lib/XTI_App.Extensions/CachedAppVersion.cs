@@ -1,48 +1,56 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.Caching.Memory;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
-using XTI_App.Api;
 
 namespace XTI_App.Extensions
 {
     internal sealed class CachedAppVersion : IAppVersion
     {
-        private readonly IServiceProvider services;
-        private readonly AppVersionKey key;
+        private readonly IMemoryCache cache;
+        private readonly AppContextCache<CacheData> versionCache;
+        private readonly IApp app;
+        private readonly AppVersionKey versionKey;
+        private readonly AppFactory appFactory;
+        private CacheData cacheData = new CacheData(new EntityID(), AppVersionKey.None);
 
-        public CachedAppVersion(IServiceProvider services, IAppVersion appVersion)
+        public CachedAppVersion(IMemoryCache cache, AppFactory appFactory, IApp app, AppVersionKey versionKey)
         {
-            this.services = services;
-            ID = appVersion.ID;
-            key = appVersion.Key();
+            this.cache = cache;
+            this.appFactory = appFactory;
+            this.app = app;
+            this.versionKey = versionKey;
+            versionCache = new AppContextCache<CacheData>(cache, $"xti_version_{app.ID.Value}_{versionKey.Value}");
         }
 
-        public EntityID ID { get; }
-        public AppVersionKey Key() => key;
+        public EntityID ID { get => cacheData.ID; }
+        public AppVersionKey Key() => cacheData.Key;
 
-        private readonly ConcurrentDictionary<string, CachedResourceGroup> resourceGroupLookup
-            = new ConcurrentDictionary<string, CachedResourceGroup>();
+        public async Task Load()
+        {
+            cacheData = versionCache.Get();
+            if (cacheData == null)
+            {
+                var version = await getSourceVersion();
+                cacheData = new CacheData(version.ID, version.Key());
+                versionCache.Set(cacheData);
+            }
+        }
+
+        private async Task<AppVersion> getSourceVersion()
+        {
+            var sourceApp = await appFactory.Apps().App(app.ID.Value);
+            var version = await sourceApp.Version(versionKey);
+            return version;
+        }
 
         public async Task<IResourceGroup> ResourceGroup(ResourceGroupName name)
         {
-            if (!resourceGroupLookup.TryGetValue(name.Value, out var cachedResourceGroup))
-            {
-                var app = await appFromContext();
-                var version = await app.Version(key);
-                var group = await version.ResourceGroup(name);
-                cachedResourceGroup = new CachedResourceGroup(services, group);
-                resourceGroupLookup.AddOrUpdate(name.Value, cachedResourceGroup, (key, rg) => cachedResourceGroup);
-            }
-            return cachedResourceGroup;
+            var cachedGroup = new CachedResourceGroup(cache, appFactory, app, this, name);
+            await cachedGroup.Load();
+            return cachedGroup;
         }
 
-        private Task<IApp> appFromContext()
-        {
-            var appContext = services.GetService<ISourceAppContext>();
-            return appContext.App();
-        }
+        private sealed record CacheData(EntityID ID, AppVersionKey Key);
 
     }
 }

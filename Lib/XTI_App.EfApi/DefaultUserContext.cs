@@ -8,33 +8,28 @@ namespace XTI_App.EfApi
     public sealed class DefaultUserContext : IUserContext
     {
         private readonly AppFactory appFactory;
-        private readonly Func<int> getUserID;
+        private readonly Func<string> getUserName;
 
-        public DefaultUserContext(AppFactory appFactory, int userID)
-            : this(appFactory, () => userID)
+        public DefaultUserContext(AppFactory appFactory, string userName)
+            : this(appFactory, () => userName)
         {
         }
 
-        public DefaultUserContext(AppFactory appFactory, Func<int> getUserID)
+        public DefaultUserContext(AppFactory appFactory, Func<string> getUserName)
         {
             this.appFactory = appFactory;
-            this.getUserID = getUserID;
+            this.getUserName = getUserName;
         }
 
-        public Task<string> GetKey() => Task.FromResult(getUserID().ToString());
+        public Task<string> GetKey() => Task.FromResult(getUserName());
 
         public async Task<IAppUser> User()
         {
-            var userID = getUserID();
-            AppUser user;
-            if (userID > 0)
-            {
-                user = await appFactory.Users().User(userID);
-            }
-            else
-            {
-                user = await appFactory.Users().User(AppUserName.Anon);
-            }
+            var userNameValue = getUserName();
+            var userName = string.IsNullOrWhiteSpace(userNameValue)
+                ? AppUserName.Anon
+                : new AppUserName(userNameValue);
+            var user = await appFactory.Users().User(userName);
             return user;
         }
     }

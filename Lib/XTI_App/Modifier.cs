@@ -25,6 +25,23 @@ namespace XTI_App
 
         public bool IsForCategory(ModifierCategory modCategory) => modCategory.ID.Value == record.CategoryID;
 
+        async Task<IApp> IModifier.App() => await App();
+
+        public Task<App> App()
+        {
+            var appIDs = factory.DB
+                .ModifierCategories
+                .Retrieve()
+                .Where(modCat => modCat.ID == record.CategoryID)
+                .Select(modCat => modCat.AppID);
+            return factory.DB
+                .Apps
+                .Retrieve()
+                .Where(a => appIDs.Any(id => a.ID == id))
+                .Select(a => factory.App(a))
+                .FirstAsync();
+        }
+
         async Task<IModifier> IModifier.DefaultModifier() => await DefaultModifier();
 
         public async Task<Modifier> DefaultModifier()

@@ -35,7 +35,7 @@ namespace XTI_App
         internal AppRole Role(AppRoleRecord record) => new AppRole(this, record);
 
         private ResourceGroupRepository groups;
-        internal ResourceGroupRepository Groups()
+        public ResourceGroupRepository Groups()
             => groups ?? (groups = new ResourceGroupRepository(this));
         internal ResourceGroup Group(ResourceGroupRecord record)
             => new ResourceGroup(this, record);
