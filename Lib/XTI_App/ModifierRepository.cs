@@ -72,6 +72,21 @@ namespace XTI_App
             return factory.Modifier(record);
         }
 
+        internal async Task<Modifier> ModifierForApp(App app, int modifierID)
+        {
+            var categoryIDs = factory.DB
+                .ModifierCategories
+                .Retrieve()
+                .Where(modCat => modCat.AppID == app.ID.Value)
+                .Select(modCat => modCat.ID);
+            var record = await factory.DB
+                .Modifiers
+                .Retrieve()
+                .Where(m => categoryIDs.Any(id => id == m.CategoryID) && m.ID == modifierID)
+                .FirstOrDefaultAsync();
+            return factory.Modifier(record);
+        }
+
         internal async Task<Modifier> Modifier(ModifierCategory category, string targetKey)
         {
             var record = await modifiersForCategory(category)
