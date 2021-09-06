@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="MainDB.EF.SqlServer" Version="1.10.13" />
-    <PackageReference Include="XTI_Secrets.Extensions" Version="1.7.7" />
+    <PackageReference Include="XTI_Secrets.Extensions" Version="1.7.8" />
   </ItemGroup>
 
   <ItemGroup>
