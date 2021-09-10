@@ -37,5 +37,14 @@ namespace XTI_App.Api
                 .Distinct();
 
         public bool IsUser() => Name.Equals("User", StringComparison.OrdinalIgnoreCase);
+
+        public AppApiGroupTemplateModel ToModel()
+            => new AppApiGroupTemplateModel
+            {
+                Name = Name,
+                ModCategory = ModCategory.Value,
+                Roles = Access.Allowed.Select(r => r.Value).ToArray(),
+                ActionTemplates = ActionTemplates.Select(a => a.ToModel()).ToArray()
+            };
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Fakes;
-using XTI_App.TestFakes;
+using XTI_App.Fakes;
 using XTI_Configuration.Extensions;
 
 namespace XTI_App.Tests
@@ -20,9 +20,9 @@ namespace XTI_App.Tests
             var services = await setup();
             var appContext = getAppContext(services);
             var appFromContext = await appContext.App();
-            var app = await services.FakeApp();
-            Assert.That(appFromContext.ID, Is.EqualTo(app.ID), "Should retrieve app from source");
-            Assert.That(appFromContext.Title, Is.EqualTo(app.Title), "Should retrieve app from source");
+            var appSetup = services.GetService<FakeAppSetup>();
+            Assert.That(appFromContext.ID, Is.EqualTo(appSetup.App.ID), "Should retrieve app from source");
+            Assert.That(appFromContext.Title, Is.EqualTo(appSetup.App.Title), "Should retrieve app from source");
         }
 
         [Test]
@@ -32,8 +32,8 @@ namespace XTI_App.Tests
             var appContext = getAppContext(services);
             var appFromContext = await appContext.App();
             var originalTitle = appFromContext.Title;
-            var app = await services.FakeApp();
-            await app.SetTitle("New title");
+            var appSetup = services.GetService<FakeAppSetup>();
+            appSetup.App.SetTitle("New title");
             var cachedApp = await appContext.App();
             Assert.That(cachedApp.Title, Is.EqualTo(originalTitle), "Should retrieve app from cache");
         }
@@ -66,8 +66,8 @@ namespace XTI_App.Tests
             var appContext = getAppContext(services);
             var originalApp = await appContext.App();
             var originalAppRoles = await originalApp.Roles();
-            var app = await services.FakeApp();
-            await app.AddRole(new AppRoleName("New Role"));
+            var appSetup = services.GetService<FakeAppSetup>();
+            appSetup.App.AddRole(new AppRoleName("New Role"));
             var cachedApp = await appContext.App();
             var cachedAppRoles = await cachedApp.Roles();
             var expectedRoleNames = new[]
@@ -91,10 +91,8 @@ namespace XTI_App.Tests
             var appContext = getAppContext(services);
             var originalApp = await appContext.App();
             var originalVersion = await originalApp.Version(AppVersionKey.Current);
-            var app = await services.FakeApp();
-            var newVersion = await app.StartNewMajorVersion(DateTime.UtcNow);
-            await newVersion.Publishing();
-            await newVersion.Published();
+            var appSetup = services.GetService<FakeAppSetup>();
+            var newVersion = appSetup.App.AddVersion(new AppVersionKey(1));
             var cachedApp = await appContext.App();
             var cachedVersion = await cachedApp.Version(AppVersionKey.Current);
             Assert.That(cachedVersion.ID, Is.EqualTo(originalVersion.ID), "Should retrieve current version from cache");
@@ -133,13 +131,9 @@ namespace XTI_App.Tests
             var version = await appFromContext.Version(AppVersionKey.Current);
             var resourceGroup = await version.ResourceGroup(new ResourceGroupName("Employee"));
             await resourceGroup.ModCategory();
-            var app = await services.FakeApp();
-            var currentVersion = await app.CurrentVersion();
+            var appSetup = services.GetService<FakeAppSetup>();
+            var currentVersion = await appSetup.App.Version(AppVersionKey.Current);
             var sourceResourceGroup = await currentVersion.ResourceGroup(new ResourceGroupName("Employee"));
-            var factory = services.GetService<AppFactory>();
-            var unknownApp = await factory.Apps().App(AppKey.Unknown);
-            var defaultModCategory = await unknownApp.ModCategory(ModifierCategoryName.Default);
-            await sourceResourceGroup.SetModCategory(defaultModCategory);
             var cachedModCategory = await resourceGroup.ModCategory();
             Assert.That(cachedModCategory.Name(), Is.EqualTo(new ModifierCategoryName("Department")), "Should retrieve modifier category from source");
         }

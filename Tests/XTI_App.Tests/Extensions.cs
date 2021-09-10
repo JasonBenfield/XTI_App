@@ -1,13 +1,10 @@
-﻿using MainDB.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_App.EfApi;
 using XTI_App.Extensions;
 using XTI_App.Fakes;
-using XTI_App.TestFakes;
 using XTI_Core;
 using XTI_Core.Fakes;
 
@@ -18,13 +15,13 @@ namespace XTI_App.Tests
         public static void AddServicesForTests(this IServiceCollection services)
         {
             services.AddMemoryCache();
-            services.AddMainDbContextForInMemory();
-            services.AddScoped<AppFactory>();
             services.AddSingleton<FakeClock>();
             services.AddSingleton<Clock>(sp => sp.GetService<FakeClock>());
-            services.AddScoped<ISourceAppContext, DefaultAppContext>();
+            services.AddScoped<FakeAppContext>();
+            services.AddScoped<ISourceAppContext>(sp => sp.GetService<FakeAppContext>());
             services.AddScoped<IAppContext, CachedAppContext>();
-            services.AddScoped<ISourceUserContext, FakeUserContext>();
+            services.AddScoped<FakeUserContext>();
+            services.AddScoped<ISourceUserContext>(sp => sp.GetService<FakeUserContext>());
             services.AddScoped<IUserContext, CachedUserContext>();
             services.AddSingleton(_ => FakeInfo.AppKey);
             services.AddSingleton(_ => AppVersionKey.Current);
@@ -42,6 +39,7 @@ namespace XTI_App.Tests
                 return factory.Create(apiUser);
             });
             services.AddScoped<FakeAppSetup>();
+            services.AddScoped<IAppSetup>(sp => sp.GetService<FakeAppSetup>());
         }
 
         public static Task Setup(this IServiceProvider services)
@@ -50,10 +48,10 @@ namespace XTI_App.Tests
             return setup.Run(AppVersionKey.Current);
         }
 
-        public static Task<App> FakeApp(this IServiceProvider services)
+        public static FakeApp FakeApp(this IServiceProvider services)
         {
-            var factory = services.GetService<AppFactory>();
-            return factory.Apps().App(FakeInfo.AppKey);
+            var setup = services.GetService<FakeAppSetup>();
+            return setup.App;
         }
     }
 }

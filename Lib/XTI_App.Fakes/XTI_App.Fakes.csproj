@@ -6,8 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\XTI_App.Api\XTI_App.Api.csproj" />
-    <ProjectReference Include="..\XTI_App.EfApi\XTI_App.EfApi.csproj" />
-    <ProjectReference Include="..\XTI_App\XTI_App.csproj" />
   </ItemGroup>
 
 </Project>

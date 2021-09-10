@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Linq;
-using XTI_App.TestFakes;
+using XTI_App.Fakes;
 
 namespace XTI_App.Tests
 {

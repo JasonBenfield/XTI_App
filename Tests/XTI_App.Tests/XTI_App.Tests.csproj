@@ -20,11 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Internal\XTI_Version\XTI_Version.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_App.Api\XTI_App.Api.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_App.Extensions\XTI_App.Extensions.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_App.Fakes\XTI_App.Fakes.csproj" />
     <ProjectReference Include="..\..\Lib\XTI_Forms\XTI_Forms.csproj" />
-    <ProjectReference Include="..\XTI_App.TestFakes\XTI_App.TestFakes.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,11 +5,7 @@ using System;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_App.EfApi;
 using XTI_App.Fakes;
-using XTI_App.TestFakes;
-using XTI_Core;
-using XTI_Core.Fakes;
 
 namespace XTI_App.Tests
 {
@@ -19,12 +15,12 @@ namespace XTI_App.Tests
         public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole()
         {
             var services = await setup();
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(AppRoleName.Admin);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
             await addRolesToUser(services, adminRole);
             var api = getApi(services);
             var action = api.Product.AddProduct;
-            await setPath(services, action);
+            setPath(services, action);
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role");
         }
@@ -33,12 +29,12 @@ namespace XTI_App.Tests
         public async Task ShouldNotHaveAccess_WhenUserDoesNoBelongToAnAllowedRole()
         {
             var services = await setup();
-            var app = await services.FakeApp();
-            var viewerRole = await app.Role(FakeAppRoles.Instance.Viewer);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
             await addRolesToUser(services, viewerRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action);
+            setPath(services, action);
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role");
         }
@@ -47,12 +43,12 @@ namespace XTI_App.Tests
         public async Task ShouldNotHaveAccess_WhenUserBelongsToADeniedRole()
         {
             var services = await setup();
-            var app = await services.FakeApp();
-            var viewerRole = await app.Role(FakeAppRoles.Instance.Viewer);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
             await addRolesToUser(services, viewerRole);
             var api = getApi(services);
             var action = api.Product.AddProduct;
-            await setPath(services, action, "IT");
+            setPath(services, action, "IT");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user belongs to a denied role");
         }
@@ -63,11 +59,11 @@ namespace XTI_App.Tests
             var services = await setup();
             var api = getApi(services);
             var user = await retrieveCurrentUser(services);
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(AppRoleName.Admin);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
             await user.AddRole(adminRole);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action, "IT");
+            setPath(services, action, "IT");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
         }
@@ -77,16 +73,16 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var user = await retrieveCurrentUser(services);
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(AppRoleName.Admin);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
             await user.AddRole(adminRole);
-            var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
-            var modifier = await modCategory.Modifier("IT");
-            var viewerRole = await app.Role(FakeAppRoles.Instance.Viewer);
-            await user.AddRole(viewerRole, modifier);
+            var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+            var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+            user.AddRoles(modifier, viewerRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action, "IT");
+            setPath(services, action, "IT");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role for modified action");
         }
@@ -96,14 +92,14 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var user = await retrieveCurrentUser(services);
-            var app = await services.FakeApp();
-            var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
-            var modifier = await modCategory.Modifier("IT");
-            var adminRole = await app.Role(AppRoleName.Admin);
-            await user.AddRole(adminRole, modifier);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
+            user.AddRoles(modifier, adminRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action, "IT");
+            setPath(services, action, "IT");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
         }
@@ -113,14 +109,14 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var user = await retrieveCurrentUser(services);
-            var app = await services.FakeApp();
-            var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
-            var viewerRole = await app.Role(FakeAppRoles.Instance.Viewer);
-            var modifier = await modCategory.Modifier("IT");
-            await user.AddRole(viewerRole, modifier);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+            var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+            var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+            user.AddRoles(modifier, viewerRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action, "IT");
+            setPath(services, action, "IT");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role even if they have access to the modified action");
         }
@@ -128,13 +124,13 @@ namespace XTI_App.Tests
         [Test]
         public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndTheActionHasTheDefaultModifier()
         {
-            var services = await setup("/Fake/Current/Employee/AddEmployee");
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(AppRoleName.Admin);
+            var services = await setup();
+            var appSetup = services.GetService<FakeAppSetup>();
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
             await addRolesToUser(services, adminRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action);
+            setPath(services, action);
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role and the action has the default modifier");
         }
@@ -144,14 +140,14 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var user = await retrieveCurrentUser(services);
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(AppRoleName.Admin);
-            var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
-            var modifier = await modCategory.Modifier("IT");
-            await user.AddRole(adminRole, modifier);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
+            var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+            user.AddRoles(modifier, adminRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action, "HR");
+            setPath(services, action, "HR");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role for modified action");
         }
@@ -160,13 +156,11 @@ namespace XTI_App.Tests
         public async Task AnonShouldNotHaveAccess_WhenAnonIsNotAllowed()
         {
             var services = await setup();
-            var factory = getAppFactory(services);
-            var anonUser = await factory.Users().User(AppUserName.Anon);
             var userContext = getUserContext(services);
-            userContext.SetUser(anonUser);
+            userContext.SetCurrentUser(AppUserName.Anon);
             var api = getApi(services);
             var action = api.Home.DoSomething;
-            await setPath(services, action);
+            setPath(services, action);
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "Anon should not have access unless anons are allowed");
         }
@@ -175,13 +169,11 @@ namespace XTI_App.Tests
         public async Task AnonShouldHaveAccess_WhenAnonIsAllowed()
         {
             var services = await setup();
-            var factory = getAppFactory(services);
-            var anonUser = await factory.Users().User(AppUserName.Anon);
             var userContext = getUserContext(services);
-            userContext.SetUser(anonUser);
+            userContext.SetCurrentUser(AppUserName.Anon);
             var api = getApi(services);
             var action = api.Login.Authenticate;
-            await setPath(services, action);
+            setPath(services, action);
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.True, "Anon should have access when anons are allowed");
         }
@@ -201,10 +193,8 @@ namespace XTI_App.Tests
         public async Task ShouldNotAllowAccess_WhenTheUserIsNotAuthenticatedAndTheResourceAllowsAuthenticatedUsers()
         {
             var services = await setup();
-            var factory = getAppFactory(services);
-            var anonUser = await factory.Users().User(AppUserName.Anon);
             var userContext = getUserContext(services);
-            userContext.SetUser(anonUser);
+            userContext.SetCurrentUser(AppUserName.Anon);
             var api = getApi(services);
             var group = api.Home;
             setPath(services, group);
@@ -217,22 +207,21 @@ namespace XTI_App.Tests
         {
             var services = await setup();
             var user = await retrieveCurrentUser(services);
-            var app = await services.FakeApp();
-            var adminRole = await app.Role(AppRoleName.Admin);
+            var appSetup = services.GetService<FakeAppSetup>();
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
             await user.AddRole(adminRole);
-            var denyAccessRole = await app.Role(AppRoleName.DenyAccess);
-            var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
-            var modifier = await modCategory.Modifier("IT");
-            await user.AddRole(adminRole, modifier);
-            await user.AddRole(denyAccessRole, modifier);
+            var denyAccessRole = await appSetup.App.Role(AppRoleName.DenyAccess);
+            var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+            var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+            user.AddRoles(modifier, adminRole, denyAccessRole);
             var api = getApi(services);
             var action = api.Employee.AddEmployee;
-            await setPath(services, action, "IT");
+            setPath(services, action, "IT");
             var hasAccess = await action.HasAccess();
             Assert.That(hasAccess, Is.False, "User should not have access when user has the deny access role");
         }
 
-        private async Task addRolesToUser(IServiceProvider services, params AppRole[] roles)
+        private async Task addRolesToUser(IServiceProvider services, params FakeAppRole[] roles)
         {
             var user = await retrieveCurrentUser(services);
             foreach (var role in roles)
@@ -241,7 +230,7 @@ namespace XTI_App.Tests
             }
         }
 
-        private async Task<IServiceProvider> setup(string path = "", string department = "")
+        private async Task<IServiceProvider> setup()
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices
@@ -249,22 +238,18 @@ namespace XTI_App.Tests
                     services =>
                     {
                         services.AddServicesForTests();
-                        services.AddScoped<IAppContext, DefaultAppContext>();
-                        services.AddScoped<IUserContext, FakeUserContext>();
+                        services.AddScoped<IAppContext>(sp => sp.GetService<FakeAppContext>());
+                        services.AddScoped<IUserContext>(sp => sp.GetService<FakeUserContext>());
                     }
                 )
                 .Build();
             var scope = host.Services.CreateScope();
             var sp = scope.ServiceProvider;
-            var factory = sp.GetService<AppFactory>();
-            var clock = (FakeClock)sp.GetService<Clock>();
             await sp.Setup();
-            var user = await factory.Users().Add
-            (
-                new AppUserName("someone"), new FakeHashedPassword("Password"), clock.Now()
-            );
-            var userContext = getUserContext(sp);
-            userContext.SetUser(user);
+            var userContext = (FakeUserContext)sp.GetService<ISourceUserContext>();
+            var userName = new AppUserName("someone");
+            userContext.AddUser(userName);
+            userContext.SetCurrentUser(userName);
             return sp;
         }
 
@@ -274,29 +259,16 @@ namespace XTI_App.Tests
             pathAccessor.SetPath(group.Path);
         }
 
-        private async Task setPath<TModel, TResult>(IServiceProvider sp, AppApiAction<TModel, TResult> action, string department = "")
+        private void setPath<TModel, TResult>(IServiceProvider sp, AppApiAction<TModel, TResult> action, string department = "")
         {
-            var app = await sp.FakeApp();
-            Modifier modifier;
-            if (department == "")
-            {
-                modifier = await app.DefaultModifier();
-            }
-            else
-            {
-                var modCategory = await app.ModCategory(new ModifierCategoryName("Department"));
-                modifier = await modCategory.Modifier(department);
-            }
             var pathAccessor = (FakeXtiPathAccessor)sp.GetService<IXtiPathAccessor>();
-            pathAccessor.SetPath(action.Path.WithModifier(modifier.ModKey()));
+            pathAccessor.SetPath(action.Path.WithModifier(new ModifierKey(department)));
         }
 
-        private AppFactory getAppFactory(IServiceProvider sp) => sp.GetService<AppFactory>();
-
-        private async Task<AppUser> retrieveCurrentUser(IServiceProvider sp)
+        private async Task<FakeAppUser> retrieveCurrentUser(IServiceProvider sp)
         {
             var userContext = getUserContext(sp);
-            return (AppUser)await userContext.User();
+            return (FakeAppUser)await userContext.User();
         }
 
         private FakeUserContext getUserContext(IServiceProvider sp)

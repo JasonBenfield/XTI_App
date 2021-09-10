@@ -1,30 +1,41 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_App.EfApi;
 
 namespace XTI_App.Fakes
 {
     public sealed class FakeUserContext : ISourceUserContext
     {
-        private readonly DefaultUserContext userContext;
+        private readonly FakeAppContext appContext;
+        private AppUserName currentUser;
+        private readonly List<FakeAppUser> users = new List<FakeAppUser>();
 
-        private string userName;
-
-        public FakeUserContext(AppFactory appFactory)
+        public FakeUserContext(FakeAppContext appContext)
         {
-            userContext = new DefaultUserContext(appFactory, getUserName);
+            this.appContext = appContext;
+            AddUser(AppUserName.Anon);
         }
 
-        private string getUserName() => userName;
+        public Task<IAppUser> User() => User(currentUser);
 
-        public Task<IAppUser> User() => userContext.User();
-
-        public Task<IAppUser> User(AppUserName userName) => userContext.User(userName);
-
-        public void SetUser(IAppUser user)
+        public Task<IAppUser> User(AppUserName userName)
         {
-            userName = user?.UserName().Value ?? "";
+            var user = users.First(u => u.UserName().Equals(userName));
+            return Task.FromResult<IAppUser>(user);
+        }
+
+        public void SetCurrentUser(AppUserName userName)
+        {
+            currentUser = userName;
+        }
+
+        public FakeAppUser AddUser(AppUserName userName)
+        {
+            var user = new FakeAppUser(appContext, FakeAppUser.NextID(), userName);
+            users.Add(user);
+            return user;
         }
     }
 }
