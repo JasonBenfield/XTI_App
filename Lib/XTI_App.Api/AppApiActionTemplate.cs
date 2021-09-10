@@ -96,5 +96,12 @@ namespace XTI_App.Api
             }
             return numericTemplates.Distinct();
         }
+
+        public AppApiActionTemplateModel ToModel()
+            => new AppApiActionTemplateModel
+            {
+                Name = Name,
+                Roles = Access.Allowed.Select(r => r.Value).ToArray()
+            };
     }
 }

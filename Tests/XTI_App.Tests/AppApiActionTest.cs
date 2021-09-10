@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using XTI_App.Api;
-using XTI_App.TestFakes;
+using XTI_App.Fakes;
 using XTI_Forms;
 
 namespace XTI_App.Tests

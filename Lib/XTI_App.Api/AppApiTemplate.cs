@@ -34,6 +34,13 @@ namespace XTI_App.Api
                 .SelectMany(g => g.NumericValueTemplates())
                 .Distinct();
 
+        public AppApiTemplateModel ToModel()
+            => new AppApiTemplateModel
+            {
+                AppKey = new AppKeyModel(AppKey),
+                GroupTemplates = GroupTemplates.Select(g => g.ToModel()).ToArray()
+            };
+
         public bool IsAuthenticator() => Name.Equals("Hub", StringComparison.OrdinalIgnoreCase);
     }
 }

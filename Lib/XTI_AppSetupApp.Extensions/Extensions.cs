@@ -11,7 +11,6 @@ namespace XTI_AppSetupApp.Extensions
         public static void AddAppSetupServices(this IServiceCollection services, IConfiguration config)
         {
             services.AddMainDbContextForSqlServer(config);
-            services.AddScoped<AppFactory>();
             services.AddScoped<Clock, UtcClock>();
             services.Configure<SetupOptions>(config.GetSection(SetupOptions.Setup));
             services.AddHostedService<SetupHostedService>();
