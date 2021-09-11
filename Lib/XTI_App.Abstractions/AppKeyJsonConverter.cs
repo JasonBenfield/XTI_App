@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using XTI_Core;
 
 namespace XTI_App.Abstractions
 {
@@ -34,18 +35,8 @@ namespace XTI_App.Abstractions
                 }
                 else if (propName == "Type")
                 {
-                    while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-                    {
-                        if (reader.TokenType == JsonTokenType.PropertyName)
-                        {
-                            propName = reader.GetString();
-                            reader.Read();
-                            if (propName == "Value")
-                            {
-                                type = AppType.Values.Value(reader.GetInt32());
-                            }
-                        }
-                    }
+                    reader.Read();
+                    type = (AppType)new NumericValueJsonConverter().Read(ref reader, typeof(AppType), options);
                 }
             }
             return new AppKey(name, type);

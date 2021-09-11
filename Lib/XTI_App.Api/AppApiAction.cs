@@ -8,6 +8,10 @@ namespace XTI_App.Api
 {
     public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     {
+        private readonly IAppApiUser user;
+        private readonly Func<AppActionValidation<TModel>> createValidation;
+        private readonly Func<AppAction<TModel, TResult>> createAction;
+
         public AppApiAction
         (
             XtiPath path,
@@ -29,10 +33,6 @@ namespace XTI_App.Api
             this.createAction = createAction;
         }
 
-        private readonly IAppApiUser user;
-        private readonly Func<AppActionValidation<TModel>> createValidation;
-        private readonly Func<AppAction<TModel, TResult>> createAction;
-
         public XtiPath Path { get; }
         public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
         public string FriendlyName { get; }
@@ -50,7 +50,11 @@ namespace XTI_App.Api
             return Task.FromResult(false);
         }
 
-        public async Task<object> Execute(object model) => await Execute((TModel)model);
+        public async Task<TResult> Invoke(TModel model)
+        {
+            var result = await Execute(model);
+            return result.Data;
+        }
 
         public async Task<ResultContainer<TResult>> Execute(TModel model)
         {
@@ -94,5 +98,6 @@ namespace XTI_App.Api
         }
 
         public override string ToString() => $"{GetType().Name} {FriendlyName}";
+
     }
 }
