@@ -8,8 +8,8 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    <PackageReference Include="XTI_Secrets.Extensions" Version="1.7.8" />
-    <PackageReference Include="XTI_TempLog.Extensions" Version="1.2.11" />
+    <PackageReference Include="XTI_Secrets.Extensions" Version="1.7.9" />
+    <PackageReference Include="XTI_TempLog.Extensions" Version="1.2.14" />
   </ItemGroup>
 
   <ItemGroup>
