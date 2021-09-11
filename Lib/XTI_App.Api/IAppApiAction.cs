@@ -10,8 +10,6 @@ namespace XTI_App.Api
 
         Task<bool> HasAccess();
 
-        Task<object> Execute(object model);
-
         AppApiActionTemplate Template();
     }
 }
