@@ -37,7 +37,7 @@ namespace XTI_App.Api
         public AppApiTemplateModel ToModel()
             => new AppApiTemplateModel
             {
-                AppKey = new AppKeyModel(AppKey),
+                AppKey = AppKey,
                 GroupTemplates = GroupTemplates.Select(g => g.ToModel()).ToArray()
             };
 
