@@ -101,6 +101,7 @@ namespace XTI_App.Api
             => new AppApiActionTemplateModel
             {
                 Name = Name,
+                IsAnonymousAllowed = Access.IsAnonymousAllowed,
                 Roles = Access.Allowed.Select(r => r.Value).ToArray()
             };
     }

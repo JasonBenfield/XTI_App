@@ -43,6 +43,7 @@ namespace XTI_App.Api
             {
                 Name = Name,
                 ModCategory = ModCategory.Value,
+                IsAnonymousAllowed = Access.IsAnonymousAllowed,
                 Roles = Access.Allowed.Select(r => r.Value).ToArray(),
                 ActionTemplates = ActionTemplates.Select(a => a.ToModel()).ToArray()
             };
