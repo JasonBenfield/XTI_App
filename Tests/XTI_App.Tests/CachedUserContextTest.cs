@@ -1,6 +1,4 @@
-﻿using MainDB.EF;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using System;
@@ -10,9 +8,7 @@ using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_App.Fakes;
-using XTI_App.Fakes;
 using XTI_Configuration.Extensions;
-using XTI_Core;
 
 namespace XTI_App.Tests
 {
@@ -118,8 +114,6 @@ namespace XTI_App.Tests
 
         private CachedUserContext getUserContext(IServiceProvider sp)
             => (CachedUserContext)sp.GetService<IUserContext>();
-
-        private MainDbContext getMainDbContext(IServiceProvider sp) => sp.GetService<MainDbContext>();
 
         private async Task<FakeAppUser> testUser(IServiceProvider sp)
         {
