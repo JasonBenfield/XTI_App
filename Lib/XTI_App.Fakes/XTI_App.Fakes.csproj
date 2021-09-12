@@ -5,7 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XTI_App.Api\XTI_App.Api.csproj" />
+    <PackageReference Include="XTI_Core.Fakes" Version="1.8.18" />
+    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\XTI_App.Extensions\XTI_App.Extensions.csproj" />
   </ItemGroup>
 
 </Project>
