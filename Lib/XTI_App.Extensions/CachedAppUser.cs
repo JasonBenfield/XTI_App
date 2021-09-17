@@ -13,15 +13,17 @@ namespace XTI_App.Extensions
         private readonly IMemoryCache cache;
         private readonly ISourceAppContext sourceAppContext;
         private readonly ISourceUserContext sourceUserContext;
+        private readonly AppUserName userName;
         private readonly string cacheKey;
         private CacheData cacheData = new CacheData(new EntityID(), AppUserName.Anon);
 
-        public CachedAppUser(IMemoryCache cache, ISourceAppContext sourceAppContext, ISourceUserContext sourceUserContext)
+        public CachedAppUser(IMemoryCache cache, ISourceAppContext sourceAppContext, ISourceUserContext sourceUserContext, AppUserName userName)
         {
             this.cache = cache;
             this.sourceAppContext = sourceAppContext;
             this.sourceUserContext = sourceUserContext;
-            cacheKey = "xti_current_user";
+            this.userName = userName;
+            cacheKey = $"xti_user_{userName.Value}";
         }
 
         public EntityID ID { get => cacheData.ID; }
@@ -45,7 +47,7 @@ namespace XTI_App.Extensions
             cacheData = cache.Get<CacheData>(cacheKey);
             if (cacheData == null)
             {
-                var user = await sourceUserContext.User();
+                var user = await sourceUserContext.User(userName);
                 cacheData = new CacheData(user.ID, user.UserName());
                 store();
             }
@@ -67,7 +69,7 @@ namespace XTI_App.Extensions
         public async Task<IAppRole[]> Roles(IModifier modifier)
         {
             var cachedUserRoles = new List<CachedAppRole>();
-            var rolesKey = $"xti_user_roles_{modifier.ID.Value}";
+            var rolesKey = $"xti_user_{userName.Value}_roles_{modifier.ID.Value}";
             var cachedRoleNames = cache.Get<AppRoleName[]>(rolesKey);
             if (cachedRoleNames == null)
             {

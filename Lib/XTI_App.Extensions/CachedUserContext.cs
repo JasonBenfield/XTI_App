@@ -29,13 +29,14 @@ namespace XTI_App.Extensions
 
         public void ClearCache(AppUserName userName)
         {
-            var cachedUser = new CachedAppUser(cache, sourceAppContext, sourceUserContext);
+            var cachedUser = new CachedAppUser(cache, sourceAppContext, sourceUserContext, userName);
             cachedUser.ClearCache();
         }
 
         public async Task<IAppUser> User()
         {
-            var cachedUser = new CachedAppUser(cache, sourceAppContext, sourceUserContext);
+            var userName = await sourceUserContext.CurrentUserName();
+            var cachedUser = new CachedAppUser(cache, sourceAppContext, sourceUserContext, userName);
             await cachedUser.Load();
             return cachedUser;
         }

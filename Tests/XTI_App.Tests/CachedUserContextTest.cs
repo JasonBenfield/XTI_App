@@ -35,12 +35,26 @@ namespace XTI_App.Tests
             var modCategory = await appSetup.App.ModCategory(ModifierCategoryName.Default);
             var modifier = await modCategory.Modifier(ModifierKey.Default);
             await user.Roles(modifier);
-            var adminRole = (FakeAppRole)await appSetup.App.Role(AppRoleName.Admin);
+            var adminRole = await appSetup.App.Role(AppRoleName.Admin);
             var sourceUser = await testUser(services);
             sourceUser.AddRoles(modifier, adminRole);
             userContext.ClearCache(user.UserName());
             var userRoles = await user.Roles(modifier);
             Assert.That(userRoles.Select(r => r.Name()), Has.One.EqualTo(AppRoleName.Admin), "Should clear cache");
+        }
+
+        [Test]
+        public async Task ShouldRetrieveDifferentUser()
+        {
+            var services = await setup();
+            var userContext = getUserContext(services);
+            await userContext.User();
+            var sourceUserContext = (FakeUserContext)services.GetService<ISourceUserContext>();
+            var anotherUserName = new AppUserName("another.user");
+            sourceUserContext.AddUser(anotherUserName);
+            sourceUserContext.SetCurrentUser(anotherUserName);
+            var differentUser = await userContext.User();
+            Assert.That(differentUser.UserName(), Is.EqualTo(anotherUserName));
         }
 
         [Test]
@@ -106,7 +120,7 @@ namespace XTI_App.Tests
             var userContext = sp.GetService<FakeUserContext>();
             var userName = new AppUserName("test.user");
             var user = userContext.AddUser(userName);
-            var viewerRole = (FakeAppRole)await fakeSetup.App.Role(FakeAppRoles.Instance.Viewer);
+            var viewerRole = await fakeSetup.App.Role(FakeAppRoles.Instance.Viewer);
             user.AddRoles(modifier, viewerRole);
             userContext.SetCurrentUser(userName);
             return sp;

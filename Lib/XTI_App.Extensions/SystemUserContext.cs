@@ -18,14 +18,14 @@ namespace XTI_App.Extensions
 
         public async Task<IAppUser> User()
         {
-            var userName = await getUserName();
+            var userName = await CurrentUserName();
             var user = await User(userName);
             return user;
         }
 
         public Task<IAppUser> User(AppUserName userName) => sourceUserContext.User(userName);
 
-        private async Task<AppUserName> getUserName()
+        public async Task<AppUserName> CurrentUserName()
         {
             var credentials = await systemUserCredentials.Value();
             return string.IsNullOrWhiteSpace(credentials.UserName)

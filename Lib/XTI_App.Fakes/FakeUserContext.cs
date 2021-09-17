@@ -9,7 +9,7 @@ namespace XTI_App.Fakes
     public sealed class FakeUserContext : ISourceUserContext
     {
         private readonly FakeAppContext appContext;
-        private AppUserName currentUser;
+        private AppUserName currentUserName;
         private readonly List<FakeAppUser> users = new List<FakeAppUser>();
 
         public FakeUserContext(FakeAppContext appContext)
@@ -18,7 +18,9 @@ namespace XTI_App.Fakes
             AddUser(AppUserName.Anon);
         }
 
-        public Task<IAppUser> User() => User(currentUser);
+        public Task<AppUserName> CurrentUserName() => Task.FromResult(currentUserName);
+
+        public Task<IAppUser> User() => User(currentUserName);
 
         public Task<IAppUser> User(AppUserName userName)
         {
@@ -28,7 +30,7 @@ namespace XTI_App.Fakes
 
         public void SetCurrentUser(AppUserName userName)
         {
-            currentUser = userName;
+            currentUserName = userName;
         }
 
         public FakeAppUser AddUser(AppUserName userName)
