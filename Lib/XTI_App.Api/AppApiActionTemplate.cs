@@ -102,7 +102,8 @@ namespace XTI_App.Api
             {
                 Name = Name,
                 IsAnonymousAllowed = Access.IsAnonymousAllowed,
-                Roles = Access.Allowed.Select(r => r.Value).ToArray()
+                Roles = Access.Allowed.Select(r => r.Value).ToArray(),
+                ResultType = ResultType()
             };
     }
 }
