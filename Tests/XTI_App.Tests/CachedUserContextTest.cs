@@ -105,7 +105,7 @@ namespace XTI_App.Tests
                 (
                     (hostContext, services) =>
                     {
-                        services.AddServicesForTests();
+                        services.AddServicesForTests(hostContext.Configuration);
                     }
                 )
                 .Build();

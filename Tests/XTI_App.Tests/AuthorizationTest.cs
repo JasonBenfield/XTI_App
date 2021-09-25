@@ -235,9 +235,9 @@ namespace XTI_App.Tests
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices
                 (
-                    services =>
+                    (hostContext, services) =>
                     {
-                        services.AddServicesForTests();
+                        services.AddServicesForTests(hostContext.Configuration);
                         services.AddScoped<IAppContext>(sp => sp.GetService<FakeAppContext>());
                         services.AddScoped<IUserContext>(sp => sp.GetService<FakeUserContext>());
                     }
