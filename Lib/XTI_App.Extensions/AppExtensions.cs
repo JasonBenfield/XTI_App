@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Secrets;
@@ -12,14 +13,14 @@ namespace XTI_App.Extensions
 {
     public static class AppExtensions
     {
-        public static void AddAppServices(this IServiceCollection services, IConfiguration configuration)
+        public static void AddAppServices(this IServiceCollection services, IHostEnvironment hostEnv, IConfiguration configuration)
         {
             services.AddMemoryCache();
             services.AddDistributedMemoryCache();
             services.Configure<AppOptions>(configuration.GetSection(AppOptions.App));
-            services.AddXtiDataProtection();
             services.AddSingleton<Clock, UtcClock>();
-            services.AddFileSecretCredentials();
+            services.AddSingleton<XtiFolder>();
+            services.AddFileSecretCredentials(hostEnv);
             services.AddScoped(sp => sp.GetService<IXtiPathAccessor>().Value());
             services.AddScoped(sp => sp.GetService<XtiPath>().Version);
             services.AddScoped<IAppContext, CachedAppContext>();
