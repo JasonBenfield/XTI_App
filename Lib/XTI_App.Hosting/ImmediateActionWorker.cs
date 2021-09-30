@@ -24,8 +24,7 @@ namespace XTI_App.Hosting
             (
                 sp,
                 options.GroupName,
-                options.ActionName,
-                a => a.Execute(new EmptyRequest())
+                options.ActionName
             );
             return actionExecutor.Run();
         }

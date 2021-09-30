@@ -1,15 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using XTI_Schedule;
+using XTI_TempLog;
 
 namespace XTI_App.Hosting
 {
     public sealed class MultiActionRunner
     {
-        private readonly IServiceProvider sp;
+        private readonly IServiceScope scope;
+        private TempLogSession session;
         private readonly ImmediateActionOptions[] immediateActions;
         private readonly ScheduledActionOptions[] scheduledActions;
         private readonly AlwaysRunningActionOptions[] alwaysRunningActions;
@@ -22,7 +23,7 @@ namespace XTI_App.Hosting
             AlwaysRunningActionOptions[] alwaysRunningActions
         )
         {
-            this.sp = sp;
+            scope = sp.CreateScope();
             this.immediateActions = immediateActions;
             this.scheduledActions = scheduledActions;
             this.alwaysRunningActions = alwaysRunningActions;
@@ -30,23 +31,26 @@ namespace XTI_App.Hosting
 
         public async Task Start(CancellationToken stoppingToken)
         {
-            using var scope = sp.CreateScope();
             var factory = scope.ServiceProvider.GetService<IActionRunnerFactory>();
-            var session = factory.CreateTempLogSession();
+            session = factory.CreateTempLogSession();
             await session.StartSession();
-            var tasks = getTasks(stoppingToken);
-            await Task.WhenAll(tasks);
-            await session.EndSession();
+            startWorkers(stoppingToken);
         }
 
-        private Task[] getTasks(CancellationToken stoppingToken)
+        public async Task Stop()
         {
-            var tasks = new List<Task>();
+            if (session != null)
+            {
+                await session.EndSession();
+            }
+        }
+
+        private void startWorkers(CancellationToken stoppingToken)
+        {
             foreach (var immediateActionOptions in immediateActions)
             {
-                var worker = new ImmediateActionWorker(sp, immediateActionOptions);
-                var task = worker.StartAsync(stoppingToken);
-                tasks.Add(task);
+                var worker = new ImmediateActionWorker(scope.ServiceProvider, immediateActionOptions);
+                worker.StartAsync(stoppingToken);
             }
             foreach (var alwaysRunningActionOptions in alwaysRunningActions)
             {
@@ -70,17 +74,14 @@ namespace XTI_App.Hosting
                         }
                     }
                 };
-                var worker = new ScheduledActionWorker(sp, scheduledActionOptions);
-                var task = worker.StartAsync(stoppingToken);
-                tasks.Add(task);
+                var worker = new ScheduledActionWorker(scope.ServiceProvider, scheduledActionOptions);
+                worker.StartAsync(stoppingToken);
             }
             foreach (var scheduledActionOptions in scheduledActions)
             {
-                var worker = new ScheduledActionWorker(sp, scheduledActionOptions);
-                var task = worker.StartAsync(stoppingToken);
-                tasks.Add(task);
+                var worker = new ScheduledActionWorker(scope.ServiceProvider, scheduledActionOptions);
+                worker.StartAsync(stoppingToken);
             }
-            return tasks.ToArray();
         }
     }
 }

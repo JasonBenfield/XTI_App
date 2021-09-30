@@ -16,6 +16,7 @@ namespace XTI_App.Fakes
         {
             this.appContext = appContext;
             AddUser(AppUserName.Anon);
+            SetCurrentUser(AppUserName.Anon);
         }
 
         public Task<AppUserName> CurrentUserName() => Task.FromResult(currentUserName);
