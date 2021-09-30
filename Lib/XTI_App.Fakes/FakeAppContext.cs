@@ -11,6 +11,15 @@ namespace XTI_App.Fakes
         private FakeApp currentApp;
         private FakeAppVersion version;
 
+        public FakeAppContext(string title = "")
+        {
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                var app = AddApp(title);
+                SetCurrentApp(app);
+            }
+        }
+
         async Task<IApp> IAppContext.App() => await App();
 
         public Task<FakeApp> App() => Task.FromResult(currentApp);

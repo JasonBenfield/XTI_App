@@ -35,8 +35,7 @@ namespace XTI_App.Hosting
                         (
                             sp,
                             options.GroupName,
-                            options.ActionName,
-                            a => a.Execute(new EmptyRequest())
+                            options.ActionName
                         );
                         var result = await actionExecutor.Run();
                         if (result == ActionRunner.Results.Succeeded)

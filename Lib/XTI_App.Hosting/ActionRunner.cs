@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
-using XTI_TempLog;
 
 namespace XTI_App.Hosting
 {
@@ -13,20 +12,17 @@ namespace XTI_App.Hosting
         private readonly IServiceProvider sp;
         private readonly string groupName;
         private readonly string actionName;
-        private readonly Func<AppApiAction<EmptyRequest, EmptyActionResult>, Task> execute;
 
         public ActionRunner
         (
             IServiceProvider sp,
             string groupName,
-            string actionName,
-            Func<AppApiAction<EmptyRequest, EmptyActionResult>, Task> execute
+            string actionName
         )
         {
             this.sp = sp;
             this.groupName = groupName;
             this.actionName = actionName;
-            this.execute = execute;
         }
 
         public enum Results
@@ -39,15 +35,18 @@ namespace XTI_App.Hosting
 
         public async Task<Results> Run()
         {
-            using var scope = sp.CreateScope();
-            var xtiPathAccessor = scope.ServiceProvider.GetService<ActionRunnerXtiPathAccessor>();
-            xtiPathAccessor.FinishPath(groupName, actionName);
-            var xtiPath = xtiPathAccessor.Value();
-            var factory = scope.ServiceProvider.GetService<IActionRunnerFactory>();
-            var result = await verifyActionIsRequired(factory, xtiPath);
-            if (result == Results.None)
+            Results result;
+            using (var scope = sp.CreateScope())
             {
-                result = await run(factory, xtiPath);
+                var xtiPathAccessor = scope.ServiceProvider.GetService<ActionRunnerXtiPathAccessor>();
+                xtiPathAccessor.FinishPath(groupName, actionName);
+                var xtiPath = xtiPathAccessor.Value();
+                var factory = scope.ServiceProvider.GetService<IActionRunnerFactory>();
+                result = await verifyActionIsRequired(factory, xtiPath);
+                if (result == Results.None)
+                {
+                    result = await run(factory, xtiPath);
+                }
             }
             return result;
         }
@@ -85,7 +84,7 @@ namespace XTI_App.Hosting
             {
                 await session.StartRequest(path);
                 var action = getApiAction(factory);
-                await execute(action);
+                await action.Execute(new EmptyRequest());
                 result = Results.Succeeded;
             }
             catch (Exception ex)
