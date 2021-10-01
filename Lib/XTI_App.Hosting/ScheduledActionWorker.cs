@@ -9,7 +9,7 @@ using XTI_Schedule;
 
 namespace XTI_App.Hosting
 {
-    public sealed class ScheduledActionWorker : BackgroundService
+    public sealed class ScheduledActionWorker : BackgroundService, IWorker
     {
         private readonly IServiceProvider sp;
         private readonly ScheduledActionOptions options;
@@ -19,6 +19,8 @@ namespace XTI_App.Hosting
             this.sp = sp;
             this.options = options;
         }
+
+        public bool HasStopped { get; private set; }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -50,6 +52,7 @@ namespace XTI_App.Hosting
                 }
                 await Task.Delay(options.Interval, stoppingToken);
             }
+            HasStopped = true;
         }
     }
 }
