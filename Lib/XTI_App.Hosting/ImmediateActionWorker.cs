@@ -7,26 +7,32 @@ using XTI_Schedule;
 
 namespace XTI_App.Hosting
 {
-    public sealed class ImmediateActionWorker : BackgroundService
+    public sealed class ImmediateActionWorker : BackgroundService, IWorker
     {
         private readonly IServiceProvider sp;
-        private readonly ImmediateActionOptions options;
+        private readonly ImmediateActionOptions[] optionsArray;
 
-        public ImmediateActionWorker(IServiceProvider sp, ImmediateActionOptions options)
+        public ImmediateActionWorker(IServiceProvider sp, ImmediateActionOptions[] optionsArray)
         {
             this.sp = sp;
-            this.options = options;
+            this.optionsArray = optionsArray;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        public bool HasStopped { get; private set; }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var actionExecutor = new ActionRunner
-            (
-                sp,
-                options.GroupName,
-                options.ActionName
-            );
-            return actionExecutor.Run();
+            foreach (var options in optionsArray)
+            {
+                var actionExecutor = new ActionRunner
+                (
+                    sp,
+                    options.GroupName,
+                    options.ActionName
+                );
+                await actionExecutor.Run();
+            }
+            HasStopped = true;
         }
     }
 }

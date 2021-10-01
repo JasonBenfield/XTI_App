@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using XTI_Schedule;
@@ -14,6 +16,7 @@ namespace XTI_App.Hosting
         private readonly ImmediateActionOptions[] immediateActions;
         private readonly ScheduledActionOptions[] scheduledActions;
         private readonly AlwaysRunningActionOptions[] alwaysRunningActions;
+        private readonly List<IWorker> workers = new List<IWorker>();
 
         public MultiActionRunner
         (
@@ -39,6 +42,10 @@ namespace XTI_App.Hosting
 
         public async Task Stop()
         {
+            while (workers.Any(w => !w.HasStopped))
+            {
+                await Task.Delay(100);
+            }
             if (session != null)
             {
                 await session.EndSession();
@@ -47,11 +54,9 @@ namespace XTI_App.Hosting
 
         private void startWorkers(CancellationToken stoppingToken)
         {
-            foreach (var immediateActionOptions in immediateActions)
-            {
-                var worker = new ImmediateActionWorker(scope.ServiceProvider, immediateActionOptions);
-                worker.StartAsync(stoppingToken);
-            }
+            var immediateWorker = new ImmediateActionWorker(scope.ServiceProvider, immediateActions);
+            immediateWorker.StartAsync(stoppingToken);
+            workers.Add(immediateWorker);
             foreach (var alwaysRunningActionOptions in alwaysRunningActions)
             {
                 var scheduledActionOptions = new ScheduledActionOptions
@@ -67,7 +72,7 @@ namespace XTI_App.Hosting
                             {
                                 DaysOfWeek = new[]
                                 {
-                                    DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday,DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday
+                                    DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday
                                 },
                                 TimeRanges = new [] { new TimeRangeOptions { StartTime = 0, EndTime = 2400 } }
                             }
@@ -76,11 +81,13 @@ namespace XTI_App.Hosting
                 };
                 var worker = new ScheduledActionWorker(scope.ServiceProvider, scheduledActionOptions);
                 worker.StartAsync(stoppingToken);
+                workers.Add(worker);
             }
             foreach (var scheduledActionOptions in scheduledActions)
             {
                 var worker = new ScheduledActionWorker(scope.ServiceProvider, scheduledActionOptions);
                 worker.StartAsync(stoppingToken);
+                workers.Add(worker);
             }
         }
     }
