@@ -1,11 +1,12 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using XTI_App.Api;
 using XTI_App.Fakes;
+using XTI_Configuration.Extensions;
 using XTI_Forms;
 
 namespace XTI_App.Tests
@@ -15,7 +16,8 @@ namespace XTI_App.Tests
         [Test]
         public void ShouldValidateForm()
         {
-            var api = new FakeAppApi(new AppApiSuperUser());
+            var services = setup();
+            var api = services.GetService<FakeAppApi>();
             var form = new FakeForm();
             form.TestText.SetValue(null);
             var ex = Assert.ThrowsAsync<ValidationFailedException>(() => api.Employee.SubmitFakeForm.Execute(form));
@@ -27,11 +29,34 @@ namespace XTI_App.Tests
         [Test]
         public async Task ShouldExecuteAction_WhenFormIsValid()
         {
-            var api = new FakeAppApi(new AppApiSuperUser());
+            var services = setup();
+            var api = services.GetService<FakeAppApi>();
             var form = new FakeForm();
             form.TestText.SetValue("Valid");
             var result = await api.Employee.SubmitFakeForm.Execute(form);
             Assert.That(result.Data, Is.EqualTo("Valid"));
+        }
+
+        private IServiceProvider setup()
+        {
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration
+                (
+                    (hostContext, config) =>
+                    {
+                        config.UseXtiConfiguration(hostContext.HostingEnvironment, new string[] { });
+                    }
+                )
+                .ConfigureServices
+                (
+                    (hostContext, services) =>
+                    {
+                        services.AddServicesForTests(hostContext.Configuration);
+                    }
+                )
+                .Build();
+            var scope = host.Services.CreateScope();
+            return scope.ServiceProvider;
         }
     }
 }

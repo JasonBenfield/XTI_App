@@ -41,7 +41,7 @@ function App-CompleteIssue {
 
 function App-Publish {
     param(
-        [ValidateSet("Development", "Production", "Staging", "Test")]
+        [ValidateSet("Development", "Production")]
         $EnvName = "Development"
     )
     $script:appConfig | Xti-Publish @PsBoundParameters
