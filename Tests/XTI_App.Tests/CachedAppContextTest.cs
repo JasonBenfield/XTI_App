@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Fakes;
-using XTI_App.Fakes;
 using XTI_Configuration.Extensions;
 
 namespace XTI_App.Tests
@@ -92,7 +91,7 @@ namespace XTI_App.Tests
             var originalApp = await appContext.App();
             var originalVersion = await originalApp.Version(AppVersionKey.Current);
             var appSetup = services.GetService<FakeAppSetup>();
-            var newVersion = appSetup.App.AddVersion(new AppVersionKey(1));
+            appSetup.App.AddVersion(new AppVersionKey(1));
             var cachedApp = await appContext.App();
             var cachedVersion = await cachedApp.Version(AppVersionKey.Current);
             Assert.That(cachedVersion.ID, Is.EqualTo(originalVersion.ID), "Should retrieve current version from cache");
@@ -166,7 +165,6 @@ namespace XTI_App.Tests
                     (hostContext, services) =>
                     {
                         services.AddServicesForTests(hostContext.Configuration);
-                        services.AddScoped<FakeAppSetup>();
                     }
                 )
                 .Build();

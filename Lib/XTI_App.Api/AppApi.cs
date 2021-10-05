@@ -49,7 +49,8 @@ namespace XTI_App.Api
 
         public AppApiGroup Group(string groupName) => groups[groupKey(groupName)];
 
-        private static string groupKey(string groupName) => groupName.ToLower().Replace(" ", "");
+        private static string groupKey(string groupName)
+            => groupName.ToLower().Replace(" ", "").Replace("_", "");
 
         public AppApiTemplate Template() => new AppApiTemplate(this);
 

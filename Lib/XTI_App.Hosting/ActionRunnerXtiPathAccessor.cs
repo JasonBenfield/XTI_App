@@ -19,8 +19,8 @@ namespace XTI_App.Hosting
 
         public void FinishPath(string groupName, string actionName)
         {
-            this.groupName = groupName;
-            this.actionName = actionName;
+            this.groupName = groupName.Replace(" ", "");
+            this.actionName = actionName.Replace(" ", "");
         }
 
         public XtiPath Value()

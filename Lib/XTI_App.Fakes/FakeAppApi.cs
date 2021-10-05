@@ -1,11 +1,12 @@
-﻿using XTI_App.Abstractions;
+﻿using System;
+using XTI_App.Abstractions;
 using XTI_App.Api;
 
 namespace XTI_App.Fakes
 {
     public sealed class FakeAppApi : AppApiWrapper
     {
-        public FakeAppApi(IAppApiUser user)
+        public FakeAppApi(IAppApiUser user, IServiceProvider sp)
             : base
             (
                 new AppApi
@@ -48,10 +49,16 @@ namespace XTI_App.Fakes
                     nameof(Product)
                 )
             );
+            Agenda = new AgendaGroup
+            (
+                source.AddGroup(nameof(Agenda), ResourceAccess.AllowAnonymous()),
+                sp
+            );
         }
         public HomeGroup Home { get; }
         public LoginGroup Login { get; }
         public EmployeeGroup Employee { get; }
         public ProductGroup Product { get; }
+        public AgendaGroup Agenda { get; }
     }
 }
