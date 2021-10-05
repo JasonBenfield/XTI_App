@@ -2,11 +2,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Secrets;
 using XTI_Core;
 using XTI_Secrets.Extensions;
+using XTI_TempLog;
 using XTI_TempLog.Extensions;
 
 namespace XTI_App.Extensions
@@ -45,5 +47,25 @@ namespace XTI_App.Extensions
             });
             services.AddTempLogServices(configuration);
         }
+
+        public static void AddThrottledLog<TAppApi>(this IServiceCollection services, Action<TAppApi, ThrottledLogsBuilder> action)
+            where TAppApi : IAppApi
+        {
+            TempLogExtensions.AddThrottledLog
+            (
+                services,
+                (sp, builder) =>
+                {
+                    var api = (TAppApi)sp.GetService<AppApiFactory>().CreateForSuperUser();
+                    action(api, builder);
+                }
+            );
+        }
+
+        public static ThrottledPathBuilder Throttle(this ThrottledLogsBuilder builder, AppApiAction<EmptyRequest, EmptyActionResult> action)
+            => builder.Throttle(action.Path.Format());
+
+        public static ThrottledPathBuilder AndThrottle(this ThrottledPathBuilder builder, AppApiAction<EmptyRequest, EmptyActionResult> action)
+            => builder.AndThrottle(action.Path.Format());
     }
 }

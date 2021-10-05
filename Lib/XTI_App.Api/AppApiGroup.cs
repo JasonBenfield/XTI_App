@@ -37,7 +37,8 @@ namespace XTI_App.Api
             actions.Add(actionKey(action.ActionName), action);
             return action;
         }
-        private static string actionKey(string actionName) => actionName.ToLower().Replace(" ", "");
+        private static string actionKey(string actionName)
+            => actionName.ToLower().Replace(" ", "").Replace("_", "");
 
         public XtiPath Path { get; }
         public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }

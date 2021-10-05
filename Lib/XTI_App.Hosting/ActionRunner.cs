@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
@@ -67,6 +68,11 @@ namespace XTI_App.Hosting
             catch (Exception ex)
             {
                 var path = xtiPath.Format();
+                var hostEnv = sp.GetService<IHostEnvironment>();
+                if (!hostEnv.IsProduction())
+                {
+                    Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
+                }
                 await session.StartRequest(path);
                 await session.LogException(AppEventSeverity.Values.CriticalError, ex, $"Unexpected error in {path}");
                 await session.EndRequest();
@@ -89,6 +95,11 @@ namespace XTI_App.Hosting
             }
             catch (Exception ex)
             {
+                var hostEnv = sp.GetService<IHostEnvironment>();
+                if (!hostEnv.IsProduction())
+                {
+                    Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
+                }
                 result = Results.Error;
                 await session.LogException
                 (

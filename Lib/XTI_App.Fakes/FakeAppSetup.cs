@@ -1,17 +1,20 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.Fakes
 {
     public sealed class FakeAppSetup : IAppSetup
     {
+        private readonly AppApiFactory apiFactory;
         private readonly FakeAppContext appContext;
         private readonly FakeUserContext userContext;
         private readonly FakeAppOptions options;
 
-        public FakeAppSetup(FakeAppContext appContext, FakeUserContext userContext, FakeAppOptions options = null)
+        public FakeAppSetup(AppApiFactory apiFactory, FakeAppContext appContext, FakeUserContext userContext, FakeAppOptions options = null)
         {
+            this.apiFactory = apiFactory;
             this.appContext = appContext;
             this.userContext = userContext;
             this.options = options ?? new FakeAppOptions();
@@ -23,8 +26,7 @@ namespace XTI_App.Fakes
 
         public async Task Run(AppVersionKey versionKey)
         {
-            var fakeApiFactory = new FakeAppApiFactory();
-            var template = fakeApiFactory.CreateTemplate();
+            var template = apiFactory.CreateTemplate();
             var templateModel = template.ToModel();
             App = appContext.AddApp(options.Title);
             appContext.SetCurrentApp(App);

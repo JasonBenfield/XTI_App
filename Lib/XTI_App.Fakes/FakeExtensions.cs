@@ -39,12 +39,12 @@ namespace XTI_App.Fakes
             services.AddScoped(sp => sp.GetService<IXtiPathAccessor>().Value());
             services.AddScoped(sp => sp.GetService<XtiPath>().Version);
             services.AddScoped<IHashedPasswordFactory, FakeHashedPasswordFactory>();
-            services.AddScoped<FakeAppContext>();
-            services.AddScoped<ISourceAppContext>(sp => sp.GetService<FakeAppContext>());
+            services.AddSingleton<FakeAppContext>();
+            services.AddSingleton<ISourceAppContext>(sp => sp.GetService<FakeAppContext>());
             services.AddScoped<CachedAppContext>();
             services.AddScoped<IAppContext>(sp => sp.GetService<CachedAppContext>());
-            services.AddScoped<FakeUserContext>();
-            services.AddScoped<ISourceUserContext>(sp => sp.GetService<FakeUserContext>());
+            services.AddSingleton<FakeUserContext>();
+            services.AddSingleton<ISourceUserContext>(sp => sp.GetService<FakeUserContext>());
             services.AddScoped<CachedUserContext>();
             services.AddScoped<IUserContext>(sp => sp.GetService<CachedUserContext>());
             services.AddScoped(sp =>
@@ -53,6 +53,7 @@ namespace XTI_App.Fakes
                 var user = sp.GetService<IAppApiUser>();
                 return factory.Create(user);
             });
+            services.AddSingleton<FirstAgendaItemCounter>();
             services.AddFakeTempLogServices();
         }
     }
