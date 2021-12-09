@@ -1,14 +1,11 @@
-﻿using System.Threading.Tasks;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 
-namespace XTI_App.Fakes
+namespace XTI_App.Fakes;
+
+public sealed class AddProductAction : AppAction<AddProductModel, int>
 {
-    public sealed class AddProductAction : AppAction<AddProductModel, int>
+    public Task<int> Execute(AddProductModel model)
     {
-        public Task<int> Execute(AddProductModel model)
-        {
-            return Task.FromResult(1);
-        }
+        return Task.FromResult(1);
     }
-
 }

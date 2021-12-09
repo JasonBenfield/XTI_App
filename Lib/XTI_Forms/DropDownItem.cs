@@ -1,21 +1,20 @@
-﻿namespace XTI_Forms
+﻿namespace XTI_Forms;
+
+public interface DropDownItem
 {
-    public interface DropDownItem
+    public object? Value { get; }
+    public string DisplayText { get; }
+}
+public sealed class DropDownItem<T> : DropDownItem
+{
+    public DropDownItem(T? value, string displayText)
     {
-        public object Value { get; }
-        public string DisplayText { get; }
+        Value = value;
+        DisplayText = displayText;
     }
-    public sealed class DropDownItem<T> : DropDownItem
-    {
-        public DropDownItem(T value, string displayText)
-        {
-            Value = value;
-            DisplayText = displayText;
-        }
 
-        public T Value { get; }
-        public string DisplayText { get; }
+    public T? Value { get; }
+    public string DisplayText { get; }
 
-        object DropDownItem.Value { get => Value; }
-    }
+    object? DropDownItem.Value { get => Value; }
 }

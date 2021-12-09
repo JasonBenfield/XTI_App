@@ -1,11 +1,10 @@
-﻿namespace XTI_App.Api
-{
-    public abstract class AppApiFactory
-    {
-        public IAppApi Create(IAppApiUser user) => _Create(user);
-        public IAppApi CreateForSuperUser() => _Create(new AppApiSuperUser());
-        public AppApiTemplate CreateTemplate() => CreateForSuperUser().Template();
+﻿namespace XTI_App.Api;
 
-        protected abstract IAppApi _Create(IAppApiUser user);
-    }
+public abstract class AppApiFactory
+{
+    public IAppApi Create(IAppApiUser user) => _Create(user);
+    public IAppApi CreateForSuperUser() => _Create(new AppApiSuperUser());
+    public AppApiTemplate CreateTemplate() => CreateForSuperUser().Template();
+
+    protected abstract IAppApi _Create(IAppApiUser user);
 }

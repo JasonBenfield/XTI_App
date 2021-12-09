@@ -1,8 +1,7 @@
-﻿namespace XTI_Forms
+﻿namespace XTI_Forms;
+
+public sealed class DropDownFieldModel : SimpleFieldModel
 {
-    public sealed class DropDownFieldModel : SimpleFieldModel
-    {
-        public string ItemCaption { get; set; }
-        public DropDownItem[] Items { get; set; }
-    }
+    public string ItemCaption { get; set; } = "";
+    public DropDownItem[] Items { get; set; } = new DropDownItem[0];
 }

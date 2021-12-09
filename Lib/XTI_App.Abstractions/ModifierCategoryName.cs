@@ -1,16 +1,14 @@
-﻿using System;
-using XTI_Core;
+﻿using XTI_Core;
 
-namespace XTI_App.Abstractions
+namespace XTI_App.Abstractions;
+
+public sealed class ModifierCategoryName : TextKeyValue, IEquatable<ModifierCategoryName>
 {
-    public sealed class ModifierCategoryName : TextKeyValue, IEquatable<ModifierCategoryName>
+    public static readonly ModifierCategoryName Default = new ModifierCategoryName("Default");
+
+    public ModifierCategoryName(string value) : base(value)
     {
-        public static readonly ModifierCategoryName Default = new ModifierCategoryName("Default");
-
-        public ModifierCategoryName(string value) : base(value)
-        {
-        }
-
-        public bool Equals(ModifierCategoryName other) => _Equals(other);
     }
+
+    public bool Equals(ModifierCategoryName? other) => _Equals(other);
 }

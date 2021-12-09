@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Api;
 
-namespace XTI_App.Api
+public sealed class EmptyAppAction<TModel, TResult> : AppAction<TModel, TResult>
 {
-    public sealed class EmptyAppAction<TModel, TResult> : AppAction<TModel, TResult>
+    private readonly Func<TResult> createDefault;
+
+    public EmptyAppAction(Func<TResult> createDefault)
     {
-        public Task<TResult> Execute(TModel model) => Task.FromResult(default(TResult));
+        this.createDefault = createDefault;
     }
+
+    public Task<TResult> Execute(TModel model) => Task.FromResult(createDefault());
 }

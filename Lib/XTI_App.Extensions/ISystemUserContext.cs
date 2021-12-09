@@ -1,8 +1,7 @@
 ﻿using XTI_App.Api;
 
-namespace XTI_App.Extensions
+namespace XTI_App.Extensions;
+
+public interface ISystemUserContext : IUserContext
 {
-    public interface ISystemUserContext : IUserContext
-    {
-    }
 }

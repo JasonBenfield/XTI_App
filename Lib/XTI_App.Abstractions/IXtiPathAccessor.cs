@@ -1,7 +1,6 @@
-﻿namespace XTI_App.Abstractions
+﻿namespace XTI_App.Abstractions;
+
+public interface IXtiPathAccessor
 {
-    public interface IXtiPathAccessor
-    {
-        XtiPath Value();
-    }
+    XtiPath Value();
 }

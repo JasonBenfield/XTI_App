@@ -1,12 +1,11 @@
 ﻿using XTI_App.Abstractions;
 
-namespace XTI_App.Hosting
+namespace XTI_App.Hosting;
+
+public sealed class ImmediateAppAgendaItem : AppAgendaItem
 {
-    public sealed class ImmediateAppAgendaItem : AppAgendaItem
+    public ImmediateAppAgendaItem(ResourceGroupName groupName, ResourceName actionName, bool isDisabled)
+        : base(groupName, actionName, isDisabled)
     {
-        public ImmediateAppAgendaItem(ResourceGroupName groupName, ResourceName actionName, bool isDisabled)
-            : base(groupName, actionName, isDisabled)
-        {
-        }
     }
 }

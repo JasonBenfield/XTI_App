@@ -1,46 +1,46 @@
-﻿using System;
+﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
 using XTI_Core;
 
-namespace XTI_App.Abstractions
+namespace XTI_App.Abstractions;
+
+[TypeConverter(typeof(AppVersionKeyTypeConverter))]
+public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
 {
-    public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
+    private static readonly Regex keyRegex = new Regex("V?(\\d+)");
+
+    public static readonly AppVersionKey None = new AppVersionKey(0);
+    public static readonly AppVersionKey Current = new AppVersionKey("Current");
+
+    public static AppVersionKey Parse(string str)
     {
-        private static readonly Regex keyRegex = new Regex("V?(\\d+)");
-
-        public static readonly AppVersionKey None = new AppVersionKey(0);
-        public static readonly AppVersionKey Current = new AppVersionKey("Current");
-
-        public static AppVersionKey Parse(string str)
+        AppVersionKey key;
+        if (string.IsNullOrWhiteSpace(str))
         {
-            AppVersionKey key;
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                key = None;
-            }
-            else if (str.Equals("Current", StringComparison.OrdinalIgnoreCase))
-            {
-                key = Current;
-            }
-            else
-            {
-                if (!keyRegex.IsMatch(str))
-                {
-                    throw new ArgumentException($"'{str}' is not a valid version key");
-                }
-                key = new AppVersionKey(str);
-            }
-            return key;
+            key = None;
         }
-
-        public AppVersionKey(int versionID) : this($"V{versionID}")
+        else if (str.Equals("Current", StringComparison.OrdinalIgnoreCase))
         {
+            key = Current;
         }
-
-        private AppVersionKey(string key) : base(key)
+        else
         {
+            if (!keyRegex.IsMatch(str))
+            {
+                throw new ArgumentException($"'{str}' is not a valid version key");
+            }
+            key = new AppVersionKey(str);
         }
-
-        public bool Equals(AppVersionKey other) => _Equals(other);
+        return key;
     }
+
+    public AppVersionKey(int versionID) : this($"V{versionID}")
+    {
+    }
+
+    private AppVersionKey(string key) : base(key)
+    {
+    }
+
+    public bool Equals(AppVersionKey? other) => _Equals(other);
 }

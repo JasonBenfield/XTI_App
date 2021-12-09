@@ -1,12 +1,11 @@
 ﻿using XTI_App.Abstractions;
 
-namespace XTI_App.Api
+namespace XTI_App.Api;
+
+public sealed class AppApiActionTemplateModel
 {
-    public sealed class AppApiActionTemplateModel
-    {
-        public string Name { get; set; }
-        public bool IsAnonymousAllowed { get; set; }
-        public string[] Roles { get; set; }
-        public ResourceResultType ResultType { get; set; }
-    }
+    public string Name { get; set; } = "";
+    public bool IsAnonymousAllowed { get; set; }
+    public string[] Roles { get; set; } = new string[0];
+    public ResourceResultType ResultType { get; set; } = ResourceResultType.Values.None;
 }

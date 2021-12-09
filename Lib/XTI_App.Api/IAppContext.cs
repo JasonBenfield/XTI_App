@@ -1,11 +1,9 @@
-﻿using System.Threading.Tasks;
-using XTI_App.Abstractions;
+﻿using XTI_App.Abstractions;
 
-namespace XTI_App.Api
+namespace XTI_App.Api;
+
+public interface IAppContext
 {
-    public interface IAppContext
-    {
-        Task<IApp> App();
-        Task<IAppVersion> Version();
-    }
+    Task<IApp> App();
+    Task<IAppVersion> Version();
 }

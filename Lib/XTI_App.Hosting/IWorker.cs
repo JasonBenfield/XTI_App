@@ -1,7 +1,6 @@
-﻿namespace XTI_App.Hosting
+﻿namespace XTI_App.Hosting;
+
+public interface IWorker
 {
-    public interface IWorker
-    {
-        bool HasStopped { get; }
-    }
+    bool HasStopped { get; }
 }

@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public interface IAppVersion
 {
-    public interface IAppVersion
-    {
-        EntityID ID { get; }
-        AppVersionKey Key();
-        Task<IResourceGroup> ResourceGroup(ResourceGroupName name);
-    }
+    EntityID ID { get; }
+    AppVersionKey Key();
+    Task<IResourceGroup> ResourceGroup(ResourceGroupName name);
 }

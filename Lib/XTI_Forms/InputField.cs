@@ -1,35 +1,34 @@
 ﻿using XTI_Core;
 
-namespace XTI_Forms
+namespace XTI_Forms;
+
+public sealed class InputField<T> : SimpleField<T>
 {
-    public sealed class InputField<T> : SimpleField<T>
+    public InputField(string prefix, string name)
+        : base(prefix, name)
     {
-        public InputField(string prefix, string name)
-            : base(prefix, name)
-        {
-        }
+    }
 
-        public int? MaxLength { get; set; }
-        public bool IsProtected { get; set; }
+    public int? MaxLength { get; set; }
+    public bool IsProtected { get; set; }
 
-        protected override void Validating(ErrorList errors)
+    protected override void Validating(ErrorList errors)
+    {
+        if (MaxLength.HasValue)
         {
-            if (MaxLength.HasValue)
+            var value = Value();
+            if ((value?.ToString()?.Length ?? 0) > MaxLength)
             {
-                var value = Value();
-                if (value != null && value.ToString().Length > MaxLength)
-                {
-                    errors.Add(Error(string.Format(FormErrors.MustNotExceedLength, MaxLength)));
-                }
+                errors.Add(Error(string.Format(FormErrors.MustNotExceedLength, MaxLength)));
             }
         }
-
-        public new InputFieldModel ToModel() => (InputFieldModel)base.ToModel();
-
-        protected override SimpleFieldModel _ToModel() => new InputFieldModel
-        {
-            IsProtected = IsProtected,
-            MaxLength = MaxLength
-        };
     }
+
+    public new InputFieldModel ToModel() => (InputFieldModel)base.ToModel();
+
+    protected override SimpleFieldModel _ToModel() => new InputFieldModel
+    {
+        IsProtected = IsProtected,
+        MaxLength = MaxLength
+    };
 }

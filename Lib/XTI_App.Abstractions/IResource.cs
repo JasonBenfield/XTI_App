@@ -1,9 +1,8 @@
-﻿namespace XTI_App.Abstractions
-{
-    public interface IResource
-    {
-        EntityID ID { get; }
+﻿namespace XTI_App.Abstractions;
 
-        ResourceName Name();
-    }
+public interface IResource
+{
+    EntityID ID { get; }
+
+    ResourceName Name();
 }

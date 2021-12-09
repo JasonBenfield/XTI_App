@@ -1,7 +1,6 @@
-﻿namespace XTI_Forms
+﻿namespace XTI_Forms;
+
+public class ConstraintModel
 {
-    public class ConstraintModel
-    {
-        public string FailureMessage { get; set; }
-    }
+    public string FailureMessage { get; set; } = "";
 }

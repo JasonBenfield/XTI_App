@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-using XTI_Core;
+﻿using XTI_Core;
 
-namespace XTI_App.Api
+namespace XTI_App.Api;
+
+public interface AppActionValidation<TModel>
 {
-    public interface AppActionValidation<TModel>
-    {
-        Task Validate(ErrorList errors, TModel model);
-    }
+    Task Validate(ErrorList errors, TModel model);
 }

@@ -1,14 +1,11 @@
-﻿using System.Threading.Tasks;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 
-namespace XTI_App.Fakes
+namespace XTI_App.Fakes;
+
+public sealed class AddEmployeeAction : AppAction<AddEmployeeModel, int>
 {
-    public sealed class AddEmployeeAction : AppAction<AddEmployeeModel, int>
+    public Task<int> Execute(AddEmployeeModel model)
     {
-        public Task<int> Execute(AddEmployeeModel model)
-        {
-            return Task.FromResult(1);
-        }
+        return Task.FromResult(1);
     }
-
 }

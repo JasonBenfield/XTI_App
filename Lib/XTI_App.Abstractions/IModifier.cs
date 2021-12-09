@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public interface IModifier
 {
-    public interface IModifier
-    {
-        EntityID ID { get; }
-        ModifierKey ModKey();
-        Task<IModifier> DefaultModifier();
-    }
+    EntityID ID { get; }
+    ModifierKey ModKey();
+    Task<IModifier> DefaultModifier();
 }

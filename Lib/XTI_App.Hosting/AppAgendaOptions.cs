@@ -1,10 +1,9 @@
-﻿namespace XTI_App.Hosting
+﻿namespace XTI_App.Hosting;
+
+public sealed class AppAgendaOptions
 {
-    public sealed class AppAgendaOptions
-    {
-        public static readonly string AppAgenda = nameof(AppAgenda);
-        public ImmediateAppAgendaItemOptions[] ImmediateItems { get; set; } = new ImmediateAppAgendaItemOptions[] { };
-        public ScheduledAppAgendaItemOptions[] ScheduledItems { get; set; } = new ScheduledAppAgendaItemOptions[] { };
-        public AlwaysRunningAppAgendaItemOptions[] AlwaysRunningItems { get; set; } = new AlwaysRunningAppAgendaItemOptions[] { };
-    }
+    public static readonly string AppAgenda = nameof(AppAgenda);
+    public ImmediateAppAgendaItemOptions[] ImmediateItems { get; set; } = new ImmediateAppAgendaItemOptions[0];
+    public ScheduledAppAgendaItemOptions[] ScheduledItems { get; set; } = new ScheduledAppAgendaItemOptions[0];
+    public AlwaysRunningAppAgendaItemOptions[] AlwaysRunningItems { get; set; } = new AlwaysRunningAppAgendaItemOptions[0];
 }

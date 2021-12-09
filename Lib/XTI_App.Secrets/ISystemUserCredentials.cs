@@ -1,8 +1,7 @@
 ﻿using XTI_Credentials;
 
-namespace XTI_App.Secrets
+namespace XTI_App.Secrets;
+
+public interface ISystemUserCredentials : ICredentials
 {
-    public interface ISystemUserCredentials : ICredentials
-    {
-    }
 }

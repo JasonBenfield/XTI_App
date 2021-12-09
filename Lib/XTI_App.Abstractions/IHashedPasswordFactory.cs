@@ -1,7 +1,6 @@
-﻿namespace XTI_App.Abstractions
+﻿namespace XTI_App.Abstractions;
+
+public interface IHashedPasswordFactory
 {
-    public interface IHashedPasswordFactory
-    {
-        IHashedPassword Create(string password);
-    }
+    IHashedPassword Create(string password);
 }

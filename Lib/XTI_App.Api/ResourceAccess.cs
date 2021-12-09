@@ -1,41 +1,38 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using XTI_App.Abstractions;
+﻿using XTI_App.Abstractions;
 
-namespace XTI_App.Api
+namespace XTI_App.Api;
+
+public sealed class ResourceAccess
 {
-    public sealed class ResourceAccess
+    public static ResourceAccess AllowAnonymous()
+        => new ResourceAccess(new AppRoleName[] { }, true);
+
+    public static ResourceAccess AllowAuthenticated()
+        => new ResourceAccess(new AppRoleName[] { }, false);
+
+    public ResourceAccess(IEnumerable<AppRoleName> allowed)
+        : this(allowed, false)
     {
-        public static ResourceAccess AllowAnonymous()
-            => new ResourceAccess(new AppRoleName[] { }, true);
+    }
 
-        public static ResourceAccess AllowAuthenticated()
-            => new ResourceAccess(new AppRoleName[] { }, false);
+    private ResourceAccess(IEnumerable<AppRoleName> allowed, bool isAnonAllowed)
+    {
+        Allowed = (allowed ?? new AppRoleName[] { });
+        IsAnonymousAllowed = isAnonAllowed;
+    }
 
-        public ResourceAccess(IEnumerable<AppRoleName> allowed)
-            : this(allowed, false)
-        {
-        }
+    public IEnumerable<AppRoleName> Allowed { get; }
+    public bool IsAnonymousAllowed { get; }
 
-        private ResourceAccess(IEnumerable<AppRoleName> allowed, bool isAnonAllowed)
-        {
-            Allowed = (allowed ?? new AppRoleName[] { });
-            IsAnonymousAllowed = isAnonAllowed;
-        }
+    public ResourceAccess WithAllowed(params AppRoleName[] allowed)
+        => new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }));
 
-        public IEnumerable<AppRoleName> Allowed { get; }
-        public bool IsAnonymousAllowed { get; }
+    public ResourceAccess WithoutAllowed(params AppRoleName[] allowed)
+        => new ResourceAccess(Allowed.Except(allowed ?? new AppRoleName[] { }));
 
-        public ResourceAccess WithAllowed(params AppRoleName[] allowed)
-            => new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }));
-
-        public ResourceAccess WithoutAllowed(params AppRoleName[] allowed)
-            => new ResourceAccess(Allowed.Except(allowed ?? new AppRoleName[] { }));
-
-        public override string ToString()
-        {
-            var allowed = string.Join(",", Allowed.Select(r => r.DisplayText));
-            return $"{nameof(ResourceAccess)}\r\nAllowed: {allowed}";
-        }
+    public override string ToString()
+    {
+        var allowed = string.Join(",", Allowed.Select(r => r.DisplayText));
+        return $"{nameof(ResourceAccess)}\r\nAllowed: {allowed}";
     }
 }

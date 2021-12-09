@@ -1,13 +1,9 @@
-﻿using System;
+﻿namespace XTI_App.Fakes;
 
-namespace XTI_App.Fakes
+public sealed class Employee
 {
-    public sealed class Employee
-    {
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public DateTime BirthDate { get; set; }
-        public EmployeeType EmployeeType { get; set; }
-    }
-
+    public int ID { get; set; }
+    public string Name { get; set; } = "";
+    public DateTime BirthDate { get; set; }
+    public EmployeeType EmployeeType { get; set; } = EmployeeType.Values.None;
 }
