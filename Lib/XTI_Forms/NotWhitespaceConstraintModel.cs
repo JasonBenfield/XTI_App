@@ -1,6 +1,5 @@
-﻿namespace XTI_Forms
+﻿namespace XTI_Forms;
+
+public sealed class NotWhitespaceConstraintModel : ConstraintModel
 {
-    public sealed class NotWhitespaceConstraintModel : ConstraintModel
-    {
-    }
 }

@@ -1,44 +1,40 @@
-﻿using System;
+﻿namespace XTI_Forms;
 
-namespace XTI_Forms
+public sealed class ConvertedValue<T>
 {
-    public sealed class ConvertedValue<T>
+    private readonly object? source;
+
+    public ConvertedValue(object? source)
     {
-        private readonly object source;
+        this.source = source;
+    }
 
-        public ConvertedValue(object source)
+    public T? Value()
+    {
+        if (source == null)
         {
-            this.source = source;
+            return default;
         }
-
-        public T Value()
+        var sourceType = source.GetType();
+        var targetType = typeof(T);
+        if (isNullableType(targetType))
         {
-            if(source == null)
-            {
-                return default;
-            }
-            var sourceType = source.GetType();
-            var targetType = typeof(T);
-            if (isNullableType(targetType))
-            {
-                targetType = getNullableType(targetType);
-            }
-            if (sourceType == targetType)
-            {
-                return (T)source;
-            }
-            return (T)Convert.ChangeType(source, targetType);
+            targetType = getNullableType(targetType);
         }
-
-        private static bool isNullableType(Type type)
+        if (sourceType == targetType)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return (T)source;
         }
+        return (T)Convert.ChangeType(source, targetType);
+    }
 
-        private static Type getNullableType(Type type)
-        {
-            return type.GetGenericArguments()[0];
-        }
+    private static bool isNullableType(Type type)
+    {
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+    }
 
+    private static Type getNullableType(Type type)
+    {
+        return type.GetGenericArguments()[0];
     }
 }

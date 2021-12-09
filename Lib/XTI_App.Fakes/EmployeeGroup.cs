@@ -1,41 +1,38 @@
 ﻿using XTI_App.Api;
-using XTI_App.Tests;
 
-namespace XTI_App.Fakes
+namespace XTI_App.Fakes;
+
+public sealed class EmployeeGroup : AppApiGroupWrapper
 {
-    public sealed class EmployeeGroup : AppApiGroupWrapper
+    public EmployeeGroup(AppApiGroup source) : base(source)
     {
-        public EmployeeGroup(AppApiGroup source) : base(source)
-        {
-            var actions = new AppApiActionFactory(source);
-            AddEmployee = source.AddAction
+        var actions = new AppApiActionFactory(source);
+        AddEmployee = source.AddAction
+        (
+            actions.Action
             (
-                actions.Action
-                (
-                    nameof(AddEmployee),
-                    source.Access.WithAllowed(FakeAppRoles.Instance.Manager),
-                    () => new AddEmployeeValidation(),
-                    () => new AddEmployeeAction()
-                )
-            );
-            Employee = source.AddAction
+                nameof(AddEmployee),
+                source.Access.WithAllowed(FakeAppRoles.Instance.Manager),
+                () => new AddEmployeeValidation(),
+                () => new AddEmployeeAction()
+            )
+        );
+        Employee = source.AddAction
+        (
+            actions.Action
             (
-                actions.Action
-                (
-                    nameof(Employee),
-                    source.Access.WithAllowed(FakeAppRoles.Instance.Viewer),
-                    () => new EmployeeAction(),
-                    "Get Employee Information"
-                )
-            );
-            SubmitFakeForm = source.AddAction
-            (
-                actions.Action(nameof(SubmitFakeForm), () => new SubmitFakeFormAction())
-            );
-        }
-        public AppApiAction<AddEmployeeModel, int> AddEmployee { get; }
-        public AppApiAction<int, Employee> Employee { get; }
-        public AppApiAction<FakeForm, string> SubmitFakeForm { get; }
+                nameof(Employee),
+                source.Access.WithAllowed(FakeAppRoles.Instance.Viewer),
+                () => new EmployeeAction(),
+                "Get Employee Information"
+            )
+        );
+        SubmitFakeForm = source.AddAction
+        (
+            actions.Action(nameof(SubmitFakeForm), () => new SubmitFakeFormAction())
+        );
     }
-
+    public AppApiAction<AddEmployeeModel, int> AddEmployee { get; }
+    public AppApiAction<int, Employee> Employee { get; }
+    public AppApiAction<FakeForm, string> SubmitFakeForm { get; }
 }

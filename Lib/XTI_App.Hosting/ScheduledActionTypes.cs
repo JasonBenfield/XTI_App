@@ -1,8 +1,7 @@
-﻿namespace XTI_App.Hosting
+﻿namespace XTI_App.Hosting;
+
+public enum ScheduledActionTypes
 {
-    public enum ScheduledActionTypes
-    {
-        Continuous = 0,
-        PeriodicUntilSuccess = 1
-    }
+    Continuous = 0,
+    PeriodicUntilSuccess = 1
 }

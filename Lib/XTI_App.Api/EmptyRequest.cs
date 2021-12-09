@@ -1,6 +1,5 @@
-﻿namespace XTI_App.Api
+﻿namespace XTI_App.Api;
+
+public sealed class EmptyRequest
 {
-    public sealed class EmptyRequest
-    {
-    }
 }

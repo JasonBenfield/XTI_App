@@ -1,11 +1,7 @@
-﻿using System;
+﻿namespace XTI_App.Fakes;
 
-namespace XTI_App.Fakes
+public sealed class AddEmployeeModel
 {
-    public sealed class AddEmployeeModel
-    {
-        public string Name { get; set; }
-        public DateTime BirthDate { get; set; }
-    }
-
+    public string Name { get; set; } = "";
+    public DateTime BirthDate { get; set; }
 }

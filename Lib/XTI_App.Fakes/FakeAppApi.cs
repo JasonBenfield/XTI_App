@@ -1,64 +1,62 @@
-﻿using System;
-using XTI_App.Abstractions;
+﻿using XTI_App.Abstractions;
 using XTI_App.Api;
 
-namespace XTI_App.Fakes
+namespace XTI_App.Fakes;
+
+public sealed class FakeAppApi : AppApiWrapper
 {
-    public sealed class FakeAppApi : AppApiWrapper
-    {
-        public FakeAppApi(IAppApiUser user, IServiceProvider sp)
-            : base
+    public FakeAppApi(IAppApiUser user, IServiceProvider sp)
+        : base
+        (
+            new AppApi
             (
-                new AppApi
-                (
-                    FakeInfo.AppKey,
-                    user,
-                    ResourceAccess.AllowAuthenticated()
-                        .WithAllowed(AppRoleName.Admin)
-                )
+                FakeInfo.AppKey,
+                user,
+                ResourceAccess.AllowAuthenticated()
+                    .WithAllowed(AppRoleName.Admin)
             )
-        {
-            Home = new HomeGroup
+        )
+    {
+        Home = new HomeGroup
+        (
+            source.AddGroup
             (
-                source.AddGroup
-                (
-                    nameof(Home),
-                    ResourceAccess.AllowAuthenticated()
-                )
-            );
-            Login = new LoginGroup
+                nameof(Home),
+                ResourceAccess.AllowAuthenticated()
+            )
+        );
+        Login = new LoginGroup
+        (
+            source.AddGroup
             (
-                source.AddGroup
-                (
-                    nameof(Login),
-                    ResourceAccess.AllowAnonymous()
-                )
-            );
-            Employee = new EmployeeGroup
+                nameof(Login),
+                ResourceAccess.AllowAnonymous()
+            )
+        );
+        Employee = new EmployeeGroup
+        (
+            source.AddGroup
             (
-                source.AddGroup
-                (
-                    nameof(Employee),
-                    FakeInfo.ModCategories.Department
-                )
-            );
-            Product = new ProductGroup
+                nameof(Employee),
+                FakeInfo.ModCategories.Department
+            )
+        );
+        Product = new ProductGroup
+        (
+            source.AddGroup
             (
-                source.AddGroup
-                (
-                    nameof(Product)
-                )
-            );
-            Agenda = new AgendaGroup
-            (
-                source.AddGroup(nameof(Agenda), ResourceAccess.AllowAnonymous()),
-                sp
-            );
-        }
-        public HomeGroup Home { get; }
-        public LoginGroup Login { get; }
-        public EmployeeGroup Employee { get; }
-        public ProductGroup Product { get; }
-        public AgendaGroup Agenda { get; }
+                nameof(Product)
+            )
+        );
+        Agenda = new AgendaGroup
+        (
+            source.AddGroup(nameof(Agenda), ResourceAccess.AllowAnonymous()),
+            sp
+        );
     }
+    public HomeGroup Home { get; }
+    public LoginGroup Login { get; }
+    public EmployeeGroup Employee { get; }
+    public ProductGroup Product { get; }
+    public AgendaGroup Agenda { get; }
 }

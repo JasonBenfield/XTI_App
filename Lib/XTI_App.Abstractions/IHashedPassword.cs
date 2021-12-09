@@ -1,9 +1,6 @@
-﻿using System;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public interface IHashedPassword : IEquatable<string>
 {
-    public interface IHashedPassword : IEquatable<string>
-    {
-        string Value();
-    }
+    string Value();
 }

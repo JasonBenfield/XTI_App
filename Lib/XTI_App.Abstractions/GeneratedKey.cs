@@ -1,9 +1,6 @@
-﻿using System;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public sealed class GeneratedKey
 {
-    public sealed class GeneratedKey
-    {
-        public string Value() => Guid.NewGuid().ToString("N");
-    }
+    public string Value() => Guid.NewGuid().ToString("N");
 }

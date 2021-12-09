@@ -1,8 +1,7 @@
-﻿namespace XTI_Forms
+﻿namespace XTI_Forms;
+
+public sealed class InputFieldModel : SimpleFieldModel
 {
-    public sealed class InputFieldModel : SimpleFieldModel
-    {
-        public int? MaxLength { get; set; }
-        public bool IsProtected { get; set; }
-    }
+    public int? MaxLength { get; set; }
+    public bool IsProtected { get; set; }
 }

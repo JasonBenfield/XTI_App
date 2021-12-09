@@ -1,9 +1,8 @@
 ﻿using XTI_App.Abstractions;
 
-namespace XTI_App.Fakes
+namespace XTI_App.Fakes;
+
+public sealed class FakeHashedPasswordFactory : IHashedPasswordFactory
 {
-    public sealed class FakeHashedPasswordFactory : IHashedPasswordFactory
-    {
-        public IHashedPassword Create(string password) => new FakeHashedPassword(password);
-    }
+    public IHashedPassword Create(string password) => new FakeHashedPassword(password);
 }

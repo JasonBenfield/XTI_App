@@ -1,7 +1,6 @@
-﻿namespace XTI_Forms
+﻿namespace XTI_Forms;
+
+public sealed class FormModel : ComplexFieldModel
 {
-    public sealed class FormModel : ComplexFieldModel
-    {
-        public ComplexFieldTemplate[] ComplexFieldTemplates { get; set; }
-    }
+    public ComplexFieldTemplate[] ComplexFieldTemplates { get; set; } = new ComplexFieldTemplate[0];
 }

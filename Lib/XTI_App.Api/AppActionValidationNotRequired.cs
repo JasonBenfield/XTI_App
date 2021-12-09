@@ -1,13 +1,11 @@
-﻿using System.Threading.Tasks;
-using XTI_Core;
+﻿using XTI_Core;
 
-namespace XTI_App.Api
+namespace XTI_App.Api;
+
+public sealed class AppActionValidationNotRequired<TModel> : AppActionValidation<TModel>
 {
-    public sealed class AppActionValidationNotRequired<TModel> : AppActionValidation<TModel>
+    public Task Validate(ErrorList errors, TModel model)
     {
-        public Task Validate(ErrorList errors, TModel model)
-        {
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

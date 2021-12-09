@@ -1,12 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public interface IResourceGroup
 {
-    public interface IResourceGroup
-    {
-        EntityID ID { get; }
-        ResourceGroupName Name();
-        Task<IResource> Resource(ResourceName name);
-        Task<IModifierCategory> ModCategory();
-    }
+    EntityID ID { get; }
+    ResourceGroupName Name();
+    Task<IResource> Resource(ResourceName name);
+    Task<IModifierCategory> ModCategory();
 }

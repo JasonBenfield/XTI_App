@@ -1,14 +1,12 @@
-﻿using System;
-using XTI_Core;
+﻿using XTI_Core;
 
-namespace XTI_App.Abstractions
+namespace XTI_App.Abstractions;
+
+public sealed class PersonName : TextValue, IEquatable<PersonName>
 {
-    public sealed class PersonName : TextValue, IEquatable<PersonName>
+    public PersonName(string value) : base(value?.Trim() ?? "")
     {
-        public PersonName(string value) : base(value?.Trim() ?? "")
-        {
-        }
-
-        public bool Equals(PersonName other) => _Equals(other);
     }
+
+    public bool Equals(PersonName? other) => _Equals(other);
 }

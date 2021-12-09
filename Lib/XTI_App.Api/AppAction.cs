@@ -1,9 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Api;
 
-namespace XTI_App.Api
+public interface AppAction<TModel, TResult>
 {
-    public interface AppAction<TModel, TResult>
-    {
-        Task<TResult> Execute(TModel model);
-    }
+    Task<TResult> Execute(TModel model);
 }

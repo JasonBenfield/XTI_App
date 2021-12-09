@@ -1,37 +1,32 @@
 ﻿using Microsoft.Extensions.Hosting;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace XTI_App.Hosting
+namespace XTI_App.Hosting;
+
+public sealed class ImmediateActionWorker : BackgroundService, IWorker
 {
-    public sealed class ImmediateActionWorker : BackgroundService, IWorker
+    private readonly IServiceProvider sp;
+    private readonly ImmediateAppAgendaItem[] agendaItems;
+
+    public ImmediateActionWorker(IServiceProvider sp, ImmediateAppAgendaItem[] agendaItems)
     {
-        private readonly IServiceProvider sp;
-        private readonly ImmediateAppAgendaItem[] agendaItems;
+        this.sp = sp;
+        this.agendaItems = agendaItems;
+    }
 
-        public ImmediateActionWorker(IServiceProvider sp, ImmediateAppAgendaItem[] agendaItems)
+    public bool HasStopped { get; private set; }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        foreach (var agendaItem in agendaItems.Where(item => item.IsEnabled))
         {
-            this.sp = sp;
-            this.agendaItems = agendaItems;
+            var actionExecutor = new ActionRunner
+            (
+                sp,
+                agendaItem.GroupName.Value,
+                agendaItem.ActionName.Value
+            );
+            await actionExecutor.Run();
         }
-
-        public bool HasStopped { get; private set; }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            foreach (var agendaItem in agendaItems.Where(item => item.IsEnabled))
-            {
-                var actionExecutor = new ActionRunner
-                (
-                    sp,
-                    agendaItem.GroupName,
-                    agendaItem.ActionName
-                );
-                await actionExecutor.Run();
-            }
-            HasStopped = true;
-        }
+        HasStopped = true;
     }
 }

@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public interface IAppUser
 {
-    public interface IAppUser
-    {
-        EntityID ID { get; }
-        AppUserName UserName();
-        Task<IAppRole[]> Roles(IModifier modifier);
-    }
+    EntityID ID { get; }
+    AppUserName UserName();
+    Task<IAppRole[]> Roles(IModifier modifier);
 }

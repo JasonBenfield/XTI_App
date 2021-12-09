@@ -1,9 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Api;
 
-namespace XTI_App.Api
+public interface IAppApiUser
 {
-    public interface IAppApiUser
-    {
-        Task<bool> HasAccess(ResourceAccess resourceAccess);
-    }
+    Task<bool> HasAccess(ResourceAccess resourceAccess);
 }

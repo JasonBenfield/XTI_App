@@ -1,9 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Abstractions;
 
-namespace XTI_App.Abstractions
+public interface IAppSetup
 {
-    public interface IAppSetup
-    {
-        Task Run(AppVersionKey versionKey);
-    }
+    Task Run(AppVersionKey versionKey);
 }

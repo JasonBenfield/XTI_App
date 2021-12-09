@@ -1,39 +1,36 @@
-﻿using System;
+﻿namespace XTI_Forms;
 
-namespace XTI_Forms
+internal sealed class FormattedValue<T>
 {
-    internal sealed class FormattedValue<T>
+    private readonly T value;
+
+    public FormattedValue(T value)
     {
-        private readonly T value;
+        this.value = value;
+    }
 
-        public FormattedValue(T value)
+    public string Format()
+    {
+        string str;
+        if (value == null)
         {
-            this.value = value;
+            str = "null";
         }
-
-        public string Format()
+        else if (value is DateTimeOffset dateTimeValue)
         {
-            string str;
-            if (value == null)
+            if (dateTimeValue.Date == dateTimeValue)
             {
-                str = "null";
-            }
-            else if (value is DateTimeOffset dateTimeValue)
-            {
-                if (dateTimeValue.Date == dateTimeValue)
-                {
-                    str = dateTimeValue.ToString("M/dd/yyyy");
-                }
-                else
-                {
-                    str = dateTimeValue.ToString("M/dd/yyyy h:mm:ss TT");
-                }
+                str = dateTimeValue.ToString("M/dd/yyyy");
             }
             else
             {
-                str = value.ToString();
+                str = dateTimeValue.ToString("M/dd/yyyy h:mm:ss TT");
             }
-            return str;
         }
+        else
+        {
+            str = value.ToString() ?? "";
+        }
+        return str;
     }
 }

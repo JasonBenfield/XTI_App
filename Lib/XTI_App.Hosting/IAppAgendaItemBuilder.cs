@@ -1,9 +1,8 @@
-﻿namespace XTI_App.Hosting
-{
-    public interface IAppAgendaItemBuilder
-    {
-        bool HasAction(string groupName, string actionName);
+﻿namespace XTI_App.Hosting;
 
-        AppAgendaItem Build();
-    }
+public interface IAppAgendaItemBuilder
+{
+    bool HasAction(string groupName, string actionName);
+
+    AppAgendaItem Build();
 }

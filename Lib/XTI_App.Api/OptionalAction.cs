@@ -1,9 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿namespace XTI_App.Api;
 
-namespace XTI_App.Api
+public interface OptionalAction<TModel, TResult> : AppAction<TModel, TResult>
 {
-    public interface OptionalAction<TModel, TResult> : AppAction<TModel, TResult>
-    {
-        Task<bool> IsOptional();
-    }
+    Task<bool> IsOptional();
 }

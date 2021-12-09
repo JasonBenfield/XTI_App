@@ -1,12 +1,10 @@
-﻿using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 using XTI_TempLog;
 
-namespace XTI_App.Hosting
+namespace XTI_App.Hosting;
+
+public interface IActionRunnerFactory
 {
-    public interface IActionRunnerFactory
-    {
-        IAppApi CreateAppApi();
-        TempLogSession CreateTempLogSession();
-    }
+    IAppApi CreateAppApi();
+    TempLogSession CreateTempLogSession();
 }

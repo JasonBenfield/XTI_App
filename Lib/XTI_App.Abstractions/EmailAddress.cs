@@ -1,15 +1,13 @@
-﻿using System;
-using XTI_Core;
+﻿using XTI_Core;
 
-namespace XTI_App.Abstractions
+namespace XTI_App.Abstractions;
+
+public sealed class EmailAddress : TextValue, IEquatable<EmailAddress>
 {
-    public sealed class EmailAddress : TextValue, IEquatable<EmailAddress>
+    public EmailAddress(string value)
+        : base(value.Trim().ToLower())
     {
-        public EmailAddress(string value)
-            : base(value?.Trim().ToLower() ?? "")
-        {
-        }
-
-        public bool Equals(EmailAddress other) => _Equals(other);
     }
+
+    public bool Equals(EmailAddress? other) => _Equals(other);
 }
