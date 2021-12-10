@@ -7,9 +7,10 @@ public sealed class AppAgendaHostedService : IHostedService
 {
     private readonly AppAgenda agenda;
 
-    public AppAgendaHostedService(AppAgenda agenda)
+    public AppAgendaHostedService(IServiceProvider sp)
     {
-        this.agenda = agenda;
+        var scope = sp.CreateScope();
+        agenda = scope.ServiceProvider.GetRequiredService<AppAgenda>();
     }
 
     public Task StartAsync(CancellationToken cancellationToken) => agenda.Start(cancellationToken);
