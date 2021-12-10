@@ -16,7 +16,7 @@ public static class AppAgendaExtensions
         {
             services.Remove(serviceDescriptor);
         }
-        services.AddScoped(sp =>
+        services.AddSingleton(sp =>
         {
             var builder = new AppAgendaBuilder(sp);
             build(sp, builder);
