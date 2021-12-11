@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="XTI_Core.Fakes" Version="1.10.1" />
-    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.21" />
+    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.22" />
   </ItemGroup>
 
   <ItemGroup>
