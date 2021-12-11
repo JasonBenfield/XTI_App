@@ -32,19 +32,27 @@ public sealed class AppAgenda
 
     public async Task Stop(CancellationToken stoppingToken)
     {
-        foreach(var worker in workers)
+        foreach (var worker in workers)
         {
-            await worker.StopAsync(stoppingToken);
+            try
+            {
+                await worker.StopAsync(stoppingToken);
+            }
+            catch (TaskCanceledException) { }
         }
         var timeout = DateTime.UtcNow.AddMinutes(5);
-        while 
+        while
         (
-            IsRunning() && 
-            !stoppingToken.IsCancellationRequested && 
+            IsRunning() &&
+            !stoppingToken.IsCancellationRequested &&
             DateTime.UtcNow < timeout
         )
         {
-            await Task.Delay(100, stoppingToken);
+            try
+            {
+                await Task.Delay(100, stoppingToken);
+            }
+            catch (TaskCanceledException) { }
         }
         if (session != null)
         {
