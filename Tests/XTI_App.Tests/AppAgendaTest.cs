@@ -100,10 +100,9 @@ sealed class AppAgendaTest
         var clock = (FakeClock)services.GetRequiredService<IClock>();
         clock.Set(new DateTimeOffset(new DateTime(2021, 10, 4, 10, 30, 0)));
         var agenda = services.GetRequiredService<AppAgenda>();
-        var stoppingToken = new CancellationTokenSource();
-        await agenda.Start(stoppingToken.Token);
+        await agenda.Start(new CancellationTokenSource().Token);
         await Task.Delay(TimeSpan.FromSeconds(5));
-        stoppingToken.Cancel();
+        await agenda.Stop(new CancellationTokenSource().Token);
         var counter = services.GetRequiredService<FirstAgendaItemCounter>();
         Console.WriteLine($"Counter: {counter.Value}");
         Assert.That(counter.Value, Is.GreaterThan(1));
