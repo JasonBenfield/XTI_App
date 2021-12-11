@@ -22,7 +22,7 @@ public sealed class NumericValueTemplate : ValueTemplate, IEquatable<NumericValu
         var valuesField = fieldInfo?.GetValue(null);
         if (valuesField != null)
         {
-            var methodInfo = valuesField.GetType().GetMethod("All");
+            var methodInfo = valuesField.GetType().GetMethod("GetAll");
             values = (object[]?)methodInfo?.Invoke(valuesField, new object[] { }) ?? new object[0];
         }
         return values.Cast<NumericValue>().ToArray();

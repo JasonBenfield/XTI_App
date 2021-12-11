@@ -25,7 +25,7 @@ internal sealed class AppApiTemplateTest
         var template = services.GetRequiredService<AppApiFactory>().CreateTemplate();
         var numericValueTemplate = template.NumericValueTemplates()
             .First(templ => templ.DataType.Equals(typeof(EmployeeType)));
-        var employeeTypes = EmployeeType.Values.All();
+        var employeeTypes = EmployeeType.Values.GetAll();
         Assert.That(numericValueTemplate.Values, Is.EquivalentTo(employeeTypes), "Should include numeric values with template");
     }
 
