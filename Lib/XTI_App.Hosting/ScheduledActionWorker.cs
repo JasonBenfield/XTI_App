@@ -20,7 +20,11 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var periodicSucceeded = false;
-        await Task.Delay(scheduledItem.DelayAfterStart, stoppingToken);
+        try
+        {
+            await Task.Delay(scheduledItem.DelayAfterStart, stoppingToken);
+        }
+        catch (TaskCanceledException) { }
         while (!stoppingToken.IsCancellationRequested)
         {
             var clock = sp.GetRequiredService<IClock>();
@@ -46,7 +50,11 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
             {
                 periodicSucceeded = false;
             }
-            await Task.Delay(scheduledItem.Interval, stoppingToken);
+            try
+            {
+                await Task.Delay(scheduledItem.Interval, stoppingToken);
+            }
+            catch (TaskCanceledException) { }
         }
         HasStopped = true;
     }

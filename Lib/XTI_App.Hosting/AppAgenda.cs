@@ -30,11 +30,21 @@ public sealed class AppAgenda
 
     public bool IsRunning() => workers.Any(w => !w.HasStopped);
 
-    public async Task Stop()
+    public async Task Stop(CancellationToken stoppingToken)
     {
-        while (IsRunning())
+        foreach(var worker in workers)
         {
-            await Task.Delay(100);
+            await worker.StopAsync(stoppingToken);
+        }
+        var timeout = DateTime.UtcNow.AddMinutes(5);
+        while 
+        (
+            IsRunning() && 
+            !stoppingToken.IsCancellationRequested && 
+            DateTime.UtcNow < timeout
+        )
+        {
+            await Task.Delay(100, stoppingToken);
         }
         if (session != null)
         {

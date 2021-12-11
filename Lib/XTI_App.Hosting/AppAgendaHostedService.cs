@@ -15,5 +15,5 @@ public sealed class AppAgendaHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken) => agenda.Start(cancellationToken);
 
-    public Task StopAsync(CancellationToken cancellationToken) => agenda.Stop();
+    public Task StopAsync(CancellationToken cancellationToken) => agenda.Stop(cancellationToken);
 }
