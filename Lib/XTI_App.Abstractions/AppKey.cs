@@ -13,6 +13,8 @@ public sealed class AppKey : IEquatable<AppKey>
         return new AppKey(split[0], AppType.Values.Value(split[1]));
     }
 
+    private readonly string value;
+
     public AppKey(string name, AppType appType)
         : this(new AppName(name), appType)
     {
@@ -24,8 +26,6 @@ public sealed class AppKey : IEquatable<AppKey>
         Type = appType;
         value = $"{Name.Value}:{Type.DisplayText}";
     }
-
-    private readonly string value;
 
     public AppName Name { get; }
     public AppType Type { get; }

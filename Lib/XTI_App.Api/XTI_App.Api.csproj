@@ -6,7 +6,9 @@
 	  <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
+	<Import Project="..\\..\\Common.Targets" />
+
+	<ItemGroup>
     <ProjectReference Include="..\XTI_App.Abstractions\XTI_App.Abstractions.csproj" />
     <ProjectReference Include="..\XTI_Forms\XTI_Forms.csproj" />
   </ItemGroup>
