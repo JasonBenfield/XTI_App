@@ -9,14 +9,7 @@ public class ValueTemplateFromType
 
     public ValueTemplateFromType(Type source)
     {
-        if (isDerivedFromSemanticType(source))
-        {
-            this.source = getSemanticTypeValueType(source)!;
-        }
-        else
-        {
-            this.source = source;
-        }
+        this.source = source;
     }
 
     public ValueTemplate Template()
@@ -61,7 +54,7 @@ public class ValueTemplateFromType
         else if (typeof(Form).IsAssignableFrom(source))
         {
             var obj = Activator.CreateInstance(source);
-            if(obj == null)
+            if (obj == null)
             {
                 throw new Exception($"Instance should not be null for type {source.GetType()}");
             }
@@ -98,32 +91,5 @@ public class ValueTemplateFromType
     private static bool isDerivedFromNumericValue(Type objectType)
     {
         return typeof(NumericValue).IsAssignableFrom(objectType);
-    }
-
-    private static bool isDerivedFromSemanticType(Type objectType)
-    {
-        if (isDerivedFromNumericValue(objectType))
-        {
-            return false;
-        }
-        if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(SemanticType<>))
-        {
-            return true;
-        }
-        if (objectType.BaseType == null)
-        {
-            return false;
-        }
-        return isDerivedFromSemanticType(objectType.BaseType);
-    }
-
-    private static Type getSemanticTypeValueType(Type objectType)
-    {
-        var propertyInfo = objectType.GetProperty("Value");
-        if(propertyInfo == null)
-        {
-            throw new InvalidOperationException($"Value property not found for object of type {objectType.GetType()}");
-        }
-        return propertyInfo.PropertyType;
     }
 }
