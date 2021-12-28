@@ -28,8 +28,12 @@ public sealed class FakeModifierCategory : IModifierCategory
 
     public FakeModifier AddModifier(ModifierKey modKey)
     {
-        var mod = new FakeModifier(app, FakeModifier.NextID(), modKey);
-        modifiers.Add(mod);
+        var mod = modifiers.FirstOrDefault(m => m.ModKey().Equals(modKey));
+        if (mod == null)
+        {
+            mod = new FakeModifier(app, FakeModifier.NextID(), modKey);
+            modifiers.Add(mod);
+        }
         return mod;
     }
 

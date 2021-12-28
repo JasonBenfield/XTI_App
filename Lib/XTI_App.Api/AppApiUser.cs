@@ -19,8 +19,9 @@ public sealed class AppApiUser : IAppApiUser
     {
         var app = await appContext.App();
         var roles = await app.Roles();
-        var allowedRoles = resourceAccess.Allowed
-            .Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)));
+        var allowedRoleIDs = resourceAccess.Allowed
+            .Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)))
+            .Select(ar => ar?.ID.Value ?? 0);
         var user = await userContext.User();
         bool hasAccess = false;
         if (user.UserName().Equals(AppUserName.Anon))
@@ -38,18 +39,19 @@ public sealed class AppApiUser : IAppApiUser
             var group = await version.ResourceGroup(path.Group);
             var modCategory = await group.ModCategory();
             var modifier = await modCategory.Modifier(path.Modifier);
-            if (modifier.ModKey().Equals(path.Modifier))
+            var userRoles = await user.Roles(modifier);
+            var userRoleIDs = userRoles.Select(ur => ur.ID.Value);
+            var denyAccessRole = roles.First
+            (
+                r => r.Name().Equals(AppRoleName.DenyAccess)
+            );
+            if (userRoleIDs.Contains(denyAccessRole.ID.Value))
             {
-                var userRoles = await user.Roles(modifier);
-                var denyAccessRole = roles.First(r => r.Name().Equals(AppRoleName.DenyAccess));
-                if (userRoles.Any(ur => ur.ID.Equals(denyAccessRole.ID)))
-                {
-                    hasAccess = false;
-                }
-                else if (userRoles.Any(ur => allowedRoles.Any(ar => ur.ID.Equals(ar?.ID))))
-                {
-                    hasAccess = true;
-                }
+                hasAccess = false;
+            }
+            else if (userRoleIDs.Intersect(allowedRoleIDs).Any())
+            {
+                hasAccess = true;
             }
         }
         return hasAccess;

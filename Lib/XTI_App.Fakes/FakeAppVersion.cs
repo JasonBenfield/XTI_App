@@ -23,8 +23,12 @@ public sealed class FakeAppVersion : IAppVersion
 
     public FakeResourceGroup AddResourceGroup(ResourceGroupName name, ModifierCategoryName categoryName)
     {
-        var group = new FakeResourceGroup(app, FakeResourceGroup.NextID(), name, categoryName);
-        groups.Add(group);
+        var group = groups.FirstOrDefault(g => g.Name().Equals(name));
+        if(group == null)
+        {
+            group = new FakeResourceGroup(app, FakeResourceGroup.NextID(), name, categoryName);
+            groups.Add(group);
+        }
         return group;
     }
 

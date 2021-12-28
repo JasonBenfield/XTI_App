@@ -22,8 +22,34 @@ public sealed class FakeAppUser : IAppUser
 
     public AppUserName UserName() => userName;
 
-    public Task AddRole(FakeAppRole roleToAdd)
+    public Task AddRole(AppRoleName roleToAdd)
         => AddRoles(new[] { roleToAdd });
+
+    public async Task AddRoles(params AppRoleName[] roleNamesToAdd)
+    {
+        var app = await appContext.App();
+        var roles = new List<FakeAppRole>();
+        foreach (var roleName in roleNamesToAdd)
+        {
+            var role = await app.Role(roleName);
+            roles.Add(role);
+        }
+        await AddRoles(roles.ToArray());
+    }
+
+    public async Task AddRoles(IModifier modifier, params AppRoleName[] roleNamesToAdd)
+    {
+        var app = await appContext.App();
+        var roles = new List<FakeAppRole>();
+        foreach (var roleName in roleNamesToAdd)
+        {
+            var role = await app.Role(roleName);
+            roles.Add(role);
+        }
+        AddRoles(modifier, roles.ToArray());
+    }
+
+    public Task AddRole(FakeAppRole roleToAdd) => AddRoles(new[] { roleToAdd });
 
     public async Task AddRoles(params FakeAppRole[] rolesToAdd)
     {

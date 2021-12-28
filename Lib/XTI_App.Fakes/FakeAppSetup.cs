@@ -34,38 +34,9 @@ public sealed class FakeAppSetup : IAppSetup
 
     public async Task Run(AppVersionKey versionKey)
     {
-        var template = apiFactory.CreateTemplate();
-        var templateModel = template.ToModel();
-        App = appContext.AddApp(options.Title);
-        appContext.SetCurrentApp(App);
-        var modCategories = templateModel.GroupTemplates.Select(g => g.ModCategory).Distinct();
-        foreach (var modCategory in modCategories)
-        {
-            App.AddModCategory(new ModifierCategoryName(modCategory));
-        }
-        var existingRoles = await App.Roles();
-        var roles = templateModel.RecursiveRoles();
-        foreach (var role in roles)
-        {
-            var roleName = new AppRoleName(role);
-            if (!existingRoles.Any(r => r.Name().Equals(roleName)))
-            {
-                App.AddRole(roleName);
-            }
-        }
-        var version = await App.Version(versionKey);
-        if (version == null)
-        {
-            version = App.AddVersion(versionKey);
-        }
-        foreach (var groupTemplate in templateModel.GroupTemplates)
-        {
-            var group = version.AddResourceGroup(new ResourceGroupName(groupTemplate.Name), new ModifierCategoryName(groupTemplate.ModCategory));
-            foreach (var actionTemplate in groupTemplate.ActionTemplates)
-            {
-                group.AddResource(new ResourceName(actionTemplate.Name));
-            }
-        }
+        var setup = new DefaultFakeSetup(apiFactory, appContext, options.Title);
+        await setup.Run(versionKey);
+        App = setup.App;
         var departmentModCategoryName = new ModifierCategoryName("Department");
         var departmentModCategory = await App.ModCategory(departmentModCategoryName);
         departmentModCategory.AddModifier(new ModifierKey("IT"));
