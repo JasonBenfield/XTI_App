@@ -34,7 +34,7 @@ public sealed class FakeApp : IApp
     public FakeAppVersion CurrentVersion()
     {
         var version = versions.FirstOrDefault(v => v.Key().Equals(AppVersionKey.Current));
-        if(version == null)
+        if (version == null)
         {
             throw new ArgumentException("Current version not found");
         }
@@ -43,8 +43,12 @@ public sealed class FakeApp : IApp
 
     public FakeAppVersion AddVersion(AppVersionKey versionKey)
     {
-        var version = new FakeAppVersion(this, FakeAppVersion.NextID(), versionKey);
-        versions.Add(version);
+        var version = versions.FirstOrDefault(v => v.Key().Equals(versionKey));
+        if(version == null)
+        {
+            version = new FakeAppVersion(this, FakeAppVersion.NextID(), versionKey);
+            versions.Add(version);
+        }
         return version;
     }
 
@@ -53,14 +57,18 @@ public sealed class FakeApp : IApp
     public Task<FakeAppVersion> Version(AppVersionKey versionKey)
     {
         var version = versions.FirstOrDefault(v => v.Key().Equals(versionKey));
-        if(version == null) { throw new ArgumentNullException("version"); }
+        if (version == null) { throw new ArgumentNullException("version"); }
         return Task.FromResult(version);
     }
 
     public FakeModifierCategory AddModCategory(ModifierCategoryName name)
     {
-        var category = new FakeModifierCategory(this, FakeModifierCategory.NextID(), name);
-        modCategories.Add(category);
+        var category = modCategories.FirstOrDefault(c => c.Name().Equals(name));
+        if(category == null)
+        {
+            category = new FakeModifierCategory(this, FakeModifierCategory.NextID(), name);
+            modCategories.Add(category);
+        }
         return category;
     }
 
@@ -69,7 +77,7 @@ public sealed class FakeApp : IApp
     public Task<FakeModifierCategory> ModCategory(ModifierCategoryName name)
     {
         var category = modCategories.FirstOrDefault(c => c.Name().Equals(name));
-        if(category == null)
+        if (category == null)
         {
             throw new ArgumentException($"Category '{name.Value}' was not found");
         }
@@ -78,8 +86,12 @@ public sealed class FakeApp : IApp
 
     public FakeAppRole AddRole(AppRoleName roleName)
     {
-        var role = new FakeAppRole(FakeAppRole.NextID(), roleName);
-        roles.Add(role);
+        var role = roles.FirstOrDefault(r => r.Name().Equals(roleName));
+        if (role == null)
+        {
+            role = new FakeAppRole(FakeAppRole.NextID(), roleName);
+            roles.Add(role);
+        }
         return role;
     }
 
@@ -88,7 +100,7 @@ public sealed class FakeApp : IApp
     public Task<FakeAppRole> Role(AppRoleName roleName)
     {
         var role = roles.FirstOrDefault(r => r.Name().Equals(roleName));
-        if(role == null)
+        if (role == null)
         {
             throw new ArgumentException($"Role '{roleName.Value}' was not found");
         }

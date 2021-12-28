@@ -28,8 +28,12 @@ public sealed class FakeResourceGroup : IResourceGroup
 
     public FakeResource AddResource(ResourceName name)
     {
-        var resource = new FakeResource(FakeResource.NextID(), name);
-        resources.Add(resource);
+        var resource = resources.FirstOrDefault(r => r.Name().Equals(name));
+        if(resource == null)
+        {
+            resource = new FakeResource(FakeResource.NextID(), name);
+            resources.Add(resource);
+        }
         return resource;
     }
 
