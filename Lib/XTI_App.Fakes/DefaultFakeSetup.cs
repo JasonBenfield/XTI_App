@@ -1,15 +1,16 @@
 ﻿using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_App.Fakes;
 
 public sealed class DefaultFakeSetup : IAppSetup
 {
-    private readonly FakeAppApiFactory apiFactory;
+    private readonly AppApiFactory apiFactory;
     private readonly FakeAppContext appContext;
     private readonly string title;
     private FakeApp? app;
 
-    public DefaultFakeSetup(FakeAppApiFactory apiFactory, FakeAppContext appContext, string title)
+    public DefaultFakeSetup(AppApiFactory apiFactory, FakeAppContext appContext, string title)
     {
         this.apiFactory = apiFactory;
         this.appContext = appContext;
