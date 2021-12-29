@@ -24,7 +24,7 @@ public sealed class FakeAppVersion : IAppVersion
     public FakeResourceGroup AddResourceGroup(ResourceGroupName name, ModifierCategoryName categoryName)
     {
         var group = groups.FirstOrDefault(g => g.Name().Equals(name));
-        if(group == null)
+        if (group == null)
         {
             group = new FakeResourceGroup(app, FakeResourceGroup.NextID(), name, categoryName);
             groups.Add(group);
@@ -32,16 +32,17 @@ public sealed class FakeAppVersion : IAppVersion
         return group;
     }
 
-    async Task<IResourceGroup> IAppVersion.ResourceGroup(ResourceGroupName name) => await ResourceGroup(name);
+    Task<IResourceGroup> IAppVersion.ResourceGroup(ResourceGroupName name) =>
+        Task.FromResult<IResourceGroup>(ResourceGroup(name));
 
-    public Task<FakeResourceGroup> ResourceGroup(ResourceGroupName name)
+    public FakeResourceGroup ResourceGroup(ResourceGroupName name)
     {
         var group = groups.FirstOrDefault(g => g.Name().Equals(name));
-        if(group == null)
+        if (group == null)
         {
             throw new ArgumentException($"Group '{name.Value}' not found");
         }
-        return Task.FromResult(group);
+        return group;
     }
 
 }

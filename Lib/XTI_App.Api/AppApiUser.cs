@@ -38,7 +38,7 @@ public sealed class AppApiUser : IAppApiUser
             var version = await app.Version(path.Version);
             var group = await version.ResourceGroup(path.Group);
             var modCategory = await group.ModCategory();
-            var modifier = await modCategory.Modifier(path.Modifier);
+            var modifier = await modCategory.ModifierOrDefault(path.Modifier);
             var userRoles = await user.Roles(modifier);
             var userRoleIDs = userRoles.Select(ur => ur.ID.Value);
             var denyAccessRole = roles.First

@@ -18,13 +18,15 @@ public sealed class FakeUserContext : ISourceUserContext
 
     public Task<AppUserName> CurrentUserName() => Task.FromResult(currentUserName);
 
-    public Task<IAppUser> User() => User(currentUserName);
+    Task<IAppUser> IUserContext.User() => Task.FromResult<IAppUser>(User());
 
-    public Task<IAppUser> User(AppUserName userName)
-    {
-        var user = users.First(u => u.UserName().Equals(userName));
-        return Task.FromResult<IAppUser>(user);
-    }
+    Task<IAppUser> ISourceUserContext.User(AppUserName userName) => 
+        Task.FromResult<IAppUser>(User(userName));
+
+    public FakeAppUser User() => User(currentUserName);
+
+    public FakeAppUser User(AppUserName userName) =>
+        users.First(u => u.UserName().Equals(userName));
 
     public void SetCurrentUser(AppUserName userName)
     {

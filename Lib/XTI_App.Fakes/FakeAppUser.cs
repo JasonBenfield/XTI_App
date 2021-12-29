@@ -22,40 +22,40 @@ public sealed class FakeAppUser : IAppUser
 
     public AppUserName UserName() => userName;
 
-    public Task AddRole(AppRoleName roleToAdd)
+    public void AddRole(AppRoleName roleToAdd)
         => AddRoles(new[] { roleToAdd });
 
-    public async Task AddRoles(params AppRoleName[] roleNamesToAdd)
+    public void AddRoles(params AppRoleName[] roleNamesToAdd)
     {
-        var app = await appContext.App();
+        var app = appContext.App();
         var roles = new List<FakeAppRole>();
         foreach (var roleName in roleNamesToAdd)
         {
-            var role = await app.Role(roleName);
+            var role = app.Role(roleName);
             roles.Add(role);
         }
-        await AddRoles(roles.ToArray());
+        AddRoles(roles.ToArray());
     }
 
-    public async Task AddRoles(IModifier modifier, params AppRoleName[] roleNamesToAdd)
+    public void AddRoles(IModifier modifier, params AppRoleName[] roleNamesToAdd)
     {
-        var app = await appContext.App();
+        var app = appContext.App();
         var roles = new List<FakeAppRole>();
         foreach (var roleName in roleNamesToAdd)
         {
-            var role = await app.Role(roleName);
+            var role = app.Role(roleName);
             roles.Add(role);
         }
         AddRoles(modifier, roles.ToArray());
     }
 
-    public Task AddRole(FakeAppRole roleToAdd) => AddRoles(new[] { roleToAdd });
+    public void AddRole(FakeAppRole roleToAdd) => AddRoles(new[] { roleToAdd });
 
-    public async Task AddRoles(params FakeAppRole[] rolesToAdd)
+    public void AddRoles(params FakeAppRole[] rolesToAdd)
     {
-        var app = await appContext.App();
-        var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
-        var defaultModifier = await defaultModCategory.Modifier(ModifierKey.Default);
+        var app = appContext.App();
+        var defaultModCategory = app.ModCategory(ModifierCategoryName.Default);
+        var defaultModifier = defaultModCategory.ModifierOrDefault(ModifierKey.Default);
         AddRoles(defaultModifier, rolesToAdd);
     }
 
@@ -72,7 +72,10 @@ public sealed class FakeAppUser : IAppUser
         }
     }
 
-    public async Task<IAppRole[]> Roles(IModifier modifier)
+    Task<IAppRole[]> IAppUser.Roles(IModifier modifier) =>
+        Task.FromResult<IAppRole[]>(Roles(modifier));
+
+    public FakeAppRole[] Roles(IModifier modifier)
     {
         if (!roles.TryGetValue(modifier.ID.Value, out var userRoles))
         {
@@ -82,10 +85,10 @@ public sealed class FakeAppUser : IAppUser
             }
             else
             {
-                var app = await appContext.App();
-                var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
-                var defaultMod = await defaultModCategory.Modifier(ModifierKey.Default);
-                userRoles = (FakeAppRole[])await Roles(defaultMod);
+                var app = appContext.App();
+                var defaultModCategory = app.ModCategory(ModifierCategoryName.Default);
+                var defaultMod = defaultModCategory.ModifierOrDefault(ModifierKey.Default);
+                userRoles = Roles(defaultMod);
             }
         }
         return userRoles;

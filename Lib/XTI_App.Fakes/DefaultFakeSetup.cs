@@ -23,7 +23,7 @@ public sealed class DefaultFakeSetup : IAppSetup
         private set => app = value;
     }
 
-    public async Task Run(AppVersionKey versionKey)
+    public Task Run(AppVersionKey versionKey)
     {
         var template = apiFactory.CreateTemplate();
         var templateModel = template.ToModel();
@@ -34,7 +34,7 @@ public sealed class DefaultFakeSetup : IAppSetup
         {
             App.AddModCategory(new ModifierCategoryName(modCategory));
         }
-        var existingRoles = await App.Roles();
+        var existingRoles = App.Roles();
         var roles = templateModel.RecursiveRoles();
         foreach (var role in roles)
         {
@@ -54,5 +54,6 @@ public sealed class DefaultFakeSetup : IAppSetup
                 group.AddResource(new ResourceName(actionTemplate.Name));
             }
         }
+        return Task.CompletedTask;
     }
 }

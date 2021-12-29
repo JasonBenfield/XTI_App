@@ -33,17 +33,10 @@ internal sealed class CachedModifier : IModifier
         {
             var app = await sourceAppContext.App();
             var modCategory = await app.ModCategory(modCategoryName);
-            var modifier = await modCategory.Modifier(modKey);
+            var modifier = await modCategory.ModifierOrDefault(modKey);
             cacheData = new CacheData(modifier.ID, modifier.ModKey());
             modCache.Set(cacheData);
         }
-    }
-
-    public async Task<IModifier> DefaultModifier()
-    {
-        var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
-        var defaultMod = await defaultModCategory.Modifier(ModifierKey.Default);
-        return defaultMod;
     }
 
     private sealed record CacheData(EntityID ID, ModifierKey ModKey);

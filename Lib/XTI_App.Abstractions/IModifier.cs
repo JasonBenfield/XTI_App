@@ -4,5 +4,4 @@ public interface IModifier
 {
     EntityID ID { get; }
     ModifierKey ModKey();
-    Task<IModifier> DefaultModifier();
 }

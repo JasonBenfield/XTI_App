@@ -129,7 +129,7 @@ internal sealed class CachedAppContextTest
         await resourceGroup.ModCategory();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         var currentVersion = await appSetup.App.Version(AppVersionKey.Current);
-        var sourceResourceGroup = await currentVersion.ResourceGroup(new ResourceGroupName("Employee"));
+        currentVersion.ResourceGroup(new ResourceGroupName("Employee"));
         var cachedModCategory = await resourceGroup.ModCategory();
         Assert.That(cachedModCategory.Name(), Is.EqualTo(new ModifierCategoryName("Department")), "Should retrieve modifier category from source");
     }

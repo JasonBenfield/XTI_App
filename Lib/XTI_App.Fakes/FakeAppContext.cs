@@ -18,13 +18,10 @@ public sealed class FakeAppContext : ISourceAppContext
         }
     }
 
-    async Task<IApp> IAppContext.App() => await App();
+    Task<IApp> IAppContext.App() => Task.FromResult<IApp>(App());
 
-    public Task<FakeApp> App()
-    {
-        if (currentApp == null) { throw new ArgumentException("currentApp is null"); }
-        return Task.FromResult(currentApp);
-    }
+    public FakeApp App() =>
+        currentApp ?? throw new ArgumentException("currentApp is null");
 
     public FakeApp AddApp(string title)
     {
