@@ -85,6 +85,18 @@ public sealed class FakeApp : IApp
         return category;
     }
 
+    public void SetDefaultModifierID(EntityID id)
+    {
+        var mod = DefaultModifier();
+        mod.ID = id;
+    }
+
+    public FakeModifier DefaultModifier()
+    {
+        var defaultModCategory = ModCategory(ModifierCategoryName.Default);
+        return defaultModCategory.ModifierOrDefault(ModifierKey.Default);
+    }
+
     public FakeAppRole AddRole(AppRoleName roleName)
     {
         var role = roles.FirstOrDefault(r => r.Name().Equals(roleName));

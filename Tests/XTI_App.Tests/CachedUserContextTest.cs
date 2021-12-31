@@ -103,6 +103,8 @@ internal sealed class CachedUserContextTest
                 (hostContext, services) =>
                 {
                     services.AddServicesForTests(hostContext.Configuration);
+                    services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
+                    services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
                 }
             )
             .Build();

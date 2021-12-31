@@ -18,20 +18,33 @@ public sealed class FakeModifierCategory : IModifierCategory
         this.categoryName = categoryName;
         if (categoryName.Equals(ModifierCategoryName.Default))
         {
-            AddModifier(ModifierKey.Default, "");
+            AddModifier(getUniqueID(), ModifierKey.Default, "");
         }
+    }
+
+    private EntityID getUniqueID()
+    {
+        var id = FakeAppUser.NextID();
+        while (modifiers.Any(u => u.ID.Equals(id)))
+        {
+            id = FakeAppUser.NextID();
+        }
+        return id;
     }
 
     public EntityID ID { get; }
 
     public ModifierCategoryName Name() => categoryName;
 
-    public FakeModifier AddModifier(ModifierKey modKey, string targetID)
+    public FakeModifier AddModifier(ModifierKey modKey, string targetID) =>
+        AddModifier(getUniqueID(), modKey, targetID);
+
+    public FakeModifier AddModifier(EntityID id, ModifierKey modKey, string targetID)
     {
         var mod = modifiers.FirstOrDefault(m => m.ModKey().Equals(modKey));
         if (mod == null)
         {
-            mod = new FakeModifier(app, FakeModifier.NextID(), modKey, targetID);
+            mod = new FakeModifier(id, modKey, targetID);
             modifiers.Add(mod);
         }
         return mod;

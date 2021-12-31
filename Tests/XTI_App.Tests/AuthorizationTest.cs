@@ -15,7 +15,7 @@ internal sealed class AuthorizationTest
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         var adminRole = appSetup.App.Role(AppRoleName.Admin);
-        await addRolesToUser(services, adminRole);
+        addRolesToUser(services, adminRole);
         var api = getApi(services);
         var action = api.Product.AddProduct;
         setPath(services, action);
@@ -29,7 +29,7 @@ internal sealed class AuthorizationTest
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
-        await addRolesToUser(services, viewerRole);
+        addRolesToUser(services, viewerRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action);
@@ -43,7 +43,7 @@ internal sealed class AuthorizationTest
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
-        await addRolesToUser(services, viewerRole);
+        addRolesToUser(services, viewerRole);
         var api = getApi(services);
         var action = api.Product.AddProduct;
         setPath(services, action, "IT");
@@ -125,7 +125,7 @@ internal sealed class AuthorizationTest
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         var adminRole = appSetup.App.Role(AppRoleName.Admin);
-        await addRolesToUser(services, adminRole);
+        addRolesToUser(services, adminRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action);
@@ -219,7 +219,7 @@ internal sealed class AuthorizationTest
         Assert.That(hasAccess, Is.False, "User should not have access when user has the deny access role");
     }
 
-    private async Task addRolesToUser(IServiceProvider services, params FakeAppRole[] roles)
+    private void addRolesToUser(IServiceProvider services, params FakeAppRole[] roles)
     {
         var user = retrieveCurrentUser(services);
         foreach (var role in roles)
