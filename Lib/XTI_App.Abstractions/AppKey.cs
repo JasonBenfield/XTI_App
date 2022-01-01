@@ -5,7 +5,7 @@ namespace XTI_App.Abstractions;
 [TypeConverter(typeof(AppKeyTypeConverter))]
 public sealed class AppKey : IEquatable<AppKey>
 {
-    public static readonly AppKey Unknown = new AppKey(AppName.Unknown, AppType.Values.NotFound);
+    public static readonly AppKey Unknown = new AppKey();
 
     public static AppKey Parse(string value)
     {
@@ -14,6 +14,11 @@ public sealed class AppKey : IEquatable<AppKey>
     }
 
     private readonly string value;
+
+    public AppKey()
+        :this(AppName.Unknown, AppType.Values.NotFound)
+    {
+    }
 
     public AppKey(string name, AppType appType)
         : this(new AppName(name), appType)

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_App.Extensions;
 using XTI_App.Fakes;
 using XTI_Configuration.Extensions;
 
@@ -129,7 +130,7 @@ internal sealed class CachedAppContextTest
         await resourceGroup.ModCategory();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         var currentVersion = await appSetup.App.Version(AppVersionKey.Current);
-        var sourceResourceGroup = await currentVersion.ResourceGroup(new ResourceGroupName("Employee"));
+        currentVersion.ResourceGroup(new ResourceGroupName("Employee"));
         var cachedModCategory = await resourceGroup.ModCategory();
         Assert.That(cachedModCategory.Name(), Is.EqualTo(new ModifierCategoryName("Department")), "Should retrieve modifier category from source");
     }
@@ -162,6 +163,8 @@ internal sealed class CachedAppContextTest
                 (hostContext, services) =>
                 {
                     services.AddServicesForTests(hostContext.Configuration);
+                    services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
+                    services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
                 }
             )
             .Build();

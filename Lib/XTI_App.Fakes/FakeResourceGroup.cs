@@ -24,12 +24,15 @@ public sealed class FakeResourceGroup : IResourceGroup
 
     public ResourceGroupName Name() => groupName;
 
-    public async Task<IModifierCategory> ModCategory() => await app.ModCategory(modCategoryName);
+    Task<IModifierCategory> IResourceGroup.ModCategory() =>
+        Task.FromResult<IModifierCategory>(app.ModCategory(modCategoryName));
+
+    public FakeModifierCategory ModCategory() => app.ModCategory(modCategoryName);
 
     public FakeResource AddResource(ResourceName name)
     {
         var resource = resources.FirstOrDefault(r => r.Name().Equals(name));
-        if(resource == null)
+        if (resource == null)
         {
             resource = new FakeResource(FakeResource.NextID(), name);
             resources.Add(resource);
@@ -37,10 +40,12 @@ public sealed class FakeResourceGroup : IResourceGroup
         return resource;
     }
 
-    public Task<IResource> Resource(ResourceName name)
+    Task<IResource> IResourceGroup.Resource(ResourceName name) =>
+        Task.FromResult<IResource>(Resource(name));
+
+    public FakeResource Resource(ResourceName name)
     {
         var resource = resources.FirstOrDefault(r => r.Name().Equals(name));
-        if(resource == null) { throw new ArgumentException($"Resource '{name.Value}' not found"); }
-        return Task.FromResult<IResource>(resource);
+        return resource ?? throw new ArgumentException($"Resource '{name.Value}' not found");
     }
 }

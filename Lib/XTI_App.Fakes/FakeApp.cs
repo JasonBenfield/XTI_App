@@ -44,7 +44,7 @@ public sealed class FakeApp : IApp
     public FakeAppVersion AddVersion(AppVersionKey versionKey)
     {
         var version = versions.FirstOrDefault(v => v.Key().Equals(versionKey));
-        if(version == null)
+        if (version == null)
         {
             version = new FakeAppVersion(this, FakeAppVersion.NextID(), versionKey);
             versions.Add(version);
@@ -64,7 +64,7 @@ public sealed class FakeApp : IApp
     public FakeModifierCategory AddModCategory(ModifierCategoryName name)
     {
         var category = modCategories.FirstOrDefault(c => c.Name().Equals(name));
-        if(category == null)
+        if (category == null)
         {
             category = new FakeModifierCategory(this, FakeModifierCategory.NextID(), name);
             modCategories.Add(category);
@@ -72,16 +72,29 @@ public sealed class FakeApp : IApp
         return category;
     }
 
-    async Task<IModifierCategory> IApp.ModCategory(ModifierCategoryName name) => await ModCategory(name);
+    Task<IModifierCategory> IApp.ModCategory(ModifierCategoryName name) =>
+        Task.FromResult<IModifierCategory>(ModCategory(name));
 
-    public Task<FakeModifierCategory> ModCategory(ModifierCategoryName name)
+    public FakeModifierCategory ModCategory(ModifierCategoryName name)
     {
         var category = modCategories.FirstOrDefault(c => c.Name().Equals(name));
         if (category == null)
         {
             throw new ArgumentException($"Category '{name.Value}' was not found");
         }
-        return Task.FromResult(category);
+        return category;
+    }
+
+    public void SetDefaultModifierID(EntityID id)
+    {
+        var mod = DefaultModifier();
+        mod.ID = id;
+    }
+
+    public FakeModifier DefaultModifier()
+    {
+        var defaultModCategory = ModCategory(ModifierCategoryName.Default);
+        return defaultModCategory.ModifierOrDefault(ModifierKey.Default);
     }
 
     public FakeAppRole AddRole(AppRoleName roleName)
@@ -95,18 +108,13 @@ public sealed class FakeApp : IApp
         return role;
     }
 
-    async Task<IAppRole> IApp.Role(AppRoleName roleName) => await Role(roleName);
+    public FakeAppRole Role(AppRoleName roleName) =>
+        roles
+            .FirstOrDefault(r => r.Name().Equals(roleName))
+            ?? throw new ArgumentException($"Role '{roleName.Value}' was not found");
 
-    public Task<FakeAppRole> Role(AppRoleName roleName)
-    {
-        var role = roles.FirstOrDefault(r => r.Name().Equals(roleName));
-        if (role == null)
-        {
-            throw new ArgumentException($"Role '{roleName.Value}' was not found");
-        }
-        return Task.FromResult(role);
-    }
+    Task<IAppRole[]> IApp.Roles() => Task.FromResult<IAppRole[]>(Roles());
 
-    public Task<IAppRole[]> Roles() => Task.FromResult<IAppRole[]>(roles.ToArray());
+    public FakeAppRole[] Roles() => roles.ToArray();
 
 }

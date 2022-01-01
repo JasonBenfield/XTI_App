@@ -22,44 +22,111 @@ public sealed class FakeAppUser : IAppUser
 
     public AppUserName UserName() => userName;
 
-    public Task AddRole(AppRoleName roleToAdd)
-        => AddRoles(new[] { roleToAdd });
+    public void RemoveRole(AppRoleName roleNameToRemove)
+        => RemoveRoles(roleNameToRemove);
 
-    public async Task AddRoles(params AppRoleName[] roleNamesToAdd)
+    public void RemoveRole(IModifier modifier, AppRoleName roleNameToRemove)
+        => RemoveRoles(modifier, roleNameToRemove);
+
+    public void RemoveRole(FakeAppRole roleToRemove)
+        => RemoveRoles(roleToRemove);
+
+    public void RemoveRole(IModifier modifier, FakeAppRole roleToRemove)
+        => RemoveRoles(modifier, roleToRemove);
+
+    public void RemoveRoles(params AppRoleName[] roleNamesToRemove)
     {
-        var app = await appContext.App();
-        var roles = new List<FakeAppRole>();
-        foreach (var roleName in roleNamesToAdd)
-        {
-            var role = await app.Role(roleName);
-            roles.Add(role);
-        }
-        await AddRoles(roles.ToArray());
+        var app = appContext.App();
+        var defaultModifier = app.DefaultModifier();
+        RemoveRoles(defaultModifier, roleNamesToRemove);
     }
 
-    public async Task AddRoles(IModifier modifier, params AppRoleName[] roleNamesToAdd)
+    public void RemoveRoles(IModifier modifier, params AppRoleName[] roleNamesToRemove)
     {
-        var app = await appContext.App();
+        var app = appContext.App();
+        var roles = new List<FakeAppRole>();
+        foreach (var roleName in roleNamesToRemove)
+        {
+            var role = app.Role(roleName);
+            roles.Add(role);
+        }
+        RemoveRoles(modifier, roles.ToArray());
+    }
+
+    public void RemoveRoles(params FakeAppRole[] rolesToRemove)
+    {
+        var app = appContext.App();
+        var defaultModifier = app.DefaultModifier();
+        RemoveRoles(defaultModifier, rolesToRemove);
+    }
+
+    public void RemoveRoles(IModifier modifier, params FakeAppRole[] rolesToRemove)
+    {
+        if (roles.ContainsKey(modifier.ID.Value))
+        {
+            var originalRoles = roles[modifier.ID.Value];
+            roles[modifier.ID.Value] = originalRoles.Except(rolesToRemove).Distinct().ToArray();
+        }
+    }
+
+    public void AddRole(AppRoleName roleToAdd)
+        => AddRoles(roleToAdd);
+
+    public void AddRole(ModifierCategoryName categoryName, ModifierKey modKey, AppRoleName roleToAdd)
+        => AddRoles(getModifier(categoryName, modKey), roleToAdd);
+
+    public void AddRole(FakeModifier modifier, AppRoleName roleToAdd)
+        => AddRoles(modifier, roleToAdd);
+
+    public void AddRoles(params AppRoleName[] roleNamesToAdd)
+    {
+        var app = appContext.App();
         var roles = new List<FakeAppRole>();
         foreach (var roleName in roleNamesToAdd)
         {
-            var role = await app.Role(roleName);
+            var role = app.Role(roleName);
+            roles.Add(role);
+        }
+        AddRoles(roles.ToArray());
+    }
+
+    public void AddRoles(ModifierCategoryName categoryName, ModifierKey modKey, params AppRoleName[] roleNamesToAdd)
+    {
+        AddRoles(getModifier(categoryName, modKey), roleNamesToAdd);
+    }
+
+    private FakeModifier getModifier(ModifierCategoryName categoryName, ModifierKey modKey)
+    {
+        var app = appContext.App();
+        var modCategory = app.ModCategory(categoryName);
+        var modifier = modCategory.ModifierOrDefault(modKey);
+        return modifier;
+    }
+
+    public void AddRoles(FakeModifier modifier, params AppRoleName[] roleNamesToAdd)
+    {
+        var app = appContext.App();
+        var roles = new List<FakeAppRole>();
+        foreach (var roleName in roleNamesToAdd)
+        {
+            var role = app.Role(roleName);
             roles.Add(role);
         }
         AddRoles(modifier, roles.ToArray());
     }
 
-    public Task AddRole(FakeAppRole roleToAdd) => AddRoles(new[] { roleToAdd });
+    public void AddRole(FakeAppRole roleToAdd) => AddRoles(roleToAdd);
 
-    public async Task AddRoles(params FakeAppRole[] rolesToAdd)
+    public void AddRole(FakeModifier modifier, FakeAppRole roleToAdd) => AddRoles(modifier, roleToAdd);
+
+    public void AddRoles(params FakeAppRole[] rolesToAdd)
     {
-        var app = await appContext.App();
-        var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
-        var defaultModifier = await defaultModCategory.Modifier(ModifierKey.Default);
+        var app = appContext.App();
+        var defaultModifier = app.DefaultModifier();
         AddRoles(defaultModifier, rolesToAdd);
     }
 
-    public void AddRoles(IModifier modifier, params FakeAppRole[] rolesToAdd)
+    public void AddRoles(FakeModifier modifier, params FakeAppRole[] rolesToAdd)
     {
         if (roles.ContainsKey(modifier.ID.Value))
         {
@@ -72,7 +139,13 @@ public sealed class FakeAppUser : IAppUser
         }
     }
 
-    public async Task<IAppRole[]> Roles(IModifier modifier)
+    Task<IAppRole[]> IAppUser.Roles(IModifier modifier) =>
+        Task.FromResult<IAppRole[]>(Roles(modifier));
+
+    public FakeAppRole[] Roles(ModifierCategoryName categoryName, ModifierKey modKey) =>
+        Roles(getModifier(categoryName, modKey));
+
+    public FakeAppRole[] Roles(IModifier modifier)
     {
         if (!roles.TryGetValue(modifier.ID.Value, out var userRoles))
         {
@@ -82,10 +155,10 @@ public sealed class FakeAppUser : IAppUser
             }
             else
             {
-                var app = await appContext.App();
-                var defaultModCategory = await app.ModCategory(ModifierCategoryName.Default);
-                var defaultMod = await defaultModCategory.Modifier(ModifierKey.Default);
-                userRoles = (FakeAppRole[])await Roles(defaultMod);
+                var app = appContext.App();
+                var defaultModCategory = app.ModCategory(ModifierCategoryName.Default);
+                var defaultMod = defaultModCategory.ModifierOrDefault(ModifierKey.Default);
+                userRoles = Roles(defaultMod);
             }
         }
         return userRoles;

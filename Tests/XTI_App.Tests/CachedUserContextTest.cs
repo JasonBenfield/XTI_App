@@ -17,7 +17,7 @@ internal sealed class CachedUserContextTest
         var services = await setup();
         var userContext = getUserContext(services);
         var userFromContext = await userContext.User();
-        var sourceUser = await testUser(services);
+        var sourceUser = testUser(services);
         Assert.That(userFromContext.ID, Is.EqualTo(sourceUser.ID), "Should retrieve user from source");
         Assert.That(userFromContext.UserName(), Is.EqualTo(sourceUser.UserName()), "Should retrieve user from source");
     }
@@ -29,11 +29,11 @@ internal sealed class CachedUserContextTest
         var userContext = getUserContext(services);
         var user = await userContext.User();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var modCategory = await appSetup.App.ModCategory(ModifierCategoryName.Default);
-        var modifier = await modCategory.Modifier(ModifierKey.Default);
+        var modCategory = appSetup.App.ModCategory(ModifierCategoryName.Default);
+        var modifier = modCategory.ModifierOrDefault(ModifierKey.Default);
         await user.Roles(modifier);
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        var sourceUser = await testUser(services);
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        var sourceUser = testUser(services);
         sourceUser.AddRoles(modifier, adminRole);
         userContext.ClearCache(user.UserName());
         var userRoles = await user.Roles(modifier);
@@ -61,10 +61,10 @@ internal sealed class CachedUserContextTest
         var userContext = getUserContext(services);
         var user = await userContext.User();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var modCategory = await appSetup.App.ModCategory(ModifierCategoryName.Default);
-        var modifier = await modCategory.Modifier(ModifierKey.Default);
+        var modCategory = appSetup.App.ModCategory(ModifierCategoryName.Default);
+        var modifier = modCategory.ModifierOrDefault(ModifierKey.Default);
         var userRoles = await user.Roles(modifier);
-        var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
         Assert.That(userRoles.Select(ur => ur.ID), Is.EquivalentTo(new[] { viewerRole.ID }), "Should retrieve user roles from source");
     }
 
@@ -75,15 +75,15 @@ internal sealed class CachedUserContextTest
         var userContext = getUserContext(services);
         var user = await userContext.User();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var modCategory = await appSetup.App.ModCategory(ModifierCategoryName.Default);
-        var modifier = await modCategory.Modifier(ModifierKey.Default);
+        var modCategory = appSetup.App.ModCategory(ModifierCategoryName.Default);
+        var modifier = modCategory.ModifierOrDefault(ModifierKey.Default);
         var userRoles = await user.Roles(modifier);
-        var adminRole = (FakeAppRole)await appSetup.App.Role(AppRoleName.Admin);
-        var sourceUser = await testUser(services);
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        var sourceUser = testUser(services);
         sourceUser.AddRoles(modifier, adminRole);
         var cachedUser = await userContext.User();
         var cachedUserRoles = await cachedUser.Roles(modifier);
-        var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
         Assert.That(userRoles.Select(ur => ur.ID), Is.EquivalentTo(new[] { viewerRole.ID }), "Should retrieve user roles from source");
     }
 
@@ -103,6 +103,8 @@ internal sealed class CachedUserContextTest
                 (hostContext, services) =>
                 {
                     services.AddServicesForTests(hostContext.Configuration);
+                    services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
+                    services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
                 }
             )
             .Build();
@@ -112,12 +114,12 @@ internal sealed class CachedUserContextTest
         xtiPathAccessor.SetPath(XtiPath.Parse("/Fake/Current/Employees/Index"));
         var fakeSetup = sp.GetRequiredService<FakeAppSetup>();
         await fakeSetup.Run(AppVersionKey.Current);
-        var modCategory = await fakeSetup.App.ModCategory(ModifierCategoryName.Default);
-        var modifier = await modCategory.Modifier(ModifierKey.Default);
+        var modCategory = fakeSetup.App.ModCategory(ModifierCategoryName.Default);
+        var modifier = modCategory.ModifierOrDefault(ModifierKey.Default);
         var userContext = sp.GetRequiredService<FakeUserContext>();
         var userName = new AppUserName("test.user");
         var user = userContext.AddUser(userName);
-        var viewerRole = await fakeSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        var viewerRole = fakeSetup.App.Role(FakeAppRoles.Instance.Viewer);
         user.AddRoles(modifier, viewerRole);
         userContext.SetCurrentUser(userName);
         return sp;
@@ -126,10 +128,9 @@ internal sealed class CachedUserContextTest
     private CachedUserContext getUserContext(IServiceProvider sp)
         => (CachedUserContext)sp.GetRequiredService<IUserContext>();
 
-    private async Task<FakeAppUser> testUser(IServiceProvider sp)
+    private FakeAppUser testUser(IServiceProvider sp)
     {
         var userContext = sp.GetRequiredService<FakeUserContext>();
-        var user = await userContext.User();
-        return (FakeAppUser)user;
+        return userContext.User();
     }
 }

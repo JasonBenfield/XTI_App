@@ -18,23 +18,51 @@ public sealed class FakeUserContext : ISourceUserContext
 
     public Task<AppUserName> CurrentUserName() => Task.FromResult(currentUserName);
 
-    public Task<IAppUser> User() => User(currentUserName);
+    Task<IAppUser> IUserContext.User() => Task.FromResult<IAppUser>(User());
 
-    public Task<IAppUser> User(AppUserName userName)
-    {
-        var user = users.First(u => u.UserName().Equals(userName));
-        return Task.FromResult<IAppUser>(user);
-    }
+    Task<IAppUser> ISourceUserContext.User(AppUserName userName) =>
+        Task.FromResult<IAppUser>(User(userName));
+
+    public FakeAppUser User() => User(currentUserName);
+
+    public FakeAppUser User(AppUserName userName) =>
+        users.First(u => u.UserName().Equals(userName));
 
     public void SetCurrentUser(AppUserName userName)
     {
         currentUserName = userName;
     }
 
+    public FakeAppUser AddUser(IAppUser appUser)
+    {
+        var user = users.FirstOrDefault(u => u.ID.Equals(appUser.ID));
+        if(user == null)
+        {
+            user = new FakeAppUser(appContext, appUser.ID, appUser.UserName());
+            users.Add(user);
+        }
+        return user;
+    }
+
     public FakeAppUser AddUser(AppUserName userName)
     {
-        var user = new FakeAppUser(appContext, FakeAppUser.NextID(), userName);
-        users.Add(user);
+        var user = users.FirstOrDefault(u => u.UserName().Equals(userName));
+        if (user == null)
+        {
+            var id = getUniqueID();
+            user = new FakeAppUser(appContext, id, userName);
+            users.Add(user);
+        }
         return user;
+    }
+
+    private EntityID getUniqueID()
+    {
+        var id = FakeAppUser.NextID();
+        while (users.Any(u => u.ID.Equals(id)))
+        {
+            id = FakeAppUser.NextID();
+        }
+        return id;
     }
 }

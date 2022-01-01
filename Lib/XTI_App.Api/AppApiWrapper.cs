@@ -16,5 +16,12 @@ public class AppApiWrapper : IAppApi
     public ResourceAccess Access { get => source.Access; }
     public IAppApiGroup Group(string groupName) => source.Group(groupName);
     public IEnumerable<IAppApiGroup> Groups() => source.Groups();
-    public AppApiTemplate Template() => source.Template();
+    public AppApiTemplate Template()
+    {
+        var template = source.Template();
+        ConfigureTemplate(template);
+        return template;
+    }
+
+    protected virtual void ConfigureTemplate(AppApiTemplate template) { }
 }

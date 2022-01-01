@@ -18,35 +18,57 @@ public sealed class FakeModifierCategory : IModifierCategory
         this.categoryName = categoryName;
         if (categoryName.Equals(ModifierCategoryName.Default))
         {
-            AddModifier(ModifierKey.Default);
+            AddModifier(getUniqueID(), ModifierKey.Default, "");
         }
+    }
+
+    private EntityID getUniqueID()
+    {
+        var id = FakeAppUser.NextID();
+        while (modifiers.Any(u => u.ID.Equals(id)))
+        {
+            id = FakeAppUser.NextID();
+        }
+        return id;
     }
 
     public EntityID ID { get; }
 
     public ModifierCategoryName Name() => categoryName;
 
-    public FakeModifier AddModifier(ModifierKey modKey)
+    public FakeModifier AddModifier(ModifierKey modKey, string targetID) =>
+        AddModifier(getUniqueID(), modKey, targetID);
+
+    public FakeModifier AddModifier(EntityID id, ModifierKey modKey, string targetID)
     {
         var mod = modifiers.FirstOrDefault(m => m.ModKey().Equals(modKey));
         if (mod == null)
         {
-            mod = new FakeModifier(app, FakeModifier.NextID(), modKey);
+            mod = new FakeModifier(id, modKey, targetID);
             modifiers.Add(mod);
         }
         return mod;
     }
 
-    async Task<IModifier> IModifierCategory.Modifier(ModifierKey modKey) => await Modifier(modKey);
+    Task<IModifier> IModifierCategory.ModifierOrDefault(ModifierKey modKey) =>
+        Task.FromResult<IModifier>(ModifierOrDefault(modKey));
 
-    public async Task<FakeModifier> Modifier(ModifierKey modKey)
+    public FakeModifier ModifierOrDefault(ModifierKey modKey)
     {
         var mod = modifiers.FirstOrDefault(m => m.ModKey().Equals(modKey));
         if (mod == null)
         {
-            var modCategory = await app.ModCategory(ModifierCategoryName.Default);
-            mod = await modCategory.Modifier(ModifierKey.Default);
+            var modCategory = app.ModCategory(ModifierCategoryName.Default);
+            mod = modCategory.ModifierOrDefault(ModifierKey.Default);
         }
-        return mod;
+        return mod ?? throw new ArgumentNullException("mod");
     }
+
+    public FakeModifier ModifierByTargetID(string targetID)
+    {
+        var mod = modifiers.FirstOrDefault(m => m.TargetID.Equals(targetID, StringComparison.OrdinalIgnoreCase));
+        return mod ?? throw new ArgumentNullException("mod");
+    }
+
+    public FakeModifier[] Modifiers() => modifiers.ToArray();
 }

@@ -4,6 +4,9 @@ namespace XTI_App.Api;
 
 public sealed class AppApi
 {
+    private readonly IAppApiUser user;
+    private readonly Dictionary<string, AppApiGroup> groups = new Dictionary<string, AppApiGroup>();
+
     public AppApi
     (
         AppKey appKey,
@@ -16,9 +19,6 @@ public sealed class AppApi
         this.user = user;
         Access = access ?? ResourceAccess.AllowAuthenticated();
     }
-
-    private readonly IAppApiUser user;
-    private readonly Dictionary<string, AppApiGroup> groups = new Dictionary<string, AppApiGroup>();
 
     public XtiPath Path { get; }
 
@@ -46,8 +46,8 @@ public sealed class AppApi
 
     public AppApiGroup Group(string groupName) => groups[groupKey(groupName)];
 
-    private static string groupKey(string groupName)
-        => groupName.ToLower().Replace(" ", "").Replace("_", "");
+    private static string groupKey(string groupName) =>
+        groupName.ToLower().Replace(" ", "").Replace("_", "");
 
     public AppApiTemplate Template() => new AppApiTemplate(this);
 

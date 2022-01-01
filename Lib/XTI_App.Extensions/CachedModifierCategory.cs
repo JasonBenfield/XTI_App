@@ -48,7 +48,7 @@ internal sealed class CachedModifierCategory : IModifierCategory
         modCategoryCache.Set(cacheData);
     }
 
-    public async Task<IModifier> Modifier(ModifierKey modKey)
+    public async Task<IModifier> ModifierOrDefault(ModifierKey modKey)
     {
         var cachedMod = new CachedModifier(cache, sourceAppContext, parentApp, this, modKey);
         await cachedMod.Load();

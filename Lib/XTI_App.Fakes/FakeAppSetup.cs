@@ -38,9 +38,9 @@ public sealed class FakeAppSetup : IAppSetup
         await setup.Run(versionKey);
         App = setup.App;
         var departmentModCategoryName = new ModifierCategoryName("Department");
-        var departmentModCategory = await App.ModCategory(departmentModCategoryName);
-        departmentModCategory.AddModifier(new ModifierKey("IT"));
-        departmentModCategory.AddModifier(new ModifierKey("HR"));
+        var departmentModCategory = App.ModCategory(departmentModCategoryName);
+        departmentModCategory.AddModifier(new ModifierKey("IT"), "IT");
+        departmentModCategory.AddModifier(new ModifierKey("HR"), "HR");
         var userName = new AppUserName("xartogg");
         User = userContext.AddUser(userName);
         userContext.SetCurrentUser(userName);

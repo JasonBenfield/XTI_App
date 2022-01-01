@@ -6,9 +6,9 @@ namespace XTI_App.Extensions;
 
 internal sealed class CachedAppRole : IAppRole
 {
+    private readonly IMemoryCache cache;   
     private readonly AppContextCache<CacheData> roleCache;
     private readonly ISourceAppContext sourceAppContext;
-    private readonly AppRoleName name;
     private CacheData cacheData = new CacheData(new EntityID(), new AppRoleName("None"));
 
     public CachedAppRole(IMemoryCache cache, ISourceAppContext sourceAppContext, IAppRole role)
@@ -19,8 +19,8 @@ internal sealed class CachedAppRole : IAppRole
 
     public CachedAppRole(IMemoryCache cache, ISourceAppContext sourceAppContext, AppRoleName name)
     {
+        this.cache = cache;
         this.sourceAppContext = sourceAppContext;
-        this.name = name;
         roleCache = new AppContextCache<CacheData>(cache, $"xti_role_{name.Value}");
     }
 
@@ -34,8 +34,11 @@ internal sealed class CachedAppRole : IAppRole
         if (cacheData == null)
         {
             var app = await sourceAppContext.App();
-            var role = await app.Role(name);
-            store(role);
+            var roles = await app.Roles();
+            foreach(var role in roles)
+            {
+                new CachedAppRole(cache, sourceAppContext, role);
+            }
         }
     }
 

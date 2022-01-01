@@ -4,5 +4,5 @@ public interface IModifierCategory
 {
     EntityID ID { get; }
     ModifierCategoryName Name();
-    Task<IModifier> Modifier(ModifierKey modKey);
+    Task<IModifier> ModifierOrDefault(ModifierKey modKey);
 }

@@ -9,7 +9,7 @@ public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
 {
     private static readonly Regex keyRegex = new Regex("V?(\\d+)");
 
-    public static readonly AppVersionKey None = new AppVersionKey(0);
+    public static readonly AppVersionKey None = new AppVersionKey();
     public static readonly AppVersionKey Current = new AppVersionKey("Current");
 
     public static AppVersionKey Parse(string str)
@@ -32,6 +32,10 @@ public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
             key = new AppVersionKey(str);
         }
         return key;
+    }
+
+    public AppVersionKey() : this(0)
+    {
     }
 
     public AppVersionKey(int versionID) : this($"V{versionID}")

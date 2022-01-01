@@ -14,8 +14,8 @@ internal sealed class AuthorizationTest
     {
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        await addRolesToUser(services, adminRole);
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        addRolesToUser(services, adminRole);
         var api = getApi(services);
         var action = api.Product.AddProduct;
         setPath(services, action);
@@ -28,8 +28,8 @@ internal sealed class AuthorizationTest
     {
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
-        await addRolesToUser(services, viewerRole);
+        var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        addRolesToUser(services, viewerRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action);
@@ -42,8 +42,8 @@ internal sealed class AuthorizationTest
     {
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
-        await addRolesToUser(services, viewerRole);
+        var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        addRolesToUser(services, viewerRole);
         var api = getApi(services);
         var action = api.Product.AddProduct;
         setPath(services, action, "IT");
@@ -56,10 +56,10 @@ internal sealed class AuthorizationTest
     {
         var services = await setup();
         var api = getApi(services);
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        await user.AddRole(adminRole);
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        user.AddRole(adminRole);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "IT");
         var hasAccess = await action.HasAccess();
@@ -70,13 +70,13 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotHaveAccessToModifiedAction_WhenUserDoesNotBelongsToAnAllowedRoleForTheModifier_IfTheyBelongToAnAllowedRoleForTheDefaultModifier()
     {
         var services = await setup();
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        await user.AddRole(adminRole);
-        var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
-        var modifier = await modCategory.Modifier(new ModifierKey("IT"));
-        var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        user.AddRole(adminRole);
+        var modCategory = appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+        var modifier = modCategory.ModifierOrDefault(new ModifierKey("IT"));
+        var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
         user.AddRoles(modifier, viewerRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
@@ -89,11 +89,11 @@ internal sealed class AuthorizationTest
     public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndUserHasAccessToTheModifiedAction()
     {
         var services = await setup();
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
-        var modifier = await modCategory.Modifier(new ModifierKey("IT"));
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
+        var modCategory = appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+        var modifier = modCategory.ModifierOrDefault(new ModifierKey("IT"));
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
         user.AddRoles(modifier, adminRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
@@ -106,11 +106,11 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotHaveAccess_WhenUserDoesNotBelongToAnAllowedRole_AndUserHasAccessToTheModifiedAction()
     {
         var services = await setup();
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
-        var viewerRole = await appSetup.App.Role(FakeAppRoles.Instance.Viewer);
-        var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+        var modCategory = appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+        var viewerRole = appSetup.App.Role(FakeAppRoles.Instance.Viewer);
+        var modifier = modCategory.ModifierOrDefault(new ModifierKey("IT"));
         user.AddRoles(modifier, viewerRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
@@ -124,8 +124,8 @@ internal sealed class AuthorizationTest
     {
         var services = await setup();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        await addRolesToUser(services, adminRole);
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        addRolesToUser(services, adminRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action);
@@ -137,11 +137,11 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotHaveAccess_WhenUserBelongsToAnAllowedRole_ButDoesNotHaveAccessToTheModifiedAction()
     {
         var services = await setup();
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
-        var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        var modCategory = appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+        var modifier = modCategory.ModifierOrDefault(new ModifierKey("IT"));
         user.AddRoles(modifier, adminRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
@@ -204,13 +204,13 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotAllowAccess_WhenTheUserHasTheDenyAccessRole()
     {
         var services = await setup();
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var adminRole = await appSetup.App.Role(AppRoleName.Admin);
-        await user.AddRole(adminRole);
-        var denyAccessRole = await appSetup.App.Role(AppRoleName.DenyAccess);
-        var modCategory = await appSetup.App.ModCategory(new ModifierCategoryName("Department"));
-        var modifier = await modCategory.Modifier(new ModifierKey("IT"));
+        var adminRole = appSetup.App.Role(AppRoleName.Admin);
+        user.AddRole(adminRole);
+        var denyAccessRole = appSetup.App.Role(AppRoleName.DenyAccess);
+        var modCategory = appSetup.App.ModCategory(new ModifierCategoryName("Department"));
+        var modifier = modCategory.ModifierOrDefault(new ModifierKey("IT"));
         user.AddRoles(modifier, adminRole, denyAccessRole);
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
@@ -219,12 +219,12 @@ internal sealed class AuthorizationTest
         Assert.That(hasAccess, Is.False, "User should not have access when user has the deny access role");
     }
 
-    private async Task addRolesToUser(IServiceProvider services, params FakeAppRole[] roles)
+    private void addRolesToUser(IServiceProvider services, params FakeAppRole[] roles)
     {
-        var user = await retrieveCurrentUser(services);
+        var user = retrieveCurrentUser(services);
         foreach (var role in roles)
         {
-            await user.AddRole(role);
+            user.AddRole(role);
         }
     }
 
@@ -263,10 +263,10 @@ internal sealed class AuthorizationTest
         pathAccessor.SetPath(action.Path.WithModifier(new ModifierKey(department)));
     }
 
-    private async Task<FakeAppUser> retrieveCurrentUser(IServiceProvider sp)
+    private FakeAppUser retrieveCurrentUser(IServiceProvider sp)
     {
         var userContext = getUserContext(sp);
-        return (FakeAppUser)await userContext.User();
+        return userContext.User();
     }
 
     private FakeUserContext getUserContext(IServiceProvider sp)
