@@ -7,7 +7,7 @@ public sealed class FakeModifier : IModifier
     private static FakeEntityID currentID = new FakeEntityID();
     public static EntityID NextID() => currentID.Next();
 
-    private readonly ModifierKey modKey;
+    private ModifierKey modKey;
 
     public FakeModifier(EntityID id, ModifierKey modKey, string targetID)
     {
@@ -21,4 +21,6 @@ public sealed class FakeModifier : IModifier
     public string TargetID { get; }
 
     public ModifierKey ModKey() => modKey;
+
+    public void SetModKey(IModifier modifier) => modKey = modifier.ModKey();
 }

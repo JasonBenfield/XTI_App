@@ -6,6 +6,20 @@ public sealed class AppUserName : TextValue, IEquatable<AppUserName>
 {
     public static readonly AppUserName Anon = new AppUserName("xti_anon");
 
+    public static AppUserName InstallationUser(string machineName)
+    {
+        var parts = new[]
+        {
+                "xti",
+                "inst",
+                machineName
+            }
+        .Where(p => !string.IsNullOrWhiteSpace(p))
+        .Select(p => p.Replace(" ", "").Replace("_", ""));
+        var userName = string.Join("_", parts);
+        return new AppUserName(userName);
+    }
+
     public static AppUserName SystemUser(AppKey appKey, string machineName)
     {
         var parts = new[]

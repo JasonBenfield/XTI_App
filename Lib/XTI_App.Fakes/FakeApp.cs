@@ -7,14 +7,17 @@ public sealed class FakeApp : IApp
     private static FakeEntityID currentID = new FakeEntityID();
     public static EntityID NextID() => currentID.Next();
 
+    private readonly FakeAppContext appContext;
     private readonly List<FakeAppVersion> versions = new List<FakeAppVersion>();
     private readonly List<FakeAppRole> roles = new List<FakeAppRole>();
     private readonly List<FakeModifierCategory> modCategories = new List<FakeModifierCategory>();
 
-    public FakeApp(EntityID id, string title)
+    internal FakeApp(FakeAppContext appContext, EntityID id, AppKey appKey)
     {
+        this.appContext = appContext;
         ID = id;
-        Title = title;
+        AppKey = appKey;
+        Title = appKey.Name.DisplayText;
         AddVersion(AppVersionKey.Current);
         AddModCategory(ModifierCategoryName.Default);
         foreach (var roleName in AppRoleName.DefaultRoles())
@@ -25,6 +28,8 @@ public sealed class FakeApp : IApp
 
     public EntityID ID { get; }
     public string Title { get; private set; }
+
+    public AppKey AppKey { get; }
 
     public void SetTitle(string title)
     {
@@ -117,4 +122,12 @@ public sealed class FakeApp : IApp
 
     public FakeAppRole[] Roles() => roles.ToArray();
 
+    Task<ModifierKey> IApp.ModKeyInHubApps() => Task.FromResult(ModKeyInHubApps());
+
+    public ModifierKey ModKeyInHubApps()
+    {
+        var hubApp = appContext.AddApp(new AppKey(new AppName("Hub"), AppType.Values.WebApp));
+        var modCategory = hubApp.AddModCategory(new ModifierCategoryName("Apps"));
+        return modCategory.ModifierByTargetID(ID.Value.ToString()).ModKey();
+    }
 }

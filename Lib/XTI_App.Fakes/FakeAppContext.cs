@@ -9,12 +9,27 @@ public sealed class FakeAppContext : ISourceAppContext
     private FakeApp? currentApp;
     private FakeAppVersion? version;
 
-    public FakeAppContext(string title = "")
+    public FakeAppContext(AppKey? appKey)
     {
-        if (!string.IsNullOrWhiteSpace(title))
+        var hubAppKey = new AppKey(new AppName("Hub"), AppType.Values.WebApp);
+        var hubApp = AddNewApp(hubAppKey);
+        var modCategory = hubApp.AddModCategory(new ModifierCategoryName("Apps"));
+        modCategory.AddModifier
+        (
+            new ModifierKey(Guid.NewGuid().ToString("N")),
+            hubApp.ID.Value.ToString()
+        );
+        if (appKey != null)
         {
-            var app = AddApp(title);
-            SetCurrentApp(app);
+            if (appKey.Equals(hubAppKey))
+            {
+                SetCurrentApp(hubApp);
+            }
+            else
+            {
+                var app = AddApp(appKey);
+                SetCurrentApp(app);
+            }
         }
     }
 
@@ -23,14 +38,37 @@ public sealed class FakeAppContext : ISourceAppContext
     public FakeApp App() =>
         currentApp ?? throw new ArgumentException("currentApp is null");
 
-    public FakeApp AddApp(string title)
+    public FakeApp AddApp(AppKey appKey)
+    {
+        var app = GetApp(appKey);
+        if (app == null)
+        {
+            app = AddNewApp(appKey);
+            var hubApp = App(new AppKey(new AppName("Hub"), AppType.Values.WebApp));
+            var modCategory = hubApp.ModCategory(new ModifierCategoryName("Apps"));
+            modCategory.AddModifier
+            (
+                new ModifierKey(Guid.NewGuid().ToString("N")),
+                app.ID.Value.ToString()
+            );
+        }
+        return app;
+    }
+
+    private FakeApp AddNewApp(AppKey appKey)
     {
         var id = FakeApp.NextID();
-        var app = new FakeApp(id, title);
+        var app = new FakeApp(this, id, appKey);
         version = app.CurrentVersion();
         apps.Add(app);
         return app;
     }
+
+    public FakeApp App(AppKey appKey) =>
+        GetApp(appKey)
+        ?? throw new Exception($"App '{appKey.Name.DisplayText} {appKey.Type.DisplayText}' was not found");
+
+    private FakeApp? GetApp(AppKey appKey) => apps.FirstOrDefault(a => a.AppKey.Equals(appKey));
 
     public void SetCurrentApp(FakeApp currentApp) => this.currentApp = currentApp;
 
@@ -41,4 +79,14 @@ public sealed class FakeAppContext : ISourceAppContext
     }
 
     public void SetVersion(FakeAppVersion version) => this.version = version;
+
+    Task<ModifierKey> ISourceAppContext.ModKeyInHubApps(IApp app) =>
+        Task.FromResult(ModKeyInHubApps(app));
+
+    public ModifierKey ModKeyInHubApps(IApp app)
+    {
+        var hubApp = AddApp(new AppKey(new AppName("Hub"), AppType.Values.WebApp));
+        var modCategory = hubApp.AddModCategory(new ModifierCategoryName("Apps"));
+        return modCategory.ModifierByTargetID(app.ID.Value.ToString()).ModKey();
+    }
 }

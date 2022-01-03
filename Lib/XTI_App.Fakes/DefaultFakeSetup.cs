@@ -7,14 +7,12 @@ public sealed class DefaultFakeSetup : IAppSetup
 {
     private readonly AppApiFactory apiFactory;
     private readonly FakeAppContext appContext;
-    private readonly string title;
     private FakeApp? app;
 
-    public DefaultFakeSetup(AppApiFactory apiFactory, FakeAppContext appContext, string title)
+    public DefaultFakeSetup(AppApiFactory apiFactory, FakeAppContext appContext)
     {
         this.apiFactory = apiFactory;
         this.appContext = appContext;
-        this.title = title;
     }
 
     public FakeApp App
@@ -27,7 +25,7 @@ public sealed class DefaultFakeSetup : IAppSetup
     {
         var template = apiFactory.CreateTemplate();
         var templateModel = template.ToModel();
-        App = appContext.AddApp(title);
+        App = appContext.AddApp(template.AppKey);
         appContext.SetCurrentApp(App);
         var modCategories = templateModel.GroupTemplates.Select(g => g.ModCategory).Distinct();
         foreach (var modCategory in modCategories)

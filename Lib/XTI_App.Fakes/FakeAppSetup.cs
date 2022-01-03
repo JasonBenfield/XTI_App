@@ -7,17 +7,15 @@ public sealed class FakeAppSetup : IAppSetup
     private readonly FakeAppApiFactory apiFactory;
     private readonly FakeAppContext appContext;
     private readonly FakeUserContext userContext;
-    private readonly FakeAppOptions options;
 
     private FakeApp? app;
     private FakeAppUser? user;
 
-    public FakeAppSetup(FakeAppApiFactory apiFactory, FakeAppContext appContext, FakeUserContext userContext, FakeAppOptions options)
+    public FakeAppSetup(FakeAppApiFactory apiFactory, FakeAppContext appContext, FakeUserContext userContext)
     {
         this.apiFactory = apiFactory;
         this.appContext = appContext;
         this.userContext = userContext;
-        this.options = options;
     }
 
     public FakeApp App
@@ -34,7 +32,7 @@ public sealed class FakeAppSetup : IAppSetup
 
     public async Task Run(AppVersionKey versionKey)
     {
-        var setup = new DefaultFakeSetup(apiFactory, appContext, options.Title);
+        var setup = new DefaultFakeSetup(apiFactory, appContext);
         await setup.Run(versionKey);
         App = setup.App;
         var departmentModCategoryName = new ModifierCategoryName("Department");
