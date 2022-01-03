@@ -94,5 +94,15 @@ internal sealed class CachedApp : IApp
         return cachedModCategory;
     }
 
+    public async Task<ModifierKey> ModKeyInHubApps()
+    {
+        var cacheKey = $"xti_{appKey.Type.Value}_{appKey.Name.Value}_modKeyInHubApps";
+        if(!cache.TryGetValue<ModifierKey>(cacheKey, out var modKey))
+        {
+            modKey = await sourceAppContext.ModKeyInHubApps(this);
+        }
+        return modKey;
+    }
+
     private sealed record CacheData(EntityID ID, string Title);
 }
