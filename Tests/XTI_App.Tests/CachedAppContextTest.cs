@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_App.Fakes;
-using XTI_Configuration.Extensions;
+using XTI_Core;
+using XTI_Core.Extensions;
 
 namespace XTI_App.Tests;
 
@@ -149,27 +149,11 @@ internal sealed class CachedAppContextTest
 
     private async Task<IServiceProvider> setup()
     {
-        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
-        var host = Host.CreateDefaultBuilder()
-            .ConfigureAppConfiguration
-            (
-                (hostContext, config) =>
-                {
-                    config.UseXtiConfiguration(hostContext.HostingEnvironment, new string[] { });
-                }
-            )
-            .ConfigureServices
-            (
-                (hostContext, services) =>
-                {
-                    services.AddServicesForTests(hostContext.Configuration);
-                    services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
-                    services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
-                }
-            )
-            .Build();
-        var scope = host.Services.CreateScope();
-        var sp = scope.ServiceProvider;
+        var hostBuilder = new XtiHostBuilder(XtiEnvironment.Test);
+        hostBuilder.Services.AddServicesForTests();
+        hostBuilder.Services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
+        hostBuilder.Services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
+        var sp = hostBuilder.Build().Scope();
         var xtiPathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
         xtiPathAccessor.SetPath(XtiPath.Parse("/Fake/Current/Employees/Index"));
         await sp.Setup();

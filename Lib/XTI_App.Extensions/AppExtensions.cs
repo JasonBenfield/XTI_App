@@ -6,6 +6,7 @@ using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Secrets;
 using XTI_Core;
+using XTI_Core.Extensions;
 using XTI_Secrets.Extensions;
 using XTI_TempLog;
 using XTI_TempLog.Extensions;
@@ -14,14 +15,15 @@ namespace XTI_App.Extensions;
 
 public static class AppExtensions
 {
-    public static void AddAppServices(this IServiceCollection services, IHostEnvironment hostEnv, IConfiguration configuration)
+    public static void AddAppServices(this IServiceCollection services)
     {
         services.AddMemoryCache();
         services.AddDistributedMemoryCache();
-        services.Configure<AppOptions>(configuration.GetSection(AppOptions.App));
-        services.AddSingleton<IClock, UtcClock>();
         services.AddSingleton<XtiFolder>();
-        services.AddFileSecretCredentials(hostEnv);
+        services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
+        services.AddConfigurationOptions<AppOptions>(AppOptions.App);
+        services.AddSingleton<IClock, UtcClock>();
+        services.AddFileSecretCredentials();
         services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
         services.AddScoped<IAppContext, CachedAppContext>();
@@ -44,7 +46,7 @@ public static class AppExtensions
             var user = sp.GetRequiredService<IAppApiUser>();
             return factory.Create(user);
         });
-        services.AddTempLogServices(configuration);
+        services.AddTempLogServices();
     }
 
     public static void AddThrottledLog<TAppApi>(this IServiceCollection services, Action<TAppApi, ThrottledLogsBuilder> action)
@@ -55,15 +57,16 @@ public static class AppExtensions
             services,
             (sp, builder) =>
             {
-                var api = (TAppApi)sp.GetRequiredService<AppApiFactory>().CreateForSuperUser();
+                using var scope = sp.CreateScope();
+                var api = (TAppApi)scope.ServiceProvider.GetRequiredService<AppApiFactory>().CreateForSuperUser();
                 action(api, builder);
             }
         );
     }
 
-    public static ThrottledPathBuilder Throttle(this ThrottledLogsBuilder builder, AppApiAction<EmptyRequest, EmptyActionResult> action)
+    public static ThrottledPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action)
         => builder.Throttle(action.Path.Format());
 
-    public static ThrottledPathBuilder AndThrottle(this ThrottledPathBuilder builder, AppApiAction<EmptyRequest, EmptyActionResult> action)
+    public static ThrottledPathBuilder AndThrottle(this ThrottledPathBuilder builder, IAppApiAction action)
         => builder.AndThrottle(action.Path.Format());
 }

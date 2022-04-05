@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <TargetFramework>net6.0</TargetFramework>
-	  <Nullable>enable</Nullable>
-	  <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
 	<Import Project="..\\..\\Common.Targets" />
 
 	<ItemGroup>
-    <PackageReference Include="XTI_Core.Fakes" Version="1.10.2" />
-    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.23" />
-  </ItemGroup>
+		<PackageReference Include="XTI_Core.Fakes" Version="1.10.3" />
+		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.24" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\XTI_App.Extensions\XTI_App.Extensions.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\XTI_App.Extensions\XTI_App.Extensions.csproj" />
+	</ItemGroup>
 
 </Project>

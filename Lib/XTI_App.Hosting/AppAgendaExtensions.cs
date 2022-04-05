@@ -1,14 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.DependencyInjection;
+using XTI_Core.Extensions;
 
 namespace XTI_App.Hosting;
 
 public static class AppAgendaExtensions
 {
-    public static void AddAppAgenda(this IServiceCollection services, IConfiguration configuration, Action<IServiceProvider, AppAgendaBuilder> build)
+    public static void AddAppAgenda(this IServiceCollection services, Action<IServiceProvider, AppAgendaBuilder> build)
     {
-        services.Configure<AppAgendaOptions>(configuration.GetSection(AppAgendaOptions.AppAgenda));
+        services.AddConfigurationOptions<AppAgendaOptions>(AppAgendaOptions.AppAgenda);
         var serviceDescriptors = services
             .Where(s => s.ServiceType == typeof(AppAgendaBuilder))
             .ToArray();
@@ -20,7 +19,7 @@ public static class AppAgendaExtensions
         {
             var builder = new AppAgendaBuilder(sp);
             build(sp, builder);
-            var options = sp.GetRequiredService<IOptions<AppAgendaOptions>>().Value;
+            var options = sp.GetRequiredService<AppAgendaOptions>();
             builder.ApplyOptions(options);
             return builder.Build();
         });

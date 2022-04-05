@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Fakes;
+using XTI_Core.Extensions;
 
 namespace XTI_App.Tests;
 
@@ -230,19 +230,11 @@ internal sealed class AuthorizationTest
 
     private async Task<IServiceProvider> setup()
     {
-        var host = Host.CreateDefaultBuilder()
-            .ConfigureServices
-            (
-                (hostContext, services) =>
-                {
-                    services.AddServicesForTests(hostContext.Configuration);
-                    services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
-                    services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
-                }
-            )
-            .Build();
-        var scope = host.Services.CreateScope();
-        var sp = scope.ServiceProvider;
+        var hostBuilder = new XtiHostBuilder();
+        hostBuilder.Services.AddServicesForTests();
+        hostBuilder.Services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
+        hostBuilder.Services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
+        var sp = hostBuilder.Build().Scope();
         await sp.Setup();
         var userContext = (FakeUserContext)sp.GetRequiredService<ISourceUserContext>();
         var userName = new AppUserName("someone");

@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using XTI_App.Fakes;
 using XTI_App.Hosting;
 using XTI_Core;
+using XTI_Core.Extensions;
 using XTI_Core.Fakes;
 using XTI_Schedule;
 
 namespace XTI_App.Tests;
 
-sealed class AppAgendaTest
+internal sealed class AppAgendaTest
 {
     [Test]
     public async Task ShouldRunImmediate()
@@ -141,29 +141,11 @@ sealed class AppAgendaTest
 
     private static IServiceProvider setup(Action<IServiceProvider, AppAgendaBuilder> build, params KeyValuePair<string, string>[] options)
     {
-        var host = Host.CreateDefaultBuilder()
-            .ConfigureAppConfiguration
-            (
-                (hostContext, config) =>
-                {
-                    config.Sources.Clear();
-                    config.AddInMemoryCollection(options ?? new KeyValuePair<string, string>[] { });
-                }
-            )
-            .ConfigureServices
-            (
-                (hostContext, services) =>
-                {
-                    services.AddServicesForTests(hostContext.Configuration);
-                    services.AddAppAgenda
-                    (
-                        hostContext.Configuration,
-                        build
-                    );
-                }
-            )
-            .Build();
-        var scope = host.Services.CreateScope();
-        return scope.ServiceProvider;
+        var hostBuilder = new XtiHostBuilder();
+        hostBuilder.Configuration.AddInMemoryCollection(options ?? new KeyValuePair<string, string>[] { });
+        hostBuilder.Services.AddServicesForTests();
+        hostBuilder.Services.AddAppAgenda(build);
+        var sp = hostBuilder.Build().Scope();
+        return sp;
     }
 }
