@@ -10,11 +10,11 @@ using XTI_TempLog.Fakes;
 
 namespace XTI_App.Tests;
 
-public static class Extensions
+internal static class Extensions
 {
-    public static void AddServicesForTests(this IServiceCollection services, IConfiguration configuration)
+    public static void AddServicesForTests(this IServiceCollection services)
     {
-        services.AddFakesForXtiApp(configuration);
+        services.AddFakesForXtiApp();
         services.AddSingleton(_ => FakeInfo.AppKey);
         services.AddSingleton(_ => AppVersionKey.Current);
         services.AddSingleton<FakeAppOptions>();

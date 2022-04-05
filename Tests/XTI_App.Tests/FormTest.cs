@@ -5,7 +5,7 @@ using XTI_Forms;
 
 namespace XTI_App.Tests;
 
-public sealed class FormTest
+internal sealed class FormTest
 {
     [Test]
     public void ShouldAddTextInputToForm()

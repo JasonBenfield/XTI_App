@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
@@ -35,22 +34,21 @@ public sealed class ActionRunner
     public async Task<Results> Run()
     {
         Results result;
-        using (var scope = sp.CreateScope())
+        using var scope = sp.CreateScope();
+        var environment = scope.ServiceProvider.GetRequiredService<XtiEnvironment>();
+        var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
+        var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
+        xtiPathAccessor.FinishPath(groupName, actionName);
+        var xtiPath = xtiPathAccessor.Value();
+        result = await verifyActionIsRequired(environment, factory, xtiPath);
+        if (result == Results.None)
         {
-            var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
-            var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
-            xtiPathAccessor.FinishPath(groupName, actionName);
-            var xtiPath = xtiPathAccessor.Value();
-            result = await verifyActionIsRequired(factory, xtiPath);
-            if (result == Results.None)
-            {
-                result = await run(factory, xtiPath);
-            }
+            result = await run(environment, factory, xtiPath);
         }
         return result;
     }
 
-    private async Task<Results> verifyActionIsRequired(IActionRunnerFactory factory, XtiPath xtiPath)
+    private async Task<Results> verifyActionIsRequired(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath)
     {
         var result = Results.None;
         var session = factory.CreateTempLogSession();
@@ -66,8 +64,7 @@ public sealed class ActionRunner
         catch (Exception ex)
         {
             var path = xtiPath.Format();
-            var hostEnv = sp.GetService<IHostEnvironment>();
-            if (!hostEnv.IsProduction())
+            if (!environment.IsProduction())
             {
                 Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
             }
@@ -79,9 +76,9 @@ public sealed class ActionRunner
         return result;
     }
 
-    private async Task<Results> run(IActionRunnerFactory factory, XtiPath xtiPath)
+    private async Task<Results> run(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath)
     {
-        Results result = Results.None;
+        var result = Results.None;
         var session = factory.CreateTempLogSession();
         var path = xtiPath.Format();
         try
@@ -93,8 +90,7 @@ public sealed class ActionRunner
         }
         catch (Exception ex)
         {
-            var hostEnv = sp.GetService<IHostEnvironment>();
-            if (!hostEnv.IsProduction())
+            if (!environment.IsProduction())
             {
                 Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
             }

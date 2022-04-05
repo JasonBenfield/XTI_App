@@ -3,7 +3,7 @@ using XTI_App.Abstractions;
 
 namespace XTI_App.Tests;
 
-public sealed class XtiPathTest
+internal sealed class XtiPathTest
 {
     [Test]
     public void ShouldParsePathWithApp()

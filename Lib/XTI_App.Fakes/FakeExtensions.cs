@@ -1,24 +1,27 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_Core;
+using XTI_Core.Extensions;
 using XTI_Core.Fakes;
+using XTI_Secrets.Extensions;
 using XTI_TempLog.Fakes;
 
 namespace XTI_App.Fakes;
 
 public static class FakeExtensions
 {
-    public static void AddFakesForXtiApp(this IServiceCollection services, IConfiguration configuration)
+    public static void AddFakesForXtiApp(this IServiceCollection services)
     {
         services.AddMemoryCache();
         services.AddDistributedMemoryCache();
-        services.AddDataProtection();
+        services.AddXtiDataProtection();
+        services.AddSingleton<IHostEnvironment, FakeHostEnvironment>();
         services.AddSingleton<FakeClock>();
         services.AddSingleton<IClock>(sp => sp.GetRequiredService<FakeClock>());
-        services.Configure<AppOptions>(configuration.GetSection(AppOptions.App));
+        services.AddConfigurationOptions<AppOptions>(AppOptions.App);
         services.AddScoped<IAppApiUser, AppApiUser>();
         services.AddScoped(sp =>
         {
