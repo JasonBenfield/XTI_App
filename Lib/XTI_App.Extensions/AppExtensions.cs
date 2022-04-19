@@ -1,10 +1,7 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_App.Secrets;
 using XTI_Core;
 using XTI_Core.Extensions;
 using XTI_Secrets.Extensions;
@@ -23,22 +20,12 @@ public static class AppExtensions
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
         services.AddConfigurationOptions<AppOptions>(AppOptions.App);
         services.AddSingleton<IClock, UtcClock>();
-        services.AddFileSecretCredentials();
         services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
         services.AddScoped<IAppContext, CachedAppContext>();
         services.AddScoped<CachedUserContext>();
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         services.AddScoped<ICachedUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
-        services.AddScoped<SystemUserCredentials>();
-        services.AddScoped<ISystemUserCredentials>(sp =>
-        {
-            var cache = sp.GetRequiredService<IMemoryCache>();
-            var sourceCredentials = sp.GetRequiredService<SystemUserCredentials>();
-            return new CachedSystemUserCredentials(cache, sourceCredentials);
-        });
-        services.AddScoped<SystemUserContext>();
-        services.AddScoped<ISystemUserContext, CachedSystemUserContext>();
         services.AddScoped<IAppApiUser, AppApiUser>();
         services.AddScoped(sp =>
         {

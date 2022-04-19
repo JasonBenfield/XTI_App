@@ -6,12 +6,14 @@ public sealed class AppApiUser : IAppApiUser
 {
     private readonly IAppContext appContext;
     private readonly IUserContext userContext;
+    private readonly ICurrentUserName currentUserName;
     private readonly IXtiPathAccessor pathAccessor;
 
-    public AppApiUser(IAppContext appContext, IUserContext userContext, IXtiPathAccessor pathAccessor)
+    public AppApiUser(IAppContext appContext, IUserContext userContext, ICurrentUserName currentUserName, IXtiPathAccessor pathAccessor)
     {
         this.appContext = appContext;
         this.userContext = userContext;
+        this.currentUserName = currentUserName;
         this.pathAccessor = pathAccessor;
     }
 
@@ -22,7 +24,8 @@ public sealed class AppApiUser : IAppApiUser
         var allowedRoleIDs = resourceAccess.Allowed
             .Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)))
             .Select(ar => ar?.ID.Value ?? 0);
-        var user = await userContext.User();
+        var userName = await currentUserName.Value();
+        var user = await userContext.User(userName);
         bool hasAccess = false;
         if (user.UserName().Equals(AppUserName.Anon))
         {
