@@ -12,6 +12,7 @@ public static class TestConsoleAppExtensions
 {
     public static void AddTestConsoleAppServices(this IServiceCollection services, Action<IServiceProvider, AppAgendaBuilder> build)
     {
+        services.AddMemoryCache();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
         services.AddFakeConsoleAppServices(build);
         services.AddSingleton<Counter>();

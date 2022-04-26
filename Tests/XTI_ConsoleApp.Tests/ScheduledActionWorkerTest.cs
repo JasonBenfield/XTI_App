@@ -206,32 +206,6 @@ public sealed class ScheduledActionWorkerTest
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
         return Host.CreateDefaultBuilder(new string[0])
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                //config.Sources.Clear();
-                //config.AddInMemoryCollection(new[]
-                //{
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:0:GroupName", "Test"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:0:ActionName", "RunContinuously"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:0:Interval", "100"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:0:Schedule:WeeklyTimeRanges:0:DaysOfWeek:0", "Friday"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:0:Schedule:WeeklyTimeRanges:0:TimeRanges:0:StartTime", "900"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:0:Schedule:WeeklyTimeRanges:0:TimeRanges:0:EndTime", "1000"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:1:GroupName", "Test"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:1:ActionName", "OptionalRun"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:1:Interval", "100"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:1:Schedule:WeeklyTimeRanges:0:DaysOfWeek:0", "Friday"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:1:Schedule:WeeklyTimeRanges:0:TimeRanges:0:StartTime", "900"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:1:Schedule:WeeklyTimeRanges:0:TimeRanges:0:EndTime", "1000"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:GroupName", "Test"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:ActionName", "RunUntilSuccess"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:Type", "PeriodicUntilSuccess"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:Interval", "1"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:Schedule:WeeklyTimeRanges:0:DaysOfWeek:0", "Friday"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:Schedule:WeeklyTimeRanges:0:TimeRanges:0:StartTime", "900"),
-                //        KeyValuePair.Create("AppAgenda:ScheduledActions:2:Schedule:WeeklyTimeRanges:0:TimeRanges:0:EndTime", "1000")
-                //});
-            })
             .UseWindowsService()
             .ConfigureServices((hostContext, services) =>
             {

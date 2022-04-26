@@ -22,10 +22,10 @@ public sealed class FakeUserContext : ISourceUserContext
 
     Task<IAppUser> IUserContext.User() => Task.FromResult<IAppUser>(User());
 
+    public FakeAppUser User() => User(currentUserName.GetUserName());
+
     Task<IAppUser> IUserContext.User(AppUserName userName) =>
         Task.FromResult<IAppUser>(User(userName));
-
-    public FakeAppUser User() => User(currentUserName.GetUserName());
 
     public FakeAppUser User(AppUserName userName) =>
         users.First(u => u.UserName().Equals(userName));

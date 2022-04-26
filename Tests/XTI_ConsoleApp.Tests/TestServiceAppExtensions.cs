@@ -11,6 +11,7 @@ public static class TestServiceAppExtensions
 {
     public static void AddTestServiceAppServices(this IServiceCollection services, Action<IServiceProvider, AppAgendaBuilder> build)
     {
+        services.AddMemoryCache();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
         services.AddFakeServiceAppServices(build);
         services.AddSingleton<Counter>();

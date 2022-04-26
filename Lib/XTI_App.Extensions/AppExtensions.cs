@@ -4,7 +4,6 @@ using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
 using XTI_Core.Extensions;
-using XTI_Secrets.Extensions;
 using XTI_TempLog;
 using XTI_TempLog.Extensions;
 
