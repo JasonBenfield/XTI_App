@@ -1,7 +1,6 @@
 ﻿using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using XTI_App.Abstractions;
-using XTI_App.Secrets;
 using XTI_TempLog;
 
 namespace XTI_App.Extensions;
@@ -9,10 +8,12 @@ namespace XTI_App.Extensions;
 public sealed class AppEnvironmentContext : IAppEnvironmentContext
 {
     private readonly ICurrentUserName currentUserName;
+    private readonly AppKey appKey;
 
-    public AppEnvironmentContext(ICurrentUserName currentUserName)
+    public AppEnvironmentContext(ICurrentUserName currentUserName, AppKey appKey)
     {
         this.currentUserName = currentUserName;
+        this.appKey = appKey;
     }
 
     public async Task<AppEnvironment> Value()
@@ -30,7 +31,7 @@ public sealed class AppEnvironmentContext : IAppEnvironmentContext
             firstMacAddress,
             Environment.MachineName,
             $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}",
-            AppType.Values.ServiceApp.DisplayText
+            appKey.Type.DisplayText
         );
     }
 }

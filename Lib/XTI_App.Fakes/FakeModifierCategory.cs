@@ -5,13 +5,13 @@ namespace XTI_App.Fakes;
 public sealed class FakeModifierCategory : IModifierCategory
 {
     private static FakeEntityID currentID = new FakeEntityID();
-    public static EntityID NextID() => currentID.Next();
+    public static int NextID() => currentID.Next();
 
     private readonly FakeApp app;
     private readonly ModifierCategoryName categoryName;
     private readonly List<FakeModifier> modifiers = new List<FakeModifier>();
 
-    public FakeModifierCategory(FakeApp app, EntityID id, ModifierCategoryName categoryName)
+    public FakeModifierCategory(FakeApp app, int id, ModifierCategoryName categoryName)
     {
         this.app = app;
         ID = id;
@@ -22,7 +22,7 @@ public sealed class FakeModifierCategory : IModifierCategory
         }
     }
 
-    private EntityID getUniqueID()
+    private int getUniqueID()
     {
         var id = FakeAppUser.NextID();
         while (modifiers.Any(u => u.ID.Equals(id)))
@@ -32,14 +32,14 @@ public sealed class FakeModifierCategory : IModifierCategory
         return id;
     }
 
-    public EntityID ID { get; }
+    public int ID { get; }
 
     public ModifierCategoryName Name() => categoryName;
 
     public FakeModifier AddModifier(ModifierKey modKey, string targetID) =>
         AddModifier(getUniqueID(), modKey, targetID);
 
-    public FakeModifier AddModifier(EntityID id, ModifierKey modKey, string targetID)
+    public FakeModifier AddModifier(int id, ModifierKey modKey, string targetID)
     {
         var mod = modifiers.FirstOrDefault(m => m.ModKey().Equals(modKey));
         if (mod == null)

@@ -5,20 +5,20 @@ namespace XTI_App.Fakes;
 public sealed class FakeAppUser : IAppUser
 {
     private static FakeEntityID currentID = new FakeEntityID();
-    public static EntityID NextID() => currentID.Next();
+    public static int NextID() => currentID.Next();
 
     private readonly FakeAppContext appContext;
     private readonly AppUserName userName;
     private readonly Dictionary<int, FakeAppRole[]> roles = new Dictionary<int, FakeAppRole[]>();
 
-    public FakeAppUser(FakeAppContext appContext, EntityID id, AppUserName userName)
+    public FakeAppUser(FakeAppContext appContext, int id, AppUserName userName)
     {
         this.appContext = appContext;
         ID = id;
         this.userName = userName;
     }
 
-    public EntityID ID { get; }
+    public int ID { get; }
 
     public AppUserName UserName() => userName;
 
@@ -62,10 +62,10 @@ public sealed class FakeAppUser : IAppUser
 
     public void RemoveRoles(IModifier modifier, params FakeAppRole[] rolesToRemove)
     {
-        if (roles.ContainsKey(modifier.ID.Value))
+        if (roles.ContainsKey(modifier.ID))
         {
-            var originalRoles = roles[modifier.ID.Value];
-            roles[modifier.ID.Value] = originalRoles.Except(rolesToRemove).Distinct().ToArray();
+            var originalRoles = roles[modifier.ID];
+            roles[modifier.ID] = originalRoles.Except(rolesToRemove).Distinct().ToArray();
         }
     }
 
@@ -128,14 +128,14 @@ public sealed class FakeAppUser : IAppUser
 
     public void AddRoles(FakeModifier modifier, params FakeAppRole[] rolesToAdd)
     {
-        if (roles.ContainsKey(modifier.ID.Value))
+        if (roles.ContainsKey(modifier.ID))
         {
-            var originalRoles = roles[modifier.ID.Value];
-            roles[modifier.ID.Value] = originalRoles.Union(rolesToAdd).Distinct().ToArray();
+            var originalRoles = roles[modifier.ID];
+            roles[modifier.ID] = originalRoles.Union(rolesToAdd).Distinct().ToArray();
         }
         else
         {
-            roles.Add(modifier.ID.Value, rolesToAdd);
+            roles.Add(modifier.ID, rolesToAdd);
         }
     }
 
@@ -147,11 +147,11 @@ public sealed class FakeAppUser : IAppUser
 
     public FakeAppRole[] Roles(IModifier modifier)
     {
-        if (!roles.TryGetValue(modifier.ID.Value, out var userRoles))
+        if (!roles.TryGetValue(modifier.ID, out var userRoles))
         {
             if (modifier.ModKey().Equals(ModifierKey.Default))
             {
-                userRoles = new FakeAppRole[] { };
+                userRoles = new FakeAppRole[0];
             }
             else
             {

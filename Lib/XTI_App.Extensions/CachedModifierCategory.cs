@@ -11,7 +11,7 @@ internal sealed class CachedModifierCategory : IModifierCategory
     private readonly ISourceAppContext sourceAppContext;
     private readonly IApp parentApp;
     private readonly ModifierCategoryName name;
-    private CacheData cacheData = new CacheData(new EntityID(), new ModifierCategoryName(""));
+    private CacheData cacheData = new CacheData(0, new ModifierCategoryName(""));
 
     public CachedModifierCategory(IMemoryCache cache, ISourceAppContext sourceAppContext, IApp parentApp, IModifierCategory modCategory)
         : this(cache, sourceAppContext, parentApp, modCategory.Name())
@@ -25,10 +25,10 @@ internal sealed class CachedModifierCategory : IModifierCategory
         this.sourceAppContext = sourceAppContext;
         this.parentApp = parentApp;
         this.name = name;
-        modCategoryCache = new AppContextCache<CacheData>(cache, $"xti_mod_category_{parentApp.ID.Value}_{name.Value}");
+        modCategoryCache = new AppContextCache<CacheData>(cache, $"xti_mod_category_{parentApp.ID}_{name.Value}");
     }
 
-    public EntityID ID { get => cacheData?.ID ?? new EntityID(); }
+    public int ID { get => cacheData?.ID ?? 0; }
     public ModifierCategoryName Name() => cacheData?.Name ?? new ModifierCategoryName("");
 
     internal async Task Load()
@@ -55,6 +55,6 @@ internal sealed class CachedModifierCategory : IModifierCategory
         return cachedMod;
     }
 
-    private sealed record CacheData(EntityID ID, ModifierCategoryName Name);
+    private sealed record CacheData(int ID, ModifierCategoryName Name);
 
 }

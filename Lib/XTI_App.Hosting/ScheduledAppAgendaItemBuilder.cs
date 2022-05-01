@@ -31,27 +31,27 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
                  {
                      WeeklySchedules = new[]
                     {
-                            new WeeklyScheduleOptions
+                        new WeeklyScheduleOptions
+                        {
+                            Days = new[]
                             {
-                                Days = new[]
+                                DayOfWeek.Sunday,
+                                DayOfWeek.Monday,
+                                DayOfWeek.Tuesday,
+                                DayOfWeek.Wednesday,
+                                DayOfWeek.Thursday,
+                                DayOfWeek.Friday,
+                                DayOfWeek.Saturday
+                            },
+                            TimeRanges = new []
+                            {
+                                new TimeRangeOptions
                                 {
-                                    DayOfWeek.Sunday,
-                                    DayOfWeek.Monday,
-                                    DayOfWeek.Tuesday,
-                                    DayOfWeek.Wednesday,
-                                    DayOfWeek.Thursday,
-                                    DayOfWeek.Friday,
-                                    DayOfWeek.Saturday
-                                },
-                                TimeRanges = new []
-                                {
-                                    new TimeRangeOptions
-                                    {
-                                        Start = new Time(),
-                                        Duration = TimeSpan.FromHours(24)
-                                    }
+                                    Start = new Time(),
+                                    Duration = TimeSpan.FromHours(24)
                                 }
                             }
+                        }
                     }
                  }
              }

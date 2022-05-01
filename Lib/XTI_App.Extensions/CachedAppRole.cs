@@ -9,7 +9,7 @@ internal sealed class CachedAppRole : IAppRole
     private readonly IMemoryCache cache;   
     private readonly AppContextCache<CacheData> roleCache;
     private readonly ISourceAppContext sourceAppContext;
-    private CacheData cacheData = new CacheData(new EntityID(), new AppRoleName("None"));
+    private CacheData cacheData = new CacheData(0, new AppRoleName("None"));
 
     public CachedAppRole(IMemoryCache cache, ISourceAppContext sourceAppContext, IAppRole role)
         : this(cache, sourceAppContext, role.Name())
@@ -24,7 +24,7 @@ internal sealed class CachedAppRole : IAppRole
         roleCache = new AppContextCache<CacheData>(cache, $"xti_role_{name.Value}");
     }
 
-    public EntityID ID { get => cacheData.ID; }
+    public int ID { get => cacheData.ID; }
 
     public AppRoleName Name() => cacheData.Name;
 
@@ -48,5 +48,5 @@ internal sealed class CachedAppRole : IAppRole
         roleCache.Set(cacheData);
     }
 
-    private sealed record CacheData(EntityID ID, AppRoleName Name);
+    private sealed record CacheData(int ID, AppRoleName Name);
 }

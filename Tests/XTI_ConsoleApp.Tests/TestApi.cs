@@ -6,7 +6,7 @@ namespace XTI_ConsoleApp.Tests;
 
 public static class TestAppInfo
 {
-    public static readonly AppKey AppKey = new AppKey("Test", AppType.Values.ServiceApp);
+    public static readonly AppKey AppKey = AppKey.ServiceApp("Test");
 }
 public sealed class TestApiFactory : AppApiFactory
 {

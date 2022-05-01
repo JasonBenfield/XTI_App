@@ -9,6 +9,7 @@ using XTI_App.Hosting;
 using XTI_ConsoleApp;
 using XTI_Core;
 using XTI_Core.Extensions;
+using XTI_Secrets.Extensions;
 using XTI_TempLog;
 using XTI_TempLog.Fakes;
 
@@ -19,6 +20,7 @@ await Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
+        services.AddXtiDataProtection();
         services.AddAppServices();
         services.AddScoped(sp =>
         {
@@ -37,17 +39,24 @@ await Host.CreateDefaultBuilder(args)
         (
             (sp, b) =>
             {
+                b.AddPreStart<DemoAppApi>(api => api.PreDemo.First);
+                b.AddPreStart<DemoAppApi>(api => api.PreDemo.Second);
+                b.AddPreStart<DemoAppApi>(api => api.PreDemo.Third);
                 b.AddImmediate<DemoAppApi>(api => api.Demo.First);
                 b.AddImmediate<DemoAppApi>(api => api.Demo.Second);
                 b.AddImmediate<DemoAppApi>(api => api.Demo.Third);
+                b.AddPostStop<DemoAppApi>(api => api.PostDemo.First);
+                b.AddPostStop<DemoAppApi>(api => api.PostDemo.Second);
+                b.AddPostStop<DemoAppApi>(api => api.PostDemo.Third);
                 var api = sp.GetRequiredService<IAppApi>();
                 if (api is ConsoleAppApiWrapper)
                 {
-                    b.AddImmediate(new ResourceGroupName("Lifetime"), new ResourceName("StopApplication"));
+                    b.AddImmediate<ConsoleAppApiWrapper>(consoleApi => consoleApi.Lifetime.StopApplication);
                 }
             }
         );
         services.AddSingleton(_ => DemoInfo.AppKey);
+        services.AddScoped<FakeCurrentUserName>();
         services.AddScoped<FakeUserContext>();
         services.AddScoped<ISourceUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<ISourceUserContext>());

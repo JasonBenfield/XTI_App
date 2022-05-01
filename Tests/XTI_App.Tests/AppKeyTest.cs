@@ -11,7 +11,7 @@ internal sealed class AppKeyTest
     [Test]
     public void ShouldParseAppKey()
     {
-        var appKey = new AppKey("Test", AppType.Values.WebApp);
+        var appKey = AppKey.WebApp("Test");
         var serialized = appKey.Serialize();
         var parsed = AppKey.Parse(serialized);
         Assert.That(parsed.Name, Is.EqualTo(new AppName("Test")), "Should parse app key");
@@ -21,7 +21,7 @@ internal sealed class AppKeyTest
     [Test]
     public void ShouldDeserializeAppKey()
     {
-        var appKey = new AppKey("Test", AppType.Values.WebApp);
+        var appKey = AppKey.WebApp("Test");
         var appModel = new AppModel
         {
             AppKey = appKey,
@@ -58,7 +58,7 @@ internal sealed class AppKeyTest
     [Test]
     public void ShouldDeserializeAppKeyAsString()
     {
-        var appKey = new AppKey("Test", AppType.Values.WebApp);
+        var appKey = AppKey.WebApp("Test");
         var jsonOptions = new JsonSerializerOptions();
         jsonOptions.Converters.Add(new AppKeyJsonConverter());
         jsonOptions.Converters.Add(new AppVersionKeyJsonConverter());
@@ -70,7 +70,7 @@ internal sealed class AppKeyTest
     [Test]
     public void ShouldConvertFromStringToAppKey()
     {
-        var appKey = new AppKey("Test", AppType.Values.WebApp);
+        var appKey = AppKey.WebApp("Test");
         var serialized = appKey.Serialize();
         var typeConverter = TypeDescriptor.GetConverter(typeof(AppKey));
         var converted = typeConverter.ConvertFrom(serialized);

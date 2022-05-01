@@ -57,6 +57,15 @@ public sealed class AppApiTemplate
             codeGenerator
         );
 
+    public IEnumerable<EnumValueTemplate> EnumValueTemplates(ApiCodeGenerators codeGenerator) =>
+        excluding
+        (
+            GroupTemplates
+                .SelectMany(g => g.EnumValueTemplates())
+                .Distinct(),
+            codeGenerator
+        );
+
     private T[] excluding<T>(IEnumerable<T> valueTemplates, ApiCodeGenerators codeGenerator)
         where T : ValueTemplate
     {

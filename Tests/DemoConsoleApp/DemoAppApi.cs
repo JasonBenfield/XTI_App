@@ -17,8 +17,12 @@ public sealed class DemoAppApi : ConsoleAppApiWrapper
             sp
         )
     {
+        PreDemo = new PreDemoGroup(source.AddGroup(nameof(PreDemo)));
         Demo = new DemoGroup(source.AddGroup(nameof(Demo)));
+        PostDemo = new PostDemoGroup(source.AddGroup(nameof(PostDemo)));
     }
 
+    public PreDemoGroup PreDemo { get; }
     public DemoGroup Demo { get; }
+    public PostDemoGroup PostDemo { get; }
 }

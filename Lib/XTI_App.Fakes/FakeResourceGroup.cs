@@ -5,14 +5,14 @@ namespace XTI_App.Fakes;
 public sealed class FakeResourceGroup : IResourceGroup
 {
     private static FakeEntityID currentID = new FakeEntityID();
-    public static EntityID NextID() => currentID.Next();
+    public static int NextID() => currentID.Next();
 
     private readonly FakeApp app;
     private readonly ResourceGroupName groupName;
     private readonly ModifierCategoryName modCategoryName;
     private readonly List<FakeResource> resources = new List<FakeResource>();
 
-    public FakeResourceGroup(FakeApp app, EntityID id, ResourceGroupName groupName, ModifierCategoryName modCategoryName)
+    public FakeResourceGroup(FakeApp app, int id, ResourceGroupName groupName, ModifierCategoryName modCategoryName)
     {
         this.app = app;
         ID = id;
@@ -20,7 +20,7 @@ public sealed class FakeResourceGroup : IResourceGroup
         this.modCategoryName = modCategoryName;
     }
 
-    public EntityID ID { get; }
+    public int ID { get; }
 
     public ResourceGroupName Name() => groupName;
 

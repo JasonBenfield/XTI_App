@@ -4,5 +4,5 @@ namespace DemoConsoleApp;
 
 public static class DemoInfo
 {
-    public static readonly AppKey AppKey = new AppKey(new AppName("Demo"), AppType.Values.ConsoleApp);
+    public static readonly AppKey AppKey = AppKey.ConsoleApp("Demo");
 }

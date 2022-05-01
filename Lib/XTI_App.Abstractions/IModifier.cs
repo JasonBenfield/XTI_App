@@ -2,6 +2,6 @@
 
 public interface IModifier
 {
-    EntityID ID { get; }
+    int ID { get; }
     ModifierKey ModKey();
 }

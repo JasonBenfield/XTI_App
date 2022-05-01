@@ -2,7 +2,7 @@
 
 public interface IResourceGroup
 {
-    EntityID ID { get; }
+    int ID { get; }
     ResourceGroupName Name();
     Task<IResource> Resource(ResourceName name);
     Task<IModifierCategory> ModCategory();

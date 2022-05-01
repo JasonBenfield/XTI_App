@@ -23,6 +23,7 @@ public static class FakeExtensions
         services.AddSingleton(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
         services.AddScoped<IActionRunnerFactory, ActionRunnerFactory>();
         services.AddSingleton<IAppEnvironmentContext, FakeAppEnvironmentContext>();
+        services.AddSingleton<FakeCurrentUserName>();
         services.AddScoped<FakeUserContext>();
         services.AddScoped<ISourceUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<ISourceUserContext>());

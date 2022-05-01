@@ -2,7 +2,7 @@
 
 public interface IAppUser
 {
-    EntityID ID { get; }
+    int ID { get; }
     AppUserName UserName();
     Task<IAppRole[]> Roles(IModifier modifier);
 }

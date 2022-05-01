@@ -10,7 +10,7 @@ internal sealed class CachedResource : IResource
     private readonly ISourceAppContext sourceAppContext;
     private readonly ResourceGroupName groupName;
     private readonly ResourceName name;
-    private CacheData cacheData = new CacheData(new EntityID(), new ResourceName(""));
+    private CacheData cacheData = new CacheData(0, new ResourceName(""));
 
     public CachedResource(IMemoryCache cache, ISourceAppContext sourceAppContext, IResourceGroup group, ResourceName name)
     {
@@ -20,7 +20,7 @@ internal sealed class CachedResource : IResource
         resourceCache = new AppContextCache<CacheData>(cache, $"xti_resource_{groupName.Value}_{name.Value}");
     }
 
-    public EntityID ID { get => cacheData.ID; }
+    public int ID { get => cacheData.ID; }
 
     public ResourceName Name() => cacheData.Name;
 
@@ -37,5 +37,5 @@ internal sealed class CachedResource : IResource
         }
     }
 
-    private sealed record CacheData(EntityID ID, ResourceName Name);
+    private sealed record CacheData(int ID, ResourceName Name);
 }

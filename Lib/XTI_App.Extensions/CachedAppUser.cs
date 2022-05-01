@@ -11,7 +11,7 @@ internal sealed class CachedAppUser : IAppUser
     private readonly ISourceUserContext sourceUserContext;
     private readonly AppUserName userName;
     private readonly string cacheKey;
-    private CacheData cacheData = new CacheData(new EntityID(), AppUserName.Anon);
+    private CacheData cacheData = new CacheData(0, AppUserName.Anon);
 
     public CachedAppUser(IMemoryCache cache, ISourceAppContext sourceAppContext, ISourceUserContext sourceUserContext, AppUserName userName)
     {
@@ -22,7 +22,7 @@ internal sealed class CachedAppUser : IAppUser
         cacheKey = $"xti_user_{userName.Value}";
     }
 
-    public EntityID ID { get => cacheData.ID; }
+    public int ID { get => cacheData.ID; }
     public AppUserName UserName() => cacheData.UserName;
 
     internal void ClearCache()
@@ -65,7 +65,7 @@ internal sealed class CachedAppUser : IAppUser
     public async Task<IAppRole[]> Roles(IModifier modifier)
     {
         var cachedUserRoles = new List<CachedAppRole>();
-        var rolesKey = $"xti_user_{userName.Value}_roles_{modifier.ID.Value}";
+        var rolesKey = $"xti_user_{userName.Value}_roles_{modifier.ID}";
         var cachedRoleNames = cache.Get<AppRoleName[]>(rolesKey);
         if (cachedRoleNames == null)
         {
@@ -105,13 +105,13 @@ internal sealed class CachedAppUser : IAppUser
     {
         private readonly List<string> cacheKeys = new List<string>();
 
-        public CacheData(EntityID id, AppUserName userName)
+        public CacheData(int id, AppUserName userName)
         {
             ID = id;
             UserName = userName;
         }
 
-        public EntityID ID { get; }
+        public int ID { get; }
         public AppUserName UserName { get; }
         public string[] CacheKeys { get => cacheKeys.ToArray(); }
 

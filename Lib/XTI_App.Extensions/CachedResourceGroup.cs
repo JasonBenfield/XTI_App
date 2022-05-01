@@ -22,7 +22,7 @@ internal sealed class CachedResourceGroup : IResourceGroup
         groupCache = new AppContextCache<CacheData>(cache, $"xti_resource_group_{groupName.Value}");
     }
 
-    public EntityID ID { get => cacheData?.ID ?? new EntityID(); }
+    public int ID { get => cacheData?.ID ?? 0; }
     public ResourceGroupName Name() => cacheData?.Name ?? new ResourceGroupName("");
 
     public async Task Load()
@@ -59,5 +59,5 @@ internal sealed class CachedResourceGroup : IResourceGroup
         return cachedResource;
     }
 
-    private sealed record CacheData(EntityID ID, ResourceGroupName Name, ModifierCategoryName ModCategoryName);
+    private sealed record CacheData(int ID, ResourceGroupName Name, ModifierCategoryName ModCategoryName);
 }

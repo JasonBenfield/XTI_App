@@ -55,7 +55,7 @@ public sealed class FakeUserContext : ISourceUserContext
         return user;
     }
 
-    private EntityID getUniqueID()
+    private int getUniqueID()
     {
         var id = FakeAppUser.NextID();
         while (users.Any(u => u.ID.Equals(id)))

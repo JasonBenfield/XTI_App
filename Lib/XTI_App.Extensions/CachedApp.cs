@@ -10,7 +10,7 @@ internal sealed class CachedApp : IApp
     private readonly AppContextCache<CacheData> appCache;
     private readonly ISourceAppContext sourceAppContext;
     private readonly AppKey appKey;
-    private CacheData cacheData = new CacheData(new EntityID(), "");
+    private CacheData cacheData = new CacheData(0, "");
 
     public CachedApp(IMemoryCache cache, ISourceAppContext sourceAppContext, AppKey appKey)
     {
@@ -31,7 +31,7 @@ internal sealed class CachedApp : IApp
         }
     }
 
-    public EntityID ID { get => cacheData.ID; }
+    public int ID { get => cacheData.ID; }
     public string Title { get => cacheData.Title; }
 
     public Task<IAppVersion> CurrentVersion() => Version(AppVersionKey.Current);
@@ -104,5 +104,5 @@ internal sealed class CachedApp : IApp
         return modKey;
     }
 
-    private sealed record CacheData(EntityID ID, string Title);
+    private sealed record CacheData(int ID, string Title);
 }

@@ -2,7 +2,7 @@
 
 public interface IResource
 {
-    EntityID ID { get; }
+    int ID { get; }
 
     ResourceName Name();
 }
