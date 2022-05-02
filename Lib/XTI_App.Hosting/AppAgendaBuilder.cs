@@ -7,24 +7,32 @@ namespace XTI_App.Hosting;
 public sealed class AppAgendaBuilder
 {
     private readonly IServiceProvider sp;
-    private readonly List<IAppAgendaItemBuilder> itemBuilders = new List<IAppAgendaItemBuilder>();
+    private readonly List<IAppAgendaItemBuilder> preStartBuilders = new();
+    private readonly List<IAppAgendaItemBuilder> itemBuilders = new();
+    private readonly List<IAppAgendaItemBuilder> postStopBuilders = new();
 
     public AppAgendaBuilder(IServiceProvider sp)
     {
         this.sp = sp;
     }
 
-    public AppAgendaBuilder AddImmediate(ResourceGroupName groupName, ResourceName actionName)
-        => AddImmediate(b => b.Action(groupName, actionName));
-
-    public AppAgendaBuilder AddImmediate(XtiPath path)
-        => AddImmediate(b => b.Action(path));
-
-    public AppAgendaBuilder AddImmediate(Action<ImmediateAppAgendaItemBuilder> configure)
+    public AppAgendaBuilder AddPreStart<TAppApi>(Func<TAppApi, AppApiAction<EmptyRequest, EmptyActionResult>> createAction)
+        where TAppApi : IAppApi
     {
-        var itemBuilder = new ImmediateAppAgendaItemBuilder();
-        configure(itemBuilder);
-        itemBuilders.Add(itemBuilder);
+        var api = (TAppApi)sp.GetRequiredService<AppApiFactory>().CreateForSuperUser();
+        var preStartBuilder = new ImmediateAppAgendaItemBuilder();
+        preStartBuilder.Action(createAction(api).Path);
+        preStartBuilders.Add(preStartBuilder);
+        return this;
+    }
+
+    public AppAgendaBuilder AddPostStop<TAppApi>(Func<TAppApi, AppApiAction<EmptyRequest, EmptyActionResult>> createAction)
+        where TAppApi : IAppApi
+    {
+        var api = (TAppApi)sp.GetRequiredService<AppApiFactory>().CreateForSuperUser();
+        var postStopBuilder = new ImmediateAppAgendaItemBuilder();
+        postStopBuilder.Action(createAction(api).Path);
+        postStopBuilders.Add(postStopBuilder);
         return this;
     }
 
@@ -34,14 +42,6 @@ public sealed class AppAgendaBuilder
         var api = (TAppApi)sp.GetRequiredService<AppApiFactory>().CreateForSuperUser();
         var itemBuilder = new ImmediateAppAgendaItemBuilder();
         itemBuilder.Action(createAction(api).Path);
-        itemBuilders.Add(itemBuilder);
-        return this;
-    }
-
-    public AppAgendaBuilder AddScheduled(Action<ScheduledAppAgendaItemBuilder> configure)
-    {
-        var itemBuilder = new ScheduledAppAgendaItemBuilder();
-        configure(itemBuilder);
         itemBuilders.Add(itemBuilder);
         return this;
     }
@@ -58,7 +58,7 @@ public sealed class AppAgendaBuilder
 
     public AppAgendaBuilder ApplyOptions(AppAgendaOptions options)
     {
-        var immedActions = options.ImmediateItems ?? new ImmediateAppAgendaItemOptions[] { };
+        var immedActions = options.ImmediateItems ?? new ImmediateAppAgendaItemOptions[0];
         foreach (var immedAction in immedActions)
         {
             itemBuilders.RemoveAll(b => b.HasAction(immedAction.GroupName, immedAction.ActionName));
@@ -92,6 +92,8 @@ public sealed class AppAgendaBuilder
         => new AppAgenda
         (
             sp,
-            itemBuilders.Select(b => b.Build()).ToArray()
+            preStartBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray(),
+            itemBuilders.Select(b => b.Build()).ToArray(),
+            postStopBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray()
         );
 }

@@ -11,13 +11,13 @@ public sealed class FakeAppContext : ISourceAppContext
 
     public FakeAppContext(AppKey? appKey)
     {
-        var hubAppKey = new AppKey(new AppName("Hub"), AppType.Values.WebApp);
+        var hubAppKey = AppKey.WebApp("Hub");
         var hubApp = AddNewApp(hubAppKey);
         var modCategory = hubApp.AddModCategory(new ModifierCategoryName("Apps"));
         modCategory.AddModifier
         (
             new ModifierKey(Guid.NewGuid().ToString("N")),
-            hubApp.ID.Value.ToString()
+            hubApp.ID.ToString()
         );
         if (appKey != null)
         {
@@ -44,12 +44,12 @@ public sealed class FakeAppContext : ISourceAppContext
         if (app == null)
         {
             app = AddNewApp(appKey);
-            var hubApp = App(new AppKey(new AppName("Hub"), AppType.Values.WebApp));
+            var hubApp = App(AppKey.WebApp("Hub"));
             var modCategory = hubApp.ModCategory(new ModifierCategoryName("Apps"));
             modCategory.AddModifier
             (
                 new ModifierKey(Guid.NewGuid().ToString("N")),
-                app.ID.Value.ToString()
+                app.ID.ToString()
             );
         }
         return app;
@@ -85,8 +85,8 @@ public sealed class FakeAppContext : ISourceAppContext
 
     public ModifierKey ModKeyInHubApps(IApp app)
     {
-        var hubApp = AddApp(new AppKey(new AppName("Hub"), AppType.Values.WebApp));
+        var hubApp = AddApp(AppKey.WebApp("Hub"));
         var modCategory = hubApp.AddModCategory(new ModifierCategoryName("Apps"));
-        return modCategory.ModifierByTargetID(app.ID.Value.ToString()).ModKey();
+        return modCategory.ModifierByTargetID(app.ID.ToString()).ModKey();
     }
 }

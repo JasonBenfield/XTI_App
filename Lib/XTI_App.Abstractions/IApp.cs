@@ -2,7 +2,7 @@
 
 public interface IApp
 {
-    EntityID ID { get; }
+    int ID { get; }
     string Title { get; }
     Task<IAppVersion> Version(AppVersionKey versionKey);
     Task<IAppRole[]> Roles();

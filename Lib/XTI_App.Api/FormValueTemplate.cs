@@ -4,7 +4,7 @@ namespace XTI_App.Api;
 
 public sealed class FormValueTemplate : ValueTemplate, IEquatable<FormValueTemplate>
 {
-    public FormValueTemplate(Form form)
+    internal FormValueTemplate(Form form)
     {
         Form = form.ToModel();
         DataType = form.GetType();

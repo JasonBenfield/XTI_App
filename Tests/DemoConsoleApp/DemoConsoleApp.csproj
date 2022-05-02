@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+	  <TargetFramework>net6.0</TargetFramework>
+	  <Nullable>enable</Nullable>
+	  <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="XTI_Core.Extensions" Version="1.10.3" />
+	  <PackageReference Include="XTI_Secrets.Extensions" Version="1.8.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Lib\XTI_App.Fakes\XTI_App.Fakes.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_App.Hosting\XTI_App.Hosting.csproj" />
+    <ProjectReference Include="..\..\Lib\XTI_ConsoleApp\XTI_ConsoleApp.csproj" />
+  </ItemGroup>
+
+</Project>

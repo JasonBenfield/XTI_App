@@ -6,12 +6,14 @@ public sealed class AppApiUser : IAppApiUser
 {
     private readonly IAppContext appContext;
     private readonly IUserContext userContext;
+    private readonly ICurrentUserName currentUserName;
     private readonly IXtiPathAccessor pathAccessor;
 
-    public AppApiUser(IAppContext appContext, IUserContext userContext, IXtiPathAccessor pathAccessor)
+    public AppApiUser(IAppContext appContext, IUserContext userContext, ICurrentUserName currentUserName, IXtiPathAccessor pathAccessor)
     {
         this.appContext = appContext;
         this.userContext = userContext;
+        this.currentUserName = currentUserName;
         this.pathAccessor = pathAccessor;
     }
 
@@ -21,8 +23,9 @@ public sealed class AppApiUser : IAppApiUser
         var roles = await app.Roles();
         var allowedRoleIDs = resourceAccess.Allowed
             .Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)))
-            .Select(ar => ar?.ID.Value ?? 0);
-        var user = await userContext.User();
+            .Select(ar => ar?.ID ?? 0);
+        var userName = await currentUserName.Value();
+        var user = await userContext.User(userName);
         bool hasAccess = false;
         if (user.UserName().Equals(AppUserName.Anon))
         {
@@ -40,12 +43,12 @@ public sealed class AppApiUser : IAppApiUser
             var modCategory = await group.ModCategory();
             var modifier = await modCategory.ModifierOrDefault(path.Modifier);
             var userRoles = await user.Roles(modifier);
-            var userRoleIDs = userRoles.Select(ur => ur.ID.Value);
+            var userRoleIDs = userRoles.Select(ur => ur.ID);
             var denyAccessRole = roles.First
             (
                 r => r.Name().Equals(AppRoleName.DenyAccess)
             );
-            if (userRoleIDs.Contains(denyAccessRole.ID.Value))
+            if (userRoleIDs.Contains(denyAccessRole.ID))
             {
                 hasAccess = false;
             }

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Description>Adds fake implementations for testing XTI console apps.</Description>
+		<PackageTags>XTI;XTI_ConsoleApp;ConsoleApp</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+		<PackageReference Include="XTI_Core.Fakes" Version="1.10.3" />
+		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.25" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\XTI_App.Fakes\XTI_App.Fakes.csproj" />
+		<ProjectReference Include="..\XTI_ConsoleApp\XTI_ConsoleApp.csproj" />
+	</ItemGroup>
+
+</Project>

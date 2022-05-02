@@ -11,7 +11,7 @@ internal sealed class CachedModifier : IModifier
     private readonly IApp app;
     private readonly ModifierCategoryName modCategoryName;
     private readonly ModifierKey modKey;
-    private CacheData cacheData = new CacheData(new EntityID(), ModifierKey.Default);
+    private CacheData cacheData = new CacheData(0, ModifierKey.Default);
 
     public CachedModifier(IMemoryCache cache, ISourceAppContext sourceAppContext, IApp app, IModifierCategory modCategory, ModifierKey modKey)
     {
@@ -22,7 +22,7 @@ internal sealed class CachedModifier : IModifier
         modCache = new AppContextCache<CacheData>(cache, $"xti_modifier_{modCategoryName.Value}_{modKey.Value}");
     }
 
-    public EntityID ID { get => cacheData.ID; }
+    public int ID { get => cacheData.ID; }
 
     public ModifierKey ModKey() => cacheData.ModKey;
 
@@ -39,6 +39,6 @@ internal sealed class CachedModifier : IModifier
         }
     }
 
-    private sealed record CacheData(EntityID ID, ModifierKey ModKey);
+    private sealed record CacheData(int ID, ModifierKey ModKey);
 
 }
