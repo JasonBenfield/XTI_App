@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
     <PackageReference Include="XTI_Core.Fakes" Version="1.10.3" />
-    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.25-dev220426101701800" />
+    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.25" />
   </ItemGroup>
 
   <ItemGroup>
