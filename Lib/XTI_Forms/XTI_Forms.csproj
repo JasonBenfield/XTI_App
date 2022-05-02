@@ -6,8 +6,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
-	<Import Project="..\\..\\Common.Targets" />
-
 	<ItemGroup>
 		<PackageReference Include="XTI_Core" Version="1.10.3" />
 	</ItemGroup>

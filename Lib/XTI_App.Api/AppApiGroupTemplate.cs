@@ -33,6 +33,11 @@ public sealed class AppApiGroupTemplate
             .SelectMany(a => a.NumericValueTemplates())
             .Distinct();
 
+    public IEnumerable<EnumValueTemplate> EnumValueTemplates() =>
+        ActionTemplates
+            .SelectMany(a => a.EnumValueTemplates())
+            .Distinct();
+
     public bool IsUser() => Name.Equals("User", StringComparison.OrdinalIgnoreCase);
 
     public AppApiGroupTemplateModel ToModel()

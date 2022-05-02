@@ -2,7 +2,7 @@
 
 public interface IModifierCategory
 {
-    EntityID ID { get; }
+    int ID { get; }
     ModifierCategoryName Name();
     Task<IModifier> ModifierOrDefault(ModifierKey modKey);
 }

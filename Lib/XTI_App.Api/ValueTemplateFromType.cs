@@ -21,7 +21,18 @@ public class ValueTemplateFromType
             if (isNullable)
             {
                 var underlyingType = getNullableType(source);
-                valueTemplate = new SimpleValueTemplate(underlyingType, true);
+                if (underlyingType.IsEnum)
+                {
+                    valueTemplate = new EnumValueTemplate(underlyingType);
+                }
+                else
+                {
+                    valueTemplate = new SimpleValueTemplate(underlyingType, true);
+                }
+            }
+            else if (source.IsEnum)
+            {
+                valueTemplate = new EnumValueTemplate(source);
             }
             else
             {

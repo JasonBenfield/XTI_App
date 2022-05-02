@@ -2,7 +2,7 @@
 
 public interface IAppVersion
 {
-    EntityID ID { get; }
+    int ID { get; }
     AppVersionKey Key();
     Task<IResourceGroup> ResourceGroup(ResourceGroupName name);
 }

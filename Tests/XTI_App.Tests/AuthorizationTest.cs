@@ -233,6 +233,7 @@ internal sealed class AuthorizationTest
         var hostBuilder = new XtiHostBuilder();
         hostBuilder.Services.AddServicesForTests();
         hostBuilder.Services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
+        hostBuilder.Services.AddScoped<ICurrentUserName>(sp => sp.GetRequiredService<FakeCurrentUserName>());
         hostBuilder.Services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
         var sp = hostBuilder.Build().Scope();
         await sp.Setup();

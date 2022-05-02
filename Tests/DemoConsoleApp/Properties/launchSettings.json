@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DemoConsoleApp": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

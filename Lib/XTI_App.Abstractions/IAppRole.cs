@@ -2,6 +2,6 @@
 
 public interface IAppRole
 {
-    EntityID ID { get; }
+    int ID { get; }
     AppRoleName Name();
 }

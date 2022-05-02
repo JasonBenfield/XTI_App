@@ -7,7 +7,7 @@ public sealed class NumericValueTemplate : ValueTemplate, IEquatable<NumericValu
     private readonly string value;
     private readonly int hashCode;
 
-    public NumericValueTemplate(Type dataType)
+    internal NumericValueTemplate(Type dataType)
     {
         DataType = dataType;
         Values = getValues();

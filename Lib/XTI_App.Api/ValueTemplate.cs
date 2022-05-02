@@ -9,7 +9,7 @@ public interface ValueTemplate
 }
 public sealed class DictionaryValueTemplate : ValueTemplate, IEquatable<DictionaryValueTemplate>
 {
-    public DictionaryValueTemplate(Type dataType)
+    internal DictionaryValueTemplate(Type dataType)
     {
         DataType = dataType;
         var genericArgs = DataType.GetGenericArguments();
@@ -41,7 +41,7 @@ public sealed class SimpleValueTemplate : ValueTemplate, IEquatable<SimpleValueT
     private readonly string value;
     private readonly int hashCode;
 
-    public SimpleValueTemplate(Type dataType, bool isNullable)
+    internal SimpleValueTemplate(Type dataType, bool isNullable)
     {
         DataType = dataType;
         IsNullable = isNullable;
@@ -52,7 +52,7 @@ public sealed class SimpleValueTemplate : ValueTemplate, IEquatable<SimpleValueT
     public Type DataType { get; }
     public bool IsNullable { get; }
 
-    public IEnumerable<ObjectValueTemplate> ObjectTemplates() => new ObjectValueTemplate[] { };
+    public IEnumerable<ObjectValueTemplate> ObjectTemplates() => new ObjectValueTemplate[0];
 
     public override bool Equals(object? obj) => Equals(obj as SimpleValueTemplate);
 
@@ -67,7 +67,7 @@ public sealed class ObjectValueTemplate : ValueTemplate, IEquatable<ObjectValueT
     private readonly string value;
     private readonly int hashCode;
 
-    public ObjectValueTemplate(Type dataType)
+    internal ObjectValueTemplate(Type dataType)
     {
         DataType = dataType;
         PropertyTemplates = dataType.GetProperties().Select(p => new ObjectPropertyTemplate(p));
@@ -100,7 +100,7 @@ public sealed class ObjectPropertyTemplate : IEquatable<ObjectPropertyTemplate>
     private readonly string value;
     private readonly int hashCode;
 
-    public ObjectPropertyTemplate(PropertyInfo propertyInfo)
+    internal ObjectPropertyTemplate(PropertyInfo propertyInfo)
     {
         Name = propertyInfo.Name;
         ValueTemplate = new ValueTemplateFromType(propertyInfo.PropertyType).Template();
@@ -128,7 +128,7 @@ public sealed class ArrayValueTemplate : ValueTemplate, IEquatable<ArrayValueTem
     private readonly string value;
     private readonly int hashCode;
 
-    public ArrayValueTemplate(Type source)
+    internal ArrayValueTemplate(Type source)
     {
         DataType = source;
         var elType = getEnumerableElementType(source);

@@ -7,17 +7,23 @@ public sealed class AppAgenda
 {
     private readonly IServiceScope scope;
     private TempLogSession? session;
+    private readonly ImmediateAppAgendaItem[] preStartItems;
     private readonly AppAgendaItem[] items;
-    private readonly List<IWorker> workers = new List<IWorker>();
+    private readonly ImmediateAppAgendaItem[] postStopItems;
+    private readonly List<IWorker> workers = new();
 
     internal AppAgenda
     (
         IServiceProvider sp,
-        AppAgendaItem[] items
+        ImmediateAppAgendaItem[] preStartItems,
+        AppAgendaItem[] items,
+        ImmediateAppAgendaItem[] postStopItems
     )
     {
         scope = sp.CreateScope();
+        this.preStartItems = preStartItems;
         this.items = items;
+        this.postStopItems = postStopItems;
     }
 
     public async Task Start(CancellationToken stoppingToken)
@@ -25,6 +31,16 @@ public sealed class AppAgenda
         var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
         session = factory.CreateTempLogSession();
         await session.StartSession();
+        var preStartWorker = new ImmediateActionWorker
+        (
+            scope.ServiceProvider,
+            preStartItems
+        );
+        await preStartWorker.StartAsync(stoppingToken);
+        while (!preStartWorker.HasStopped)
+        {
+            await Task.Delay(100);
+        }
         startWorkers(stoppingToken);
     }
 
@@ -53,6 +69,16 @@ public sealed class AppAgenda
                 await Task.Delay(100, stoppingToken);
             }
             catch (TaskCanceledException) { }
+        }
+        var postStopWorker = new ImmediateActionWorker
+        (
+            scope.ServiceProvider,
+            postStopItems
+        );
+        await postStopWorker.StartAsync(stoppingToken);
+        while (!postStopWorker.HasStopped)
+        {
+            await Task.Delay(100);
         }
         if (session != null)
         {

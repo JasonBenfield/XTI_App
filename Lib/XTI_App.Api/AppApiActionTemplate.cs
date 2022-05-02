@@ -95,6 +95,25 @@ public sealed class AppApiActionTemplate
         return numericTemplates.Distinct();
     }
 
+    public IEnumerable<EnumValueTemplate> EnumValueTemplates()
+    {
+        var enumTemplates = new List<EnumValueTemplate>();
+        if (ModelTemplate is EnumValueTemplate modelNumTempl)
+        {
+            enumTemplates.Add(modelNumTempl);
+        }
+        if (ResultTemplate is EnumValueTemplate resultNumTempl)
+        {
+            enumTemplates.Add(resultNumTempl);
+        }
+        foreach (var objTempl in ObjectTemplates())
+        {
+            var propNumTempls = objTempl.PropertyTemplates.Select(pt => pt.ValueTemplate).OfType<EnumValueTemplate>();
+            enumTemplates.AddRange(propNumTempls);
+        }
+        return enumTemplates.Distinct();
+    }
+
     public AppApiActionTemplateModel ToModel()
         => new AppApiActionTemplateModel
         {

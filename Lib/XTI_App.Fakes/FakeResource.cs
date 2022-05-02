@@ -5,17 +5,17 @@ namespace XTI_App.Fakes;
 public sealed class FakeResource : IResource
 {
     private static FakeEntityID currentID = new FakeEntityID();
-    public static EntityID NextID() => currentID.Next();
+    public static int NextID() => currentID.Next();
 
     private readonly ResourceName resourceName;
 
-    public FakeResource(EntityID id, ResourceName resourceName)
+    public FakeResource(int id, ResourceName resourceName)
     {
         ID = id;
         this.resourceName = resourceName;
     }
 
-    public EntityID ID { get; }
+    public int ID { get; }
 
     public ResourceName Name() => resourceName;
 }

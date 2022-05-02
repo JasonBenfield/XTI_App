@@ -5,18 +5,18 @@ namespace XTI_App.Fakes;
 public sealed class FakeModifier : IModifier
 {
     private static FakeEntityID currentID = new FakeEntityID();
-    public static EntityID NextID() => currentID.Next();
+    public static int NextID() => currentID.Next();
 
     private ModifierKey modKey;
 
-    public FakeModifier(EntityID id, ModifierKey modKey, string targetID)
+    public FakeModifier(int id, ModifierKey modKey, string targetID)
     {
         ID = id;
         this.modKey = modKey;
         TargetID = targetID;
     }
 
-    public EntityID ID { get; internal set; }
+    public int ID { get; internal set; }
 
     public string TargetID { get; }
 

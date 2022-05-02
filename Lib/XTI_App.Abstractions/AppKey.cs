@@ -7,6 +7,15 @@ public sealed class AppKey : IEquatable<AppKey>
 {
     public static readonly AppKey Unknown = new AppKey();
 
+    public static AppKey WebApp(string name) => WebApp(new AppName(name));
+    public static AppKey WebApp(AppName name) => new AppKey(name, AppType.Values.WebApp);
+    public static AppKey ServiceApp(string name) => ServiceApp(new AppName(name));
+    public static AppKey ServiceApp(AppName name) => new AppKey(name, AppType.Values.ServiceApp);
+    public static AppKey ConsoleApp(string name) => ConsoleApp(new AppName(name));
+    public static AppKey ConsoleApp(AppName name) => new AppKey(name, AppType.Values.ConsoleApp);
+    public static AppKey Package(string name) => Package(new AppName(name));
+    public static AppKey Package(AppName name) => new AppKey(name, AppType.Values.Package);
+
     public static AppKey Parse(string value)
     {
         var split = value.Split(new[] { '\\', '/', '|', ':', ';' });

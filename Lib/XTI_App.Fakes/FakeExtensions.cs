@@ -46,10 +46,13 @@ public static class FakeExtensions
         services.AddSingleton<ISourceAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
         services.AddScoped<CachedAppContext>();
         services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
+        services.AddSingleton(_ => new FakeCurrentUserName());
+        services.AddSingleton<ICurrentUserName>(sp => sp.GetRequiredService<FakeCurrentUserName>());
         services.AddSingleton<FakeUserContext>();
         services.AddSingleton<ISourceUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
         services.AddScoped<CachedUserContext>();
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
+        services.AddScoped<ICachedUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         services.AddScoped(sp =>
         {
             var factory = sp.GetRequiredService<AppApiFactory>();

@@ -11,7 +11,7 @@ internal sealed class CachedAppVersion : IAppVersion
     private readonly IApp app;
     private readonly AppVersionKey versionKey;
     private readonly ISourceAppContext sourceAppContext;
-    private CacheData cacheData = new CacheData(new EntityID(), AppVersionKey.None);
+    private CacheData cacheData = new CacheData(0, AppVersionKey.None);
 
     public CachedAppVersion(IMemoryCache cache, ISourceAppContext sourceAppContext, IApp app, AppVersionKey versionKey)
     {
@@ -19,10 +19,10 @@ internal sealed class CachedAppVersion : IAppVersion
         this.sourceAppContext = sourceAppContext;
         this.app = app;
         this.versionKey = versionKey;
-        versionCache = new AppContextCache<CacheData>(cache, $"xti_version_{app.ID.Value}_{versionKey.Value}");
+        versionCache = new AppContextCache<CacheData>(cache, $"xti_version_{app.ID}_{versionKey.Value}");
     }
 
-    public EntityID ID { get => cacheData.ID; }
+    public int ID { get => cacheData.ID; }
     public AppVersionKey Key() => cacheData.Key;
 
     public async Task Load()
@@ -50,6 +50,6 @@ internal sealed class CachedAppVersion : IAppVersion
         return cachedGroup;
     }
 
-    private sealed record CacheData(EntityID ID, AppVersionKey Key);
+    private sealed record CacheData(int ID, AppVersionKey Key);
 
 }
