@@ -3,4 +3,5 @@
 public interface IAppApiUser
 {
     Task<bool> HasAccess(ResourceAccess resourceAccess);
+    Task EnsureUserHasAccess(ResourceAccess resourceAccess);
 }

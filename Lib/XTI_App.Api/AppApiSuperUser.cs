@@ -2,13 +2,7 @@
 
 public sealed class AppApiSuperUser : IAppApiUser
 {
-    public Task<bool> HasAccessToApp()
-    {
-        return Task.FromResult(true);
-    }
+    public Task<bool> HasAccess(ResourceAccess resourceAccess) => Task.FromResult(true);
 
-    public Task<bool> HasAccess(ResourceAccess resourceAccess)
-    {
-        return Task.FromResult(true);
-    }
+    public Task EnsureUserHasAccess(ResourceAccess resourceAccess) => Task.CompletedTask;
 }
