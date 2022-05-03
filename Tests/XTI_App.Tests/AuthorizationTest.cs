@@ -19,8 +19,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Product.AddProduct;
         setPath(services, action);
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role");
+        Assert.DoesNotThrowAsync
+        (
+            () => action.Execute(new AddProductModel { Name = "Something" }),
+            "Should have access when user belongs to an allowed role"
+        );
     }
 
     [Test]
@@ -33,8 +36,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action);
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should not have access when user does not belong to an allowed role"
+        );
     }
 
     [Test]
@@ -47,8 +53,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Product.AddProduct;
         setPath(services, action, "IT");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "Should not have access when user belongs to a denied role");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddProductModel { Name = "Something" }),
+            "Should not have access when user belongs to a denied role"
+        );
     }
 
     [Test]
@@ -62,8 +71,11 @@ internal sealed class AuthorizationTest
         user.AddRole(adminRole);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "IT");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
+        Assert.DoesNotThrowAsync
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should have access when user belongs to an allowed role for modified action"
+        );
     }
 
     [Test]
@@ -81,8 +93,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "IT");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role for modified action");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should not have access when user does not belong to an allowed role for modified action"
+        );
     }
 
     [Test]
@@ -98,8 +113,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "IT");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role for modified action");
+        Assert.DoesNotThrowAsync
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should have access when user belongs to an allowed role for modified action"
+        );
     }
 
     [Test]
@@ -115,8 +133,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "IT");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role even if they have access to the modified action");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should not have access when user does not belong to an allowed role even if they have access to the modified action"
+        );
     }
 
     [Test]
@@ -129,8 +150,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action);
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.True, "Should have access when user belongs to an allowed role and the action has the default modifier");
+        Assert.DoesNotThrowAsync
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should have access when user belongs to an allowed role and the action has the default modifier"
+        );
     }
 
     [Test]
@@ -146,8 +170,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "HR");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "Should not have access when user does not belong to an allowed role for modified action");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "Should not have access when user does not belong to an allowed role for modified action"
+        );
     }
 
     [Test]
@@ -159,8 +186,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Home.DoSomething;
         setPath(services, action);
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "Anon should not have access unless anons are allowed");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new EmptyRequest()),
+            "Anon should not have access unless anons are allowed"
+        );
     }
 
     [Test]
@@ -172,8 +202,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Login.Authenticate;
         setPath(services, action);
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.True, "Anon should have access when anons are allowed");
+        Assert.DoesNotThrowAsync
+        (
+            () => action.Execute(new EmptyRequest()),
+            "Anon should have access when anons are allowed"
+        );
     }
 
     [Test]
@@ -215,8 +248,11 @@ internal sealed class AuthorizationTest
         var api = getApi(services);
         var action = api.Employee.AddEmployee;
         setPath(services, action, "IT");
-        var hasAccess = await action.HasAccess();
-        Assert.That(hasAccess, Is.False, "User should not have access when user has the deny access role");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddEmployeeModel {  Name = "Someone" }),
+            "User should not have access when user has the deny access role"
+        );
     }
 
     private void addRolesToUser(IServiceProvider services, params FakeAppRole[] roles)

@@ -36,8 +36,6 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
 
-    public Task<bool> HasAccess() => user.HasAccess(Access);
-
     public Task<bool> IsOptional()
     {
         var action = createAction();
@@ -56,7 +54,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
 
     public async Task<ResultContainer<TResult>> Execute(TModel model)
     {
-        await EnsureUserHasAccess();
+        await user.EnsureUserHasAccess(Access);
         var errors = new ErrorList();
         if (model is Form form)
         {
@@ -69,15 +67,6 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         var action = createAction();
         var actionResult = await action.Execute(model);
         return new ResultContainer<TResult>(actionResult);
-    }
-
-    private async Task EnsureUserHasAccess()
-    {
-        var hasAccess = await HasAccess();
-        if (!hasAccess)
-        {
-            throw new AccessDeniedException(Path);
-        }
     }
 
     private static void ensureValidInput(ErrorList errors)

@@ -19,25 +19,30 @@ public sealed class AppApiUser : IAppApiUser
 
     public async Task<bool> HasAccess(ResourceAccess resourceAccess)
     {
+        var userName = await currentUserName.Value();
+        var path = pathAccessor.Value();
+        var error = await HasAccess(resourceAccess, userName, path);
+        return string.IsNullOrWhiteSpace(error);
+    }
+
+    private async Task<string> HasAccess(ResourceAccess resourceAccess, AppUserName userName, XtiPath path)
+    {
+        var error = "";
         var app = await appContext.App();
         var roles = await app.Roles();
         var allowedRoleIDs = resourceAccess.Allowed
             .Select(ar => roles.FirstOrDefault(r => r.Name().Equals(ar)))
             .Select(ar => ar?.ID ?? 0);
-        var userName = await currentUserName.Value();
         var user = await userContext.User(userName);
-        bool hasAccess = false;
         if (user.UserName().Equals(AppUserName.Anon))
         {
-            hasAccess = resourceAccess.IsAnonymousAllowed;
+            if (!resourceAccess.IsAnonymousAllowed)
+            {
+                error = $"Anon is not allowed to '{path.Format()}'";
+            }
         }
-        else if (!resourceAccess.Allowed.Any())
+        else if (resourceAccess.Allowed.Any())
         {
-            hasAccess = true;
-        }
-        else
-        {
-            var path = pathAccessor.Value();
             var version = await app.Version(path.Version);
             var group = await version.ResourceGroup(path.Group);
             var modCategory = await group.ModCategory();
@@ -50,13 +55,26 @@ public sealed class AppApiUser : IAppApiUser
             );
             if (userRoleIDs.Contains(denyAccessRole.ID))
             {
-                hasAccess = false;
+                error = $"'{userName.DisplayText}' is denied access to '{path.Format()}'";
             }
-            else if (userRoleIDs.Intersect(allowedRoleIDs).Any())
+            else if (!userRoleIDs.Intersect(allowedRoleIDs).Any())
             {
-                hasAccess = true;
+                var joinedRoles = string.Join(",", resourceAccess.Allowed.Select(ar => ar.DisplayText));
+                error = $"'{userName.DisplayText}' is not allowed to '{path.Format()}'. Allowed roles: {joinedRoles}.";
             }
         }
-        return hasAccess;
+        return error;
     }
+
+    public async Task EnsureUserHasAccess(ResourceAccess resourceAccess)
+    {
+        var userName = await currentUserName.Value();
+        var path = pathAccessor.Value();
+        var error = await HasAccess(resourceAccess, userName, path);
+        if (!string.IsNullOrWhiteSpace(error))
+        {
+            throw new AccessDeniedException(error);
+        }
+    }
+
 }

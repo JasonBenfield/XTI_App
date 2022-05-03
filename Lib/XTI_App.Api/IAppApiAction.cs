@@ -9,7 +9,5 @@ public interface IAppApiAction
     string FriendlyName { get; }
     ResourceAccess Access { get; }
 
-    Task<bool> HasAccess();
-
     AppApiActionTemplate Template();
 }
