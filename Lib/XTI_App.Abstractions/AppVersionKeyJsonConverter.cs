@@ -33,8 +33,9 @@ public sealed class AppVersionKeyJsonConverter : JsonConverter<AppVersionKey>
 
     public override void Write(Utf8JsonWriter writer, AppVersionKey value, JsonSerializerOptions options)
     {
-        var writeOptions = new JsonSerializerOptions(options);
-        writeOptions.Converters.Remove(this);
-        JsonSerializer.Serialize(writer, value, writeOptions);
+        writer.WriteStartObject();
+        writer.WriteString("Value", value.Value);
+        writer.WriteString("DisplayText", value.DisplayText);
+        writer.WriteEndObject();
     }
 }

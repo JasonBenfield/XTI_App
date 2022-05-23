@@ -23,23 +23,15 @@ public sealed class AppKeyJsonConverter : JsonConverter<AppKey>
             var propName = reader.GetString();
             if (propName == "Name")
             {
-                while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-                {
-                    if (reader.TokenType == JsonTokenType.PropertyName)
-                    {
-                        propName = reader.GetString();
-                        reader.Read();
-                        if (propName == "Value")
-                        {
-                            name = new AppName(reader.GetString() ?? "");
-                        }
-                    }
-                }
+                reader.Read();
+                name = new TextValueJsonConverter<AppName>().Read(ref reader, typeof(AppName), options)
+                    ?? AppName.Unknown;
             }
             else if (propName == "Type")
             {
                 reader.Read();
-                type = (AppType)new NumericValueJsonConverter().Read(ref reader, typeof(AppType), options);
+                type = new NumericValueJsonConverter<AppType>().Read(ref reader, typeof(AppType), options)
+                    ?? AppType.Values.GetDefault();
             }
         }
         return new AppKey(name, type);
@@ -47,8 +39,11 @@ public sealed class AppKeyJsonConverter : JsonConverter<AppKey>
 
     public override void Write(Utf8JsonWriter writer, AppKey value, JsonSerializerOptions options)
     {
-        var writeOptions = new JsonSerializerOptions(options);
-        writeOptions.Converters.Remove(this);
-        JsonSerializer.Serialize(writer, value, writeOptions);
+        writer.WriteStartObject();
+        writer.WritePropertyName("Name");
+        new TextValueJsonConverter<AppName>().Write(writer, value.Name, options);
+        writer.WritePropertyName("Type");
+        new NumericValueJsonConverter<AppType>().Write(writer, value.Type, options);
+        writer.WriteEndObject();
     }
 }

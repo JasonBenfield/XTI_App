@@ -17,7 +17,6 @@ public static class AppExtensions
         services.AddDistributedMemoryCache();
         services.AddSingleton<XtiFolder>();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
-        services.AddConfigurationOptions<AppOptions>(AppOptions.App);
         services.AddSingleton<IClock, UtcClock>();
         services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
