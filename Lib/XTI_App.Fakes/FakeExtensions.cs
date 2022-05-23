@@ -18,10 +18,11 @@ public static class FakeExtensions
         services.AddMemoryCache();
         services.AddDistributedMemoryCache();
         services.AddXtiDataProtection();
+        services.AddSingleton<FakeInstallationIDAccessor>();
+        services.AddSingleton<InstallationIDAccessor>(sp => sp.GetRequiredService<FakeInstallationIDAccessor>());
         services.AddSingleton<IHostEnvironment, FakeHostEnvironment>();
         services.AddSingleton<FakeClock>();
         services.AddSingleton<IClock>(sp => sp.GetRequiredService<FakeClock>());
-        services.AddConfigurationOptions<AppOptions>(AppOptions.App);
         services.AddScoped<IAppApiUser, AppApiUser>();
         services.AddScoped(sp =>
         {

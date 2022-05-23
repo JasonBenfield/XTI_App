@@ -8,12 +8,12 @@ namespace XTI_App.Extensions;
 public sealed class AppEnvironmentContext : IAppEnvironmentContext
 {
     private readonly ICurrentUserName currentUserName;
-    private readonly AppKey appKey;
+    private readonly InstallationIDAccessor installationIDAccessor;
 
-    public AppEnvironmentContext(ICurrentUserName currentUserName, AppKey appKey)
+    public AppEnvironmentContext(ICurrentUserName currentUserName, InstallationIDAccessor installationIDAccessor)
     {
         this.currentUserName = currentUserName;
-        this.appKey = appKey;
+        this.installationIDAccessor = installationIDAccessor;
     }
 
     public async Task<AppEnvironment> Value()
@@ -25,13 +25,14 @@ public sealed class AppEnvironmentContext : IAppEnvironmentContext
             .Select(nic => nic.GetPhysicalAddress().ToString())
             .FirstOrDefault()
             ?? "";
+        var installationID = await installationIDAccessor.Value();
         return new AppEnvironment
         (
             userName.Value,
             firstMacAddress,
             Environment.MachineName,
             $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}",
-            appKey.Type.DisplayText
+            installationID
         );
     }
 }

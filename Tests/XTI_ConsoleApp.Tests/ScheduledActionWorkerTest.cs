@@ -174,11 +174,11 @@ public sealed class ScheduledActionWorkerTest
         );
     }
 
-    private Task<LogEventModel[]> getLogEvents(IServiceProvider services)
+    private Task<LogEntryModel[]> getLogEvents(IServiceProvider services)
     {
         var tempLog = services.GetRequiredService<TempLog>();
         var clock = (FakeClock)services.GetRequiredService<IClock>();
-        return deserializeLogFiles<LogEventModel>
+        return deserializeLogFiles<LogEntryModel>
         (
             tempLog.LogEventFiles(clock.Now()).ToArray()
         );

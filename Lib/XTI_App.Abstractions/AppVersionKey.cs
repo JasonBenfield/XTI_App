@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using XTI_Core;
 
 namespace XTI_App.Abstractions;
 
 [TypeConverter(typeof(AppVersionKeyTypeConverter))]
+[JsonConverter(typeof(AppVersionKeyJsonConverter))]
 public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
 {
     private static readonly Regex keyRegex = new Regex("V?(\\d+)");

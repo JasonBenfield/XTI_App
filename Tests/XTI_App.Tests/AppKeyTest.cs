@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System.ComponentModel;
-using System.Text.Json;
 using XTI_App.Abstractions;
 using XTI_Core;
 
@@ -28,11 +27,8 @@ internal sealed class AppKeyTest
             VersionKey = new AppVersionKey(12),
             Title = "Testing"
         };
-        var jsonOptions = new JsonSerializerOptions();
-        jsonOptions.Converters.Add(new AppKeyJsonConverter());
-        jsonOptions.Converters.Add(new AppVersionKeyJsonConverter());
-        var serialized = JsonSerializer.Serialize(appModel, jsonOptions);
-        var deserialized = XtiSerializer.Deserialize<AppModel>(serialized, jsonOptions);
+        var serialized = XtiSerializer.Serialize(appModel);
+        var deserialized = XtiSerializer.Deserialize<AppModel>(serialized);
         Assert.That(deserialized.AppKey, Is.EqualTo(appKey));
         Assert.That(deserialized.VersionKey, Is.EqualTo(new AppVersionKey(12)));
         Assert.That(deserialized.Title, Is.EqualTo(appModel.Title));
@@ -47,11 +43,8 @@ internal sealed class AppKeyTest
             VersionKey = new AppVersionKey(12),
             Title = "Testing"
         };
-        var jsonOptions = new JsonSerializerOptions();
-        jsonOptions.Converters.Add(new AppKeyJsonConverter());
-        jsonOptions.Converters.Add(new AppVersionKeyJsonConverter());
-        var serialized = JsonSerializer.Serialize(appModel, jsonOptions);
-        var deserialized = XtiSerializer.Deserialize<AppModel>(serialized, jsonOptions);
+        var serialized = XtiSerializer.Serialize(appModel);
+        var deserialized = XtiSerializer.Deserialize<AppModel>(serialized);
         Assert.That(deserialized.AppKey, Is.Null);
     }
 
@@ -59,11 +52,8 @@ internal sealed class AppKeyTest
     public void ShouldDeserializeAppKeyAsString()
     {
         var appKey = AppKey.WebApp("Test");
-        var jsonOptions = new JsonSerializerOptions();
-        jsonOptions.Converters.Add(new AppKeyJsonConverter());
-        jsonOptions.Converters.Add(new AppVersionKeyJsonConverter());
         var serialized = "{ \"AppKey\": \"Test|Web App\" }";
-        var deserialized = XtiSerializer.Deserialize<AppModel>(serialized, jsonOptions);
+        var deserialized = XtiSerializer.Deserialize<AppModel>(serialized);
         Assert.That(deserialized.AppKey, Is.EqualTo(appKey));
     }
 

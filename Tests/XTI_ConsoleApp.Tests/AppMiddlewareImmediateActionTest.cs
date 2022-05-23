@@ -89,7 +89,7 @@ public sealed class AppMiddlewareImmediateActionTest
             "AppMiddleware",
             "my-computer",
             "Windows 10",
-            "Service"
+            123
         );
         var _ = Task.Run(() => host.StartAsync());
         var counter = host.Services.GetRequiredService<Counter>();

@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace XTI_App.Abstractions;
 
 [TypeConverter(typeof(AppKeyTypeConverter))]
+[JsonConverter(typeof(AppKeyJsonConverter))]
 public sealed class AppKey : IEquatable<AppKey>
 {
     public static readonly AppKey Unknown = new AppKey();

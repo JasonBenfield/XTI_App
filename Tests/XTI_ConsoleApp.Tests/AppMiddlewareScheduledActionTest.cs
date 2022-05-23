@@ -43,7 +43,7 @@ public sealed class AppMiddlewareScheduledActionTest
             "AppMiddleware",
             "my-computer",
             "Windows 10",
-            "Service"
+            123
         );
         var clock = (FakeClock)host.Services.GetRequiredService<IClock>();
         clock.Set(new DateTime(2020, 10, 16, 9, 30, 0));
