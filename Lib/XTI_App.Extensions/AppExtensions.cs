@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
-using XTI_Core.Extensions;
 using XTI_TempLog;
 using XTI_TempLog.Extensions;
 
@@ -32,6 +31,7 @@ public static class AppExtensions
             return factory.Create(user);
         });
         services.AddTempLogServices();
+        services.AddSingleton<InstallationIDAccessor, FileInstallationIDAccessor>();
     }
 
     public static void AddThrottledLog<TAppApi>(this IServiceCollection services, Action<TAppApi, ThrottledLogsBuilder> action)
