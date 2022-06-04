@@ -9,5 +9,6 @@ public sealed class EmptyAppAction<TModel, TResult> : AppAction<TModel, TResult>
         this.createDefault = createDefault;
     }
 
-    public Task<TResult> Execute(TModel model) => Task.FromResult(createDefault());
+    public Task<TResult> Execute(TModel model, CancellationToken stoppingToken) => 
+        Task.FromResult(createDefault());
 }

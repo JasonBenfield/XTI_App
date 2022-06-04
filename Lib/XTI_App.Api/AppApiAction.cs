@@ -46,13 +46,13 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         return Task.FromResult(false);
     }
 
-    public async Task<TResult> Invoke(TModel model)
+    public async Task<TResult> Invoke(TModel model, CancellationToken stoppingToken = default)
     {
-        var result = await Execute(model);
+        var result = await Execute(model, stoppingToken);
         return result.Data;
     }
 
-    public async Task<ResultContainer<TResult>> Execute(TModel model)
+    public async Task<ResultContainer<TResult>> Execute(TModel model, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Access);
         var errors = new ErrorList();
@@ -62,10 +62,10 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
             ensureValidInput(errors);
         }
         var validation = createValidation();
-        await validation.Validate(errors, model);
+        await validation.Validate(errors, model, stoppingToken);
         ensureValidInput(errors);
         var action = createAction();
-        var actionResult = await action.Execute(model);
+        var actionResult = await action.Execute(model, stoppingToken);
         return new ResultContainer<TResult>(actionResult);
     }
 

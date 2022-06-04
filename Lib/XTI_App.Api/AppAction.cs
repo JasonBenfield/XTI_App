@@ -2,5 +2,5 @@
 
 public interface AppAction<TModel, TResult>
 {
-    Task<TResult> Execute(TModel model);
+    Task<TResult> Execute(TModel model, CancellationToken stoppingToken);
 }

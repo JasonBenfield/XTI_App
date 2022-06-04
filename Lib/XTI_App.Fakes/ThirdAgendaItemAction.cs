@@ -6,7 +6,7 @@ public sealed class ThirdAgendaItemAction : AppAction<EmptyRequest, EmptyActionR
 {
     public static int Counter { get; private set; }
 
-    public Task<EmptyActionResult> Execute(EmptyRequest model)
+    public Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         Console.WriteLine($"Third Agenda Item: {DateTime.Now:HH:mm:ss}");
         Counter++;

@@ -4,5 +4,5 @@ namespace XTI_App.Api;
 
 public interface AppActionValidation<TModel>
 {
-    Task Validate(ErrorList errors, TModel model);
+    Task Validate(ErrorList errors, TModel model, CancellationToken stoppingToken);
 }

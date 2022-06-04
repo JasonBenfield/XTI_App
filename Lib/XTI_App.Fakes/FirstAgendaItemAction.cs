@@ -11,7 +11,7 @@ public sealed class FirstAgendaItemAction : AppAction<EmptyRequest, EmptyActionR
         this.counter = counter;
     }
 
-    public Task<EmptyActionResult> Execute(EmptyRequest model)
+    public Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         Console.WriteLine($"First Agenda Item: {DateTime.Now:HH:mm:ss}");
         counter.Increment();

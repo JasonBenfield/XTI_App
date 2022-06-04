@@ -4,7 +4,7 @@ namespace DemoConsoleApp;
 
 public sealed class FirstAction : AppAction<EmptyRequest, EmptyActionResult>
 {
-    public async Task<EmptyActionResult> Execute(EmptyRequest model)
+    public async Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         Console.WriteLine("Starting First Action");
         await Task.Delay(TimeSpan.FromSeconds(5));

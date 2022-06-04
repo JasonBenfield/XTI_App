@@ -5,7 +5,7 @@ namespace XTI_App.Fakes;
 
 public sealed class AddEmployeeValidation : AppActionValidation<AddEmployeeModel>
 {
-    public Task Validate(ErrorList errors, AddEmployeeModel model)
+    public Task Validate(ErrorList errors, AddEmployeeModel model, CancellationToken stoppingToken)
     {
         if (string.IsNullOrWhiteSpace(model.Name))
         {

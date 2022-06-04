@@ -31,7 +31,7 @@ public sealed class ActionRunner
         NotRequired
     }
 
-    public async Task<Results> Run()
+    public async Task<Results> Run(CancellationToken stoppingToken)
     {
         Results result;
         using var scope = sp.CreateScope();
@@ -43,7 +43,7 @@ public sealed class ActionRunner
         result = await verifyActionIsRequired(environment, factory, xtiPath);
         if (result == Results.None)
         {
-            result = await run(environment, factory, xtiPath);
+            result = await run(environment, factory, xtiPath, stoppingToken);
         }
         return result;
     }
@@ -76,7 +76,7 @@ public sealed class ActionRunner
         return result;
     }
 
-    private async Task<Results> run(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath)
+    private async Task<Results> run(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath, CancellationToken stoppingToken)
     {
         var result = Results.None;
         var session = factory.CreateTempLogSession();
@@ -85,7 +85,7 @@ public sealed class ActionRunner
         {
             await session.StartRequest(path);
             var action = getApiAction(factory);
-            await action.Execute(new EmptyRequest());
+            await action.Execute(new EmptyRequest(), stoppingToken);
             result = Results.Succeeded;
         }
         catch (Exception ex)
