@@ -25,7 +25,7 @@ public sealed class ImmediateActionWorker : BackgroundService, IWorker
                 agendaItem.GroupName.Value,
                 agendaItem.ActionName.Value
             );
-            await actionExecutor.Run();
+            await actionExecutor.Run(stoppingToken);
         }
         HasStopped = true;
     }

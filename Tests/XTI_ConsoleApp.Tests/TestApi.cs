@@ -88,7 +88,7 @@ public sealed class RunContinuouslyAction : AppAction<EmptyRequest, EmptyActionR
         this.counter = counter;
     }
 
-    public Task<EmptyActionResult> Execute(EmptyRequest model)
+    public Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         counter.IncrementContinuous();
         return Task.FromResult(new EmptyActionResult());
@@ -104,7 +104,7 @@ public sealed class RunUntilSuccessAction : AppAction<EmptyRequest, EmptyActionR
         this.counter = counter;
     }
 
-    public Task<EmptyActionResult> Execute(EmptyRequest model)
+    public Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         counter.IncrementUntilSuccess();
         return Task.FromResult(new EmptyActionResult());
@@ -128,7 +128,7 @@ public sealed class OptionalRunAction : OptionalAction<EmptyRequest, EmptyAction
         this.options = options;
     }
 
-    public Task<EmptyActionResult> Execute(EmptyRequest model)
+    public Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         counter.IncrementOptional();
         if (options.ThrowException)

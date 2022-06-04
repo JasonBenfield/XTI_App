@@ -12,7 +12,7 @@ public sealed class StopApplicationAction : AppAction<EmptyRequest, EmptyActionR
         this.lifetime = lifetime;
     }
 
-    public Task<EmptyActionResult> Execute(EmptyRequest model)
+    public Task<EmptyActionResult> Execute(EmptyRequest model, CancellationToken stoppingToken)
     {
         Console.WriteLine("Ending");
         lifetime.StopApplication();

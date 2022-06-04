@@ -5,7 +5,7 @@ namespace XTI_App.Fakes;
 
 public sealed class AddProductValidation : AppActionValidation<AddProductModel>
 {
-    public Task Validate(ErrorList errors, AddProductModel model)
+    public Task Validate(ErrorList errors, AddProductModel model, CancellationToken stoppingToken)
     {
         if (string.IsNullOrWhiteSpace(model.Name))
         {

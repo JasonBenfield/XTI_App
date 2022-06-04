@@ -39,7 +39,7 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
                         scheduledItem.GroupName.Value,
                         scheduledItem.ActionName.Value
                     );
-                    var result = await actionExecutor.Run();
+                    var result = await actionExecutor.Run(stoppingToken);
                     if (result == ActionRunner.Results.Succeeded)
                     {
                         periodicSucceeded = true;
