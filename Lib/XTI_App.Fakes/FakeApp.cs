@@ -126,7 +126,7 @@ public sealed class FakeApp : IApp
 
     public ModifierKey ModKeyInHubApps()
     {
-        var hubApp = appContext.AddApp(new AppKey(new AppName("Hub"), AppType.Values.WebApp));
+        var hubApp = appContext.AddApp(AppKey.WebApp(new AppName("Hub")));
         var modCategory = hubApp.AddModCategory(new ModifierCategoryName("Apps"));
         return modCategory.ModifierByTargetID(ID.ToString()).ModKey();
     }
