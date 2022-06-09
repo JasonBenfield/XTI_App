@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Description>Provides fake implementations for testing XTI web apps.</Description>
+		<PackageTags>XTI;XTI_WebApp;WebApp</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.10" />
+		<PackageReference Include="XTI_Secrets.Fakes" Version="1.8.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\XTI_App.Fakes\XTI_App.Fakes.csproj" />
+	  <ProjectReference Include="..\XTI_WebApp.Extensions\XTI_WebApp.Extensions.csproj" />
+	</ItemGroup>
+
+</Project>

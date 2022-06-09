@@ -1,0 +1,5 @@
+﻿@inject XTI_WebApp.Abstractions.IPageContext pageContext
+@addTagHelper *, XTI_WebApp.TagHelpers
+@section Scripts{
+    <xti-main-script page-name="@pageContext.PageName" />
+}

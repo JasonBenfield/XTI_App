@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Description>API infrastructure for XTI web apps.</Description>
+		<PackageTags>XTI;XTI_WebApp;WebApp</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" Version="6.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.27" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.10" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\XTI_App.Api\XTI_App.Api.csproj" />
+		<ProjectReference Include="..\XTI_WebApp.Abstractions\XTI_WebApp.Abstractions.csproj" />
+	</ItemGroup>
+
+</Project>

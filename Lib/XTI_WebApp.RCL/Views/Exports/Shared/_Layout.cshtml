@@ -1,0 +1,24 @@
+﻿@inject XTI_WebApp.Abstractions.IPageContext pageContext
+<!doctype html>
+<html class="vh-100 overflow-hidden" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>@ViewBag.Title</title>
+    <link href="~/styles/css/default.css" rel="stylesheet" />
+    <link href="~/styles/css/fontawesome/all.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+</head>
+<body class="vh-100 overflow-hidden">
+    <!-- ko component: { name: 'page-body', params: $data } --><!-- /ko -->
+    @RenderBody()
+    <script>
+        @{
+            var serializedPageContext = await pageContext.Serialize();
+        }
+        pageContext = @Html.Raw(serializedPageContext);
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

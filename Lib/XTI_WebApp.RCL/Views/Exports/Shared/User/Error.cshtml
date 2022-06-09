@@ -1,0 +1,15 @@
+﻿@inject XTI_WebApp.Extensions.XtiRequestContext xtiRequestContext
+@addTagHelper *, XTI_WebApp.TagHelpers
+@{
+    ViewBag.Title = "Error";
+    Layout = "~/Views/Exports/Shared/_Layout.cshtml";
+}
+@section Scripts{
+    <script>
+        @{
+            var serialized = xtiRequestContext.Serialize();
+        }
+        serverError = @Html.Raw(serialized);
+    </script>
+    <xti-main-script page-name="error" />
+}
