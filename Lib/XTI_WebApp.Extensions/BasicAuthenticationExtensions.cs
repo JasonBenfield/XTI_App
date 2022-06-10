@@ -12,7 +12,7 @@ public static class BasicAuthentication
 
 public static class BasicAuthenticationExtensions
 {
-    public static AuthenticationBuilder AddBasicAuthentication(this AuthenticationBuilder builder, IServiceCollection services)
+    public static AuthenticationBuilder AddBasicAuthentication(this AuthenticationBuilder builder)
     {
         builder.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
         (
