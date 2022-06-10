@@ -15,6 +15,12 @@ namespace XTI_WebApp.Extensions;
 
 public static class CookieAndTokenAuthentication
 {
+    public static bool IsBearerAuthentication(this HttpContext context)
+    {
+        string authorization = context.Request.Headers[HeaderNames.Authorization];
+        return !string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer ");
+    }
+
     public static void ConfigureXtiCookieAndTokenAuthentication(this IServiceCollection services, XtiEnvironment xtiEnv, IConfiguration config)
     {
         const string defaultScheme = "JWT_OR_COOKIE";
@@ -26,16 +32,18 @@ public static class CookieAndTokenAuthentication
             })
             .AddCookie("Cookies", options => options.SetXtiCookieOptions(xtiEnv, config))
             .AddJwtBearer("Bearer", options => options.SetXtiJwtBearerOptions(config))
-            .AddPolicyScheme(defaultScheme, defaultScheme, options =>
-            {
-                options.ForwardDefaultSelector = context =>
+            .AddPolicyScheme
+            (
+                defaultScheme, 
+                defaultScheme, 
+                options =>
                 {
-                    string authorization = context.Request.Headers[HeaderNames.Authorization];
-                    return !string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer ")
-                        ? "Bearer"
-                        : "Cookies";
-                };
-            });
+                    options.ForwardDefaultSelector = context =>
+                        context.IsBearerAuthentication()
+                            ? "Bearer"
+                            : "Cookies";
+                }
+            );
     }
 
     public static void SetXtiJwtBearerOptions(this JwtBearerOptions options, IConfiguration config)

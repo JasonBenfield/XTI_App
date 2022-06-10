@@ -16,6 +16,7 @@ public sealed class XtiClaimsCreator
 
     public IEnumerable<Claim> Values() => new[]
     {
+        new Claim(ClaimTypes.NameIdentifier, userName.Value),
         new Claim("UserName", userName.Value),
         new Claim("SessionKey", sessionKey)
     };

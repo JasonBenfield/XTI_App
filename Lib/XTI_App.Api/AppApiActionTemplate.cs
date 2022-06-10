@@ -41,6 +41,22 @@ public sealed class AppApiActionTemplate
         {
             type = ResourceResultType.Values.Redirect;
         }
+        else if (ResultTemplate.DataType.Name == "WebFileResult")
+        {
+            type = ResourceResultType.Values.File;
+        }
+        else if (ResultTemplate.DataType.Name == "WebContentResult")
+        {
+            type = ResourceResultType.Values.Content;
+        }
+        else if 
+        (
+            ResultTemplate.DataType.IsGenericType &&
+            ResultTemplate.DataType.GetGenericTypeDefinition() == typeof(IQueryable<>)
+        )
+        {
+            type = ResourceResultType.Values.Query;
+        }
         else
         {
             type = ResourceResultType.Values.Json;
@@ -50,6 +66,9 @@ public sealed class AppApiActionTemplate
     public bool IsView() => ResultType().Equals(ResourceResultType.Values.View);
     public bool IsPartialView() => ResultType().Equals(ResourceResultType.Values.PartialView);
     public bool IsRedirect() => ResultType().Equals(ResourceResultType.Values.Redirect);
+    public bool IsFile() => ResultType().Equals(ResourceResultType.Values.File);
+    public bool IsContent() => ResultType().Equals(ResourceResultType.Values.Content);
+    public bool IsQuery() => ResultType().Equals(ResourceResultType.Values.Query);
     public bool HasEmptyModel() => ModelTemplate.DataType == typeof(EmptyRequest);
 
     public IEnumerable<FormValueTemplate> FormTemplates()

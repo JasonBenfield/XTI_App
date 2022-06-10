@@ -6,37 +6,23 @@ public sealed class AppUserName : TextValue, IEquatable<AppUserName>
 {
     public static readonly AppUserName Anon = new AppUserName("xti_anon");
 
-    public static AppUserName InstallationUser(string machineName)
+    public static AppUserName InstallationUser(string machineName) =>
+        new AppUserName($"xti_inst[{machineName}]", $"xti installer [{machineName}]");
+
+    public static AppUserName SystemUser(AppKey appKey, string machineName) =>
+        new AppUserName
+        (
+            $"xti_sys[{appKey.Serialize()}][{machineName}]",
+            $"xti system [{appKey.Name.DisplayText} {appKey.Type.DisplayText}] [{machineName}]"
+        );
+
+    public AppUserName(string value)
+        : this(value, value)
     {
-        var parts = new[]
-        {
-                "xti",
-                "inst",
-                machineName
-            }
-        .Where(p => !string.IsNullOrWhiteSpace(p))
-        .Select(p => p.Replace(" ", "").Replace("_", ""));
-        var userName = string.Join("_", parts);
-        return new AppUserName(userName);
     }
 
-    public static AppUserName SystemUser(AppKey appKey, string machineName)
-    {
-        var parts = new[]
-        {
-                "xti",
-                "sys",
-                appKey.Name.DisplayText,
-                appKey.Type.DisplayText,
-                machineName
-            }
-        .Where(p => !string.IsNullOrWhiteSpace(p))
-        .Select(p => p.Replace(" ", "").Replace("_", ""));
-        var userName = string.Join("_", parts);
-        return new AppUserName(userName);
-    }
-
-    public AppUserName(string value) : base(value?.Trim().ToLower() ?? "")
+    private AppUserName(string value, string displayText)
+        : base(value.Trim().ToLower() ?? "", displayText)
     {
     }
 

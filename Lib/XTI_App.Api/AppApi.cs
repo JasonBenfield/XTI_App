@@ -15,7 +15,7 @@ public sealed class AppApi
     )
     {
         AppKey = appKey;
-        Path = new XtiPath(appKey.Name.DisplayText);
+        Path = new XtiPath(appKey);
         this.user = user;
         Access = access ?? ResourceAccess.AllowAuthenticated();
     }

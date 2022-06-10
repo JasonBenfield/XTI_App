@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace XTI_WebApp.Extensions;
+namespace XTI_WebApp.Api;
 
-public sealed class JsonFromRequest
+public sealed class BodyFromRequest
 {
     private readonly HttpRequest request;
 
-    public JsonFromRequest(HttpRequest request)
+    public BodyFromRequest(HttpRequest request)
     {
         this.request = request;
     }

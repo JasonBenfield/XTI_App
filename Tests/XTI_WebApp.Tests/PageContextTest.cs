@@ -143,10 +143,10 @@ internal sealed class PageContextTest
         (
             new XtiPath
             (
-                FakeInfo.AppKey.Name.DisplayText,
-                versionKey.DisplayText,
-                "",
-                "",
+                FakeInfo.AppKey,
+                versionKey,
+                new ResourceGroupName(""),
+                new ResourceName(""),
                 ModifierKey.Default
             )
         );

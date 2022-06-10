@@ -31,7 +31,7 @@ public static class FakeExtensions
             (
                 new XtiPath
                 (
-                    appKey.Name,
+                    appKey,
                     AppVersionKey.Current,
                     new ResourceGroupName("Home"),
                     new ResourceName("Index"),

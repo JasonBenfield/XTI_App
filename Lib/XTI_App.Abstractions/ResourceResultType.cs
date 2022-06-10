@@ -15,12 +15,18 @@ public sealed class ResourceResultType : NumericValue, IEquatable<ResourceResult
             PartialView = Add(new ResourceResultType(2, nameof(PartialView)));
             Redirect = Add(new ResourceResultType(3, nameof(Redirect)));
             Json = Add(new ResourceResultType(4, nameof(Json)));
+            File = Add(new ResourceResultType(5, nameof(File)));
+            Content = Add(new ResourceResultType(6, nameof(Content)));
+            Query = Add(new ResourceResultType(7, nameof(Query)));
         }
         public ResourceResultType None { get; }
         public ResourceResultType View { get; }
         public ResourceResultType PartialView { get; }
         public ResourceResultType Redirect { get; }
         public ResourceResultType Json { get; }
+        public ResourceResultType File { get; }
+        public ResourceResultType Content { get; }
+        public ResourceResultType Query { get; }
     }
 
     private ResourceResultType(int value, string displayText) 
