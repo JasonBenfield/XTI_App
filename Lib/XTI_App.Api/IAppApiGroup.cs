@@ -8,6 +8,6 @@ public interface IAppApiGroup
     ResourceAccess Access { get; }
     Task<bool> HasAccess();
     IEnumerable<IAppApiAction> Actions();
-    AppApiAction<TModel, TResult> Action<TModel, TResult>(string actionName);
+    TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction;
     AppApiGroupTemplate Template();
 }

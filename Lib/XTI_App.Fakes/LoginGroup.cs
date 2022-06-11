@@ -6,14 +6,10 @@ public sealed class LoginGroup : AppApiGroupWrapper
 {
     public LoginGroup(AppApiGroup source) : base(source)
     {
-        var factory = new AppApiActionFactory(source);
         Authenticate = source.AddAction
         (
-            factory.Action
-            (
-                nameof(Authenticate),
-                () => new EmptyAppAction<EmptyRequest, EmptyActionResult>(() => new EmptyActionResult())
-            )
+            nameof(Authenticate),
+            () => new EmptyAppAction<EmptyRequest, EmptyActionResult>(() => new EmptyActionResult())
         );
     }
     public AppApiAction<EmptyRequest, EmptyActionResult> Authenticate { get; }

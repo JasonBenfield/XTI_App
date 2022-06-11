@@ -1,4 +1,5 @@
 ﻿using XTI_App.Abstractions;
+using XTI_Core;
 
 namespace XTI_App.Api;
 
@@ -6,7 +7,7 @@ public sealed class AppApiGroup : IAppApiGroup
 {
     private readonly ModifierCategoryName modCategory;
     private readonly IAppApiUser user;
-    private readonly Dictionary<string, IAppApiAction> actions = new Dictionary<string, IAppApiAction>();
+    private readonly Dictionary<string, IAppApiAction> actions = new();
 
     public AppApiGroup
     (
@@ -24,18 +25,10 @@ public sealed class AppApiGroup : IAppApiGroup
 
     public IAppApiUser User { get => user; }
 
-    public AppApiAction<TModel, TResult> Action<TModel, TResult>(string actionName) =>
-        (AppApiAction<TModel, TResult>)actions[actionKey(actionName)];
+    public TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction =>
+        (TAppApiAction)actions[actionKey(actionName)];
 
     public IEnumerable<IAppApiAction> Actions() => actions.Values.ToArray();
-
-    public AppApiAction<TModel, TResult> AddAction<TModel, TResult>(AppApiAction<TModel, TResult> action)
-    {
-        actions.Add(actionKey(action.ActionName), action);
-        return action;
-    }
-    private static string actionKey(string actionName)
-        => actionName.ToLower().Replace(" ", "").Replace("_", "");
 
     public XtiPath Path { get; }
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
@@ -60,5 +53,68 @@ public sealed class AppApiGroup : IAppApiGroup
         return roleNames.Distinct();
     }
 
+    public AppApiAction<TModel, TResult> AddAction<TModel, TResult>
+    (
+        string actionName,
+        Func<AppAction<TModel, TResult>> createExecution,
+        Func<AppActionValidation<TModel>>? createValidation = null,
+        ResourceAccess? access = null,
+        string friendlyName = ""
+    ) =>
+        (AppApiAction<TModel, TResult>)AddAction
+        (
+            actionName,
+            friendlyName,
+            (addData) =>
+                new AppApiAction<TModel, TResult>
+                (
+                    addData.ActionPath,
+                    access ?? addData.GroupAccess,
+                    addData.User,
+                    createValidation ?? defaultCreateValidation<TModel>(),
+                    createExecution,
+                    addData.FriendlyName
+                )
+        );
+
+    public static Func<AppActionValidation<TModel>> defaultCreateValidation<TModel>() =>
+        () => new AppActionValidationNotRequired<TModel>();
+
+    public IAppApiAction AddAction
+    (
+        string actionName,
+        string friendlyName,
+        Func<AddActionData, IAppApiAction> createAction
+    )
+    {
+        var path = Path.WithAction(actionName);
+        friendlyName = string.IsNullOrWhiteSpace(friendlyName)
+            ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
+            : friendlyName;
+        var action = createAction
+        (
+            new AddActionData
+            (
+                ActionPath: path, 
+                GroupAccess: Access, 
+                User: User, 
+                FriendlyName: friendlyName
+            )
+        );
+        actions.Add(actionKey(action.ActionName), action);
+        return action;
+    }
+
+    private AppApiAction<TModel, TResult> AddAction<TModel, TResult>(AppApiAction<TModel, TResult> action)
+    {
+        actions.Add(actionKey(action.ActionName), action);
+        return action;
+    }
+
+    private static string actionKey(string actionName) =>
+        actionName.ToLower().Replace(" ", "").Replace("_", "");
+
     public override string ToString() => $"{GetType().Name} {Path.Group}";
 }
+
+public sealed record AddActionData(XtiPath ActionPath, ResourceAccess GroupAccess, IAppApiUser User, string FriendlyName);

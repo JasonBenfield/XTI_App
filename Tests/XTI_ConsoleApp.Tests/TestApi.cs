@@ -47,30 +47,20 @@ public sealed class TestGroup : AppApiGroupWrapper
     public TestGroup(AppApiGroup source, Counter counter, TestOptions options)
         : base(source)
     {
-        var actions = new AppApiActionFactory(source);
         RunContinuously = source.AddAction
         (
-            actions.Action
-            (
-                nameof(RunContinuously),
-                () => new RunContinuouslyAction(counter)
-            )
+            nameof(RunContinuously),
+            () => new RunContinuouslyAction(counter)
         );
         RunUntilSuccess = source.AddAction
         (
-            actions.Action
-            (
-                nameof(RunUntilSuccess),
-                () => new RunUntilSuccessAction(counter)
-            )
+            nameof(RunUntilSuccess),
+            () => new RunUntilSuccessAction(counter)
         );
         OptionalRun = source.AddAction
         (
-            actions.Action
-            (
-                nameof(OptionalRun),
-                () => new OptionalRunAction(counter, options)
-            )
+            nameof(OptionalRun),
+            () => new OptionalRunAction(counter, options)
         );
     }
 

@@ -7,19 +7,25 @@ public sealed class UserGroup : AppApiGroupWrapper
 {
     public UserGroup(AppApiGroup source, IServiceProvider sp) : base(source)
     {
-        var actions = new WebAppApiActionFactory(source);
-        Index = source.AddAction(actions.DefaultView<UserStartRequest>());
+        Index = source.AddAction
+        (
+            nameof(Index),
+            () => ViewAppAction<UserStartRequest>.Index()
+        );
         AccessDenied = source.AddAction
         (
-            actions.View(nameof(AccessDenied), () => new AccessDeniedAction())
+            nameof(AccessDenied),
+            () => new AccessDeniedAction()
         );
         Error = source.AddAction
         (
-            actions.View(nameof(Error), () => new ErrorAction())
+            nameof(Error),
+            () => new ErrorAction()
         );
         Logout = source.AddAction
         (
-            actions.Action(nameof(Logout), () => sp.GetRequiredService<LogoutAction>())
+            nameof(Logout), 
+            () => sp.GetRequiredService<LogoutAction>()
         );
     }
 

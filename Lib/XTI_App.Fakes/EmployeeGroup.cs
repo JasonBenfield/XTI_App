@@ -6,30 +6,24 @@ public sealed class EmployeeGroup : AppApiGroupWrapper
 {
     public EmployeeGroup(AppApiGroup source) : base(source)
     {
-        var actions = new AppApiActionFactory(source);
         AddEmployee = source.AddAction
         (
-            actions.Action
-            (
-                nameof(AddEmployee),
-                source.Access.WithAllowed(FakeAppRoles.Instance.Manager),
-                () => new AddEmployeeValidation(),
-                () => new AddEmployeeAction()
-            )
+            nameof(AddEmployee),
+            () => new AddEmployeeAction(),
+            () => new AddEmployeeValidation(),
+            source.Access.WithAllowed(FakeAppRoles.Instance.Manager)
         );
         Employee = source.AddAction
         (
-            actions.Action
-            (
-                nameof(Employee),
-                source.Access.WithAllowed(FakeAppRoles.Instance.Viewer),
-                () => new EmployeeAction(),
-                "Get Employee Information"
-            )
+            nameof(Employee),
+            () => new EmployeeAction(),
+            access: source.Access.WithAllowed(FakeAppRoles.Instance.Viewer),
+            friendlyName: "Get Employee Information"
         );
         SubmitFakeForm = source.AddAction
         (
-            actions.Action(nameof(SubmitFakeForm), () => new SubmitFakeFormAction())
+            nameof(SubmitFakeForm), 
+            () => new SubmitFakeFormAction()
         );
     }
     public AppApiAction<AddEmployeeModel, int> AddEmployee { get; }

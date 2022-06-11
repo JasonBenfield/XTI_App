@@ -5,7 +5,7 @@ namespace XTI_App.Api;
 public sealed class AppApi
 {
     private readonly IAppApiUser user;
-    private readonly Dictionary<string, AppApiGroup> groups = new Dictionary<string, AppApiGroup>();
+    private readonly Dictionary<string, AppApiGroup> groups = new();
 
     public AppApi
     (
@@ -26,14 +26,14 @@ public sealed class AppApi
 
     public ResourceAccess Access { get; }
 
-    public AppApiGroup AddGroup(string name)
-        => AddGroup(name, ModifierCategoryName.Default, Access);
+    public AppApiGroup AddGroup(string name) =>
+        AddGroup(name, ModifierCategoryName.Default, Access);
 
-    public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory)
-        => AddGroup(name, modCategory, Access);
+    public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory) =>
+        AddGroup(name, modCategory, Access);
 
-    public AppApiGroup AddGroup(string name, ResourceAccess access)
-        => AddGroup(name, ModifierCategoryName.Default, access);
+    public AppApiGroup AddGroup(string name, ResourceAccess access) =>
+        AddGroup(name, ModifierCategoryName.Default, access);
 
     public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess access)
     {
@@ -49,7 +49,7 @@ public sealed class AppApi
     private static string groupKey(string groupName) =>
         groupName.ToLower().Replace(" ", "").Replace("_", "");
 
-    public AppApiTemplate Template() => new AppApiTemplate(this);
+    public AppApiTemplate Template() => new (this);
 
     internal IEnumerable<AppRoleName> RoleNames()
     {

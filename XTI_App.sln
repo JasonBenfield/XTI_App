@@ -59,6 +59,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_WebApp.AspTests", "Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XTI_WebApp.Tests", "Tests\XTI_WebApp.Tests\XTI_WebApp.Tests.csproj", "{AC11E8EC-22D5-490D-A40C-12B334C54E73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTI_ODataQuery.Api", "Lib\XTI_ODataQuery.Api\XTI_ODataQuery.Api.csproj", "{7C9D5451-10C7-461C-B820-F8736F8FCF3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -157,6 +159,10 @@ Global
 		{AC11E8EC-22D5-490D-A40C-12B334C54E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC11E8EC-22D5-490D-A40C-12B334C54E73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC11E8EC-22D5-490D-A40C-12B334C54E73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C9D5451-10C7-461C-B820-F8736F8FCF3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C9D5451-10C7-461C-B820-F8736F8FCF3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C9D5451-10C7-461C-B820-F8736F8FCF3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C9D5451-10C7-461C-B820-F8736F8FCF3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -185,6 +191,7 @@ Global
 		{2E7545F2-87B9-4655-BD51-ECAEA63632E0} = {D22ED6D1-B5ED-4B63-A3A2-738205F8E374}
 		{74844FD3-888B-4EC5-BDB5-1C0FC74B6158} = {EC9D1552-B6C0-4949-96C7-F013F1718F0C}
 		{AC11E8EC-22D5-490D-A40C-12B334C54E73} = {EC9D1552-B6C0-4949-96C7-F013F1718F0C}
+		{7C9D5451-10C7-461C-B820-F8736F8FCF3E} = {D22ED6D1-B5ED-4B63-A3A2-738205F8E374}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AB83988D-D2DE-46B9-B285-B34C08128DFF}

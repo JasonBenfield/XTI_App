@@ -15,7 +15,7 @@ public class AppApiGroupWrapper : IAppApiGroup
     public ResourceAccess Access { get => source.Access; }
     public Task<bool> HasAccess() => source.HasAccess();
     public IEnumerable<IAppApiAction> Actions() => source.Actions();
-    public AppApiAction<TModel, TResult> Action<TModel, TResult>(string actionName)
-        => source.Action<TModel, TResult>(actionName);
+    public TAppApiAction Action<TAppApiAction>(string actionName) 
+        where TAppApiAction : IAppApiAction => source.Action<TAppApiAction>(actionName);
     public AppApiGroupTemplate Template() => source.Template();
 }
