@@ -25,9 +25,15 @@ public class AppClientGroup
     }
 
     protected Task<TResult> Post<TResult, TModel>(string action, string modifier, TModel model)
-        => Post<TResult, TModel>(action, modifier, model, true);
+        => Post<TResult, TModel>(action, modifier, model, "", false, "application/json", true);
 
-    private async Task<TResult> Post<TResult, TModel>(string action, string modifier, TModel model, bool retryUnauthorized)
+    protected Task<string> PostForQuery(string action, string modifier, string odataOptions)
+        => Post<string, string>(action, modifier, "", odataOptions, true, "application/json", true);
+
+    protected Task<string> PostForContent<TModel>(string action, string modifier, TModel model)
+        => Post<string, TModel>(action, modifier, model, "", true, "text/plain", true);
+
+    private async Task<TResult> Post<TResult, TModel>(string action, string modifier, TModel model, string query, bool isContent, string contentType, bool retryUnauthorized)
     {
         using var client = httpClientFactory.CreateClient();
         if (!action.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
@@ -39,14 +45,20 @@ public class AppClientGroup
             }
         }
         var url = await clientUrl.Value(action, modifier);
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            url += $"?{query}";
+        }
         if (model == null) { throw new ArgumentNullException(nameof(model)); }
         object transformedModel = model;
         if (model is Forms.Form form)
         {
             transformedModel = form.Export();
         }
-        var serialized = JsonSerializer.Serialize(model, jsonSerializerOptions);
-        using var content = new StringContent(serialized, Encoding.UTF8, "application/json");
+        var serialized = model is string modelString 
+            ? modelString 
+            : JsonSerializer.Serialize(model, jsonSerializerOptions);
+        using var content = new StringContent(serialized, Encoding.UTF8, contentType);
         using var response = await client.PostAsync(url, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         TResult result;
@@ -64,12 +76,16 @@ public class AppClientGroup
             else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                result = await Post<TResult, TModel>(action, modifier, model, false);
+                result = await Post<TResult, TModel>(action, modifier, model, query, isContent, contentType, false);
+            }
+            else if (isContent)
+            {
+                result = (TResult)(object)responseContent;
             }
             else
             {
                 var resultContainer = string.IsNullOrWhiteSpace(responseContent)
-                    ? new ResultContainer<ErrorModel[]>() { Data = new ErrorModel[0] }
+                    ? new ResultContainer<ErrorModel[]> { Data = new ErrorModel[0] }
                     : JsonSerializer.Deserialize<ResultContainer<ErrorModel[]>>(responseContent);
                 throw new AppClientException
                 (
@@ -92,5 +108,4 @@ public class AppClientGroup
         }
         return result;
     }
-
 }

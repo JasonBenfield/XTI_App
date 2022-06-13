@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
@@ -16,9 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Lib\XTI_WebApp.Extensions\XTI_WebApp.Extensions.csproj" />
-		<ProjectReference Include="..\..\Lib\XTI_WebApp.Fakes\XTI_WebApp.Fakes.csproj" />
-		<ProjectReference Include="..\..\Lib\XTI_WebApp.TagHelpers\XTI_WebApp.TagHelpers.csproj" />
+	  <ProjectReference Include="..\..\Lib\XTI_ODataQuery.Api\XTI_ODataQuery.Api.csproj" />
 	</ItemGroup>
 
 </Project>

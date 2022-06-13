@@ -76,6 +76,10 @@ public class ValueTemplateFromType
             var form = (Form)obj;
             valueTemplate = new FormValueTemplate(form);
         }
+        else if(source.Name.StartsWith("ODataQueryOptions"))
+        {
+            valueTemplate = new QueryOptionsTemplate(source);
+        }
         else
         {
             valueTemplate = new ObjectValueTemplate(source);

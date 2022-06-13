@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.OData.Query;
+﻿namespace XTI_ODataQuery.Api;
 
-namespace XTI_ODataQuery.Api;
-
-public sealed record QueryResult(ODataRawQueryOptions RawQueryValues, string[] SelectFields, IDictionary<string, object>[] Records);
+public sealed record QueryResult
+(
+    RawQueryValues RawQueryValues, 
+    string[] SelectFields, 
+    IDictionary<string, object>[] Records
+);

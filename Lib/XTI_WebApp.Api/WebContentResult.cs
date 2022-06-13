@@ -2,10 +2,12 @@
 
 public sealed class WebContentResult
 {
-    public WebContentResult(string value)
+    public WebContentResult(string content, string contentType = "text/plain")
     {
-        Value = value;
+        Content = content;
+        ContentType = contentType;
     }
 
-    public string Value { get;}
+    public string Content { get; }
+    public string ContentType { get; }
 }

@@ -19,6 +19,7 @@
 		<ProjectReference Include="..\..\Lib\XTI_App.Extensions\XTI_App.Extensions.csproj" />
 		<ProjectReference Include="..\..\Lib\XTI_App.Fakes\XTI_App.Fakes.csproj" />
 		<ProjectReference Include="..\..\Lib\XTI_App.Hosting\XTI_App.Hosting.csproj" />
+		<ProjectReference Include="..\..\Lib\XTI_WebAppClient\XTI_WebAppClient.csproj" />
 	</ItemGroup>
 
 </Project>

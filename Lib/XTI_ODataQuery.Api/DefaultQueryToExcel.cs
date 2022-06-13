@@ -6,9 +6,14 @@ public sealed class DefaultQueryToExcelBuilder
 {
     private string downloadName = "QueryResults";
     private Action<IXLRow> formatHeaderRow = (row) => { row.Style.Font.Bold = true; };
+    private Action<string, IXLCell> formatHeaderCell = (name, cell) => { };
     private Action<string, IXLColumn> formatColumn = (name, column) => { };
     private Func<string, object, object> transformData = (name, value) => value;
-    private Action<string, IXLCell> formatCell = (name, cell) => { };
+    private Action<string, IXLCell> formatDataCell = (name, cell) => { };
+    private Action<IDictionary<string, object>, IXLRow> formatRecordRow = (dict, row) => { };
+    private Action<IXLTable> formatTable = (_) => { };
+    private Action<QueryResult, IXLWorkbook> formatWorkbook = (result, wkbk) => { };
+    private bool includeParameters = true;
 
     public DefaultQueryToExcelBuilder SetDownloadName(string downloadName)
     {
@@ -19,6 +24,12 @@ public sealed class DefaultQueryToExcelBuilder
     public DefaultQueryToExcelBuilder FormatHeaderRow(Action<IXLRow> formatHeaderRow)
     {
         this.formatHeaderRow = formatHeaderRow;
+        return this;
+    }
+
+    public DefaultQueryToExcelBuilder FormatHeaderCell(Action<string, IXLCell> formatHeaderCell)
+    {
+        this.formatHeaderCell = formatHeaderCell;
         return this;
     }
 
@@ -34,9 +45,33 @@ public sealed class DefaultQueryToExcelBuilder
         return this;
     }
 
-    public DefaultQueryToExcelBuilder FormatCell(Action<string, IXLCell> formatCell)
+    public DefaultQueryToExcelBuilder FormatCell(Action<string, IXLCell> formatDataCell)
     {
-        this.formatCell = formatCell;
+        this.formatDataCell = formatDataCell;
+        return this;
+    }
+
+    public DefaultQueryToExcelBuilder FormatRecordRow(Action<IDictionary<string, object>, IXLRow> formatRecordRow)
+    {
+        this.formatRecordRow = formatRecordRow;
+        return this;
+    }
+
+    public DefaultQueryToExcelBuilder FormatTable(Action<IXLTable> formatTable)
+    {
+        this.formatTable = formatTable;
+        return this;
+    }
+
+    public DefaultQueryToExcelBuilder FormatWorkbook(Action<QueryResult, IXLWorkbook> formatWorkbook)
+    {
+        this.formatWorkbook = formatWorkbook;
+        return this;
+    }
+
+    public DefaultQueryToExcelBuilder HideParameters()
+    {
+        includeParameters = false;
         return this;
     }
 
@@ -44,57 +79,73 @@ public sealed class DefaultQueryToExcelBuilder
         new DefaultQueryToExcel
         (
             formatHeaderRow,
+            formatHeaderCell,
             formatColumn,
             transformData,
-            formatCell,
+            formatDataCell,
+            formatRecordRow,
+            formatTable,
+            formatWorkbook,
+            includeParameters,
             downloadName
         );
 }
 
-
 public sealed class DefaultQueryToExcel : IQueryToExcel
 {
-    private readonly Action<IXLRow> formatHeaderRow = (row) => { row.Style.Font.Bold = true; };
+    private readonly Action<IXLRow> formatHeaderRow;
     private readonly Action<string, IXLColumn> formatColumn;
+    private readonly Action<string, IXLCell> formatHeaderCell;
     private readonly Func<string, object, object> transformData;
-    private readonly Action<string, IXLCell> formatCell;
+    private readonly Action<string, IXLCell> formatDataCell;
+    private readonly Action<IDictionary<string, object>, IXLRow> formatRecordRow;
+    private readonly Action<IXLTable> formatTable;
+    private readonly Action<QueryResult, IXLWorkbook> formatWorkbook;
+    private readonly bool includeParameters;
 
     public DefaultQueryToExcel
     (
         Action<IXLRow> formatHeaderRow,
+        Action<string, IXLCell> formatHeaderCell,
         Action<string, IXLColumn> formatColumn,
         Func<string, object, object> transformData,
-        Action<string, IXLCell> formatCell,
+        Action<string, IXLCell> formatDataCell,
+        Action<IDictionary<string, object>, IXLRow> formatRecordRow,
+        Action<IXLTable> formatTable,
+        Action<QueryResult, IXLWorkbook> formatWorkbook,
+        bool includeParameters,
         string downloadName
     )
     {
         this.formatHeaderRow = formatHeaderRow;
+        this.formatHeaderCell = formatHeaderCell;
         this.formatColumn = formatColumn;
         this.transformData = transformData;
-        this.formatCell = formatCell;
+        this.formatDataCell = formatDataCell;
+        this.formatRecordRow = formatRecordRow;
+        this.formatTable = formatTable;
+        this.formatWorkbook = formatWorkbook;
+        this.includeParameters = includeParameters;
         DownloadName = downloadName;
     }
 
-    public string DownloadName { get; } = "";
+    public string DownloadName { get; }
 
     public Task<Stream> ToExcel(QueryResult queryResult, CancellationToken ct)
     {
         using var workbook = new XLWorkbook(XLEventTracking.Disabled);
         var dataWS = workbook.AddWorksheet("Data");
         var rowIndex = 1;
-        addRow
-        (
-            dataWS,
-            rowIndex,
-            queryResult.SelectFields.ToArray()
-        );
-        formatHeaderRow(dataWS.Row(rowIndex));
         var columnIndex = 1;
         foreach (var field in queryResult.SelectFields)
         {
+            var cell = dataWS.Cell(rowIndex, columnIndex);
+            cell.SetValue(field);
+            formatHeaderCell(field, cell);
             formatColumn(field, dataWS.Column(columnIndex));
             columnIndex++;
         }
+        formatHeaderRow(dataWS.Row(rowIndex));
         rowIndex++;
         foreach (var record in queryResult.Records)
         {
@@ -111,9 +162,10 @@ public sealed class DefaultQueryToExcel : IQueryToExcel
                 {
                     cell.Value = value;
                 }
-                formatCell(field, cell);
+                formatDataCell(field, cell);
                 columnIndex++;
             }
+            formatRecordRow(record, dataWS.Row(rowIndex));
             rowIndex++;
         }
         var table = dataWS.Range
@@ -122,61 +174,95 @@ public sealed class DefaultQueryToExcel : IQueryToExcel
             dataWS.Cell(rowIndex - 1, queryResult.SelectFields.Length)
         )
         .CreateTable();
+        table.Theme = XLTableTheme.TableStyleLight9;
+        formatTable(table);
         dataWS.Columns().AdjustToContents();
+        if (includeParameters)
+        {
+            AddParamtersWS(queryResult, workbook);
+        }
+        formatWorkbook(queryResult, workbook);
+        var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        return Task.FromResult<Stream>(stream);
+    }
 
+    private void AddParamtersWS(QueryResult queryResult, XLWorkbook workbook)
+    {
+        int rowIndex;
         var queryWS = workbook.AddWorksheet("Parameters");
         rowIndex = 1;
+        var queryHeader = queryWS.Cell(1, 1);
+        queryHeader.Style.Font.Bold = true;
+        queryHeader.SetValue("Query Options");
+        queryWS.Range(queryHeader, queryWS.Cell(1, 2)).Merge();
+        rowIndex++;
         if (!string.IsNullOrWhiteSpace(queryResult.RawQueryValues.Select))
         {
-            addRow
+            AddQueryValue
             (
                 queryWS,
                 rowIndex,
                 "Select",
                 queryResult.RawQueryValues.Select
             );
+            rowIndex++;
         }
         if (!string.IsNullOrWhiteSpace(queryResult.RawQueryValues.Filter))
         {
-            addRow
+            AddQueryValue
             (
                 queryWS,
                 rowIndex,
                 "Filter",
                 queryResult.RawQueryValues.Filter
             );
+            rowIndex++;
         }
         if (!string.IsNullOrWhiteSpace(queryResult.RawQueryValues.OrderBy))
         {
-            addRow
+            AddQueryValue
             (
                 queryWS,
                 rowIndex,
                 "Order By",
                 queryResult.RawQueryValues.OrderBy
             );
+            rowIndex++;
         }
-
-        var stream = new MemoryStream();
-        workbook.SaveAs(stream);
-        return Task.FromResult<Stream>(stream);
+        if (!string.IsNullOrWhiteSpace(queryResult.RawQueryValues.Skip))
+        {
+            AddQueryValue
+            (
+                queryWS,
+                rowIndex,
+                "Skip",
+                queryResult.RawQueryValues.Skip
+            );
+            rowIndex++;
+        }
+        if (!string.IsNullOrWhiteSpace(queryResult.RawQueryValues.Top))
+        {
+            AddQueryValue
+            (
+                queryWS,
+                rowIndex,
+                "Top",
+                queryResult.RawQueryValues.Top
+            );
+        }
+        queryWS.Column(1).AdjustToContents();
+        queryWS.Column(1).Style.Font.Bold = true;
+        queryWS.Column(2).AdjustToContents();
     }
 
-    private void addRow(IXLWorksheet worksheet, int rowIndex, params object[] values)
+    private void AddQueryValue(IXLWorksheet worksheet, int rowIndex, string caption, string value)
     {
-        var columnIndex = 1;
-        foreach (var value in values)
-        {
-            if (value is string str)
-            {
-                worksheet.Cell(rowIndex, columnIndex).SetValue(str);
-            }
-            else
-            {
-                worksheet.Cell(rowIndex, columnIndex).Value = value;
-            }
-            columnIndex++;
-        }
+        var captionCell = worksheet.Cell(rowIndex, 1);
+        captionCell.SetValue(caption);
+        var valueCell = worksheet.Cell(rowIndex, 2);
+        valueCell.SetValue(value);
     }
 
 }

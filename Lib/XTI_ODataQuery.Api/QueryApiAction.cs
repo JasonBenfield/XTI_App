@@ -34,7 +34,7 @@ public sealed class QueryApiAction<TEntity> : IAppApiAction
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
 
-    public IQueryable<TEntity> Execute(ODataQueryOptions options, CancellationToken stoppingToken = default)
+    public IQueryable<TEntity> Execute(ODataQueryOptions<TEntity> options, CancellationToken stoppingToken = default)
     {
         user.EnsureUserHasAccess(Access).Wait(60000, stoppingToken);
         var query = createQuery();
@@ -43,7 +43,7 @@ public sealed class QueryApiAction<TEntity> : IAppApiAction
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(string)).Template();
+        var modelTemplate = new ValueTemplateFromType(typeof(ODataQueryOptions<TEntity>)).Template();
         var resultTemplate = new ValueTemplateFromType(typeof(IQueryable<TEntity>)).Template();
         return new AppApiActionTemplate
         (

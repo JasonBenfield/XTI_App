@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="System.Text.Json" Version="6.0.1" />
+		<PackageReference Include="System.Text.Json" Version="6.0.4" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
 		<PackageReference Include="XTI_TempLog" Version="1.2.27" />
 		<PackageReference Include="XTI_Core.Extensions" Version="1.10.10" />

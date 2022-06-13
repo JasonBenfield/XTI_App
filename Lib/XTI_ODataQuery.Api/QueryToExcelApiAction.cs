@@ -36,7 +36,7 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
 
-    public async Task<WebFileResult> Execute(ODataQueryOptions options, CancellationToken stoppingToken = default)
+    public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Access);
         var query = createQuery();
@@ -49,7 +49,7 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
             .ToArray();
         var queryResult = new QueryResult
         (
-            options.RawValues,
+            new RawQueryValues(options.RawValues),
             selectFields,
             finalQuery
                 .OfType<ISelectExpandWrapper>()
@@ -69,12 +69,12 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
             queryToExcel.DownloadName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
                 ? queryToExcel.DownloadName
                 : $"{queryToExcel.DownloadName}.xlsx"
-        ); 
+        );
     }
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(string)).Template();
+        var modelTemplate = new ValueTemplateFromType(typeof(ODataQueryOptions<TEntity>)).Template();
         var resultTemplate = new ValueTemplateFromType(typeof(WebFileResult)).Template();
         return new AppApiActionTemplate
         (
@@ -82,7 +82,8 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
             FriendlyName,
             Access,
             modelTemplate,
-            resultTemplate
+            resultTemplate,
+            ResourceResultType.Values.QueryToExcel
         );
     }
 }
