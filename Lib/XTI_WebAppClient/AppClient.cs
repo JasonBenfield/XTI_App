@@ -21,7 +21,7 @@ public class AppClient
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
     }
 
-    protected T GetGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, T> createGroup)
+    protected T CreateGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, T> createGroup)
         where T : AppClientGroup
     {
         var group = createGroup
@@ -32,6 +32,19 @@ public class AppClient
         );
         group.SetJsonSerializerOptions(jsonSerializerOptions);
         return group;
+    }
+
+    protected AppClientODataGroup<TEntity> CreateODataGroup<TEntity>(string groupName)
+    {
+        var odataGroup = new AppClientODataGroup<TEntity>
+        (
+            httpClientFactory,
+            xtiTokenAccessor,
+            clientUrl,
+            groupName
+        );
+        odataGroup.SetJsonSerializerOptions(jsonSerializerOptions);
+        return odataGroup;
     }
 
     protected virtual void ConfigureJsonSerializerOptions(JsonSerializerOptions options)

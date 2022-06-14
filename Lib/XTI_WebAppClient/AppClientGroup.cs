@@ -24,16 +24,72 @@ public class AppClientGroup
         this.jsonSerializerOptions = jsonSerializerOptions;
     }
 
-    protected Task<TResult> Post<TResult, TModel>(string action, string modifier, TModel model)
-        => Post<TResult, TModel>(action, modifier, model, "", false, "application/json", true);
+    protected Task<TResult> Post<TResult, TModel>(string action, string modifier, TModel model) =>
+        _Post<TResult, TModel>(action, modifier, model, true);
 
-    protected Task<string> PostForQuery(string action, string modifier, string odataOptions)
-        => Post<string, string>(action, modifier, "", odataOptions, true, "application/json", true);
+    private async Task<TResult> _Post<TResult, TModel>(string action, string modifier, TModel model, bool retryUnauthorized)
+    {
+        var postResult = await GetPostResponse(action, modifier, model, "", "application/json");
+        TResult result;
+        try
+        {
+            if (postResult.IsSuccessful)
+            {
+                var resultContainer = JsonSerializer.Deserialize<ResultContainer<TResult>>
+                (
+                    postResult.Content, jsonSerializerOptions
+                );
+                if (resultContainer == null) { throw new ArgumentNullException(nameof(resultContainer)); }
+                result = resultContainer.Data ?? throw new ArgumentNullException("resultContainer.Data");
+            }
+            else if (postResult.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
+            {
+                xtiTokenAccessor.Reset();
+                result = await _Post<TResult, TModel>(action, modifier, model, false);
+            }
+            else
+            {
+                throw CreatePostException(postResult);
+            }
+        }
+        catch (JsonException ex)
+        {
+            throw CreateJsonException(postResult, ex);
+        }
+        return result;
+    }
 
     protected Task<string> PostForContent<TModel>(string action, string modifier, TModel model)
-        => Post<string, TModel>(action, modifier, model, "", true, "text/plain", true);
+        => _PostForContent(action, modifier, model, true);
 
-    private async Task<TResult> Post<TResult, TModel>(string action, string modifier, TModel model, string query, bool isContent, string contentType, bool retryUnauthorized)
+    private async Task<string> _PostForContent<TModel>(string action, string modifier, TModel model, bool retryUnauthorized)
+    {
+        var postResult = await GetPostResponse(action, modifier, model, "", "text/plain");
+        string result;
+        try
+        {
+            if (postResult.IsSuccessful)
+            {
+                result = postResult.Content;
+            }
+            else if (postResult.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
+            {
+                xtiTokenAccessor.Reset();
+                result = await _PostForContent(action, modifier, model, false);
+            }
+            else
+            {
+                throw CreatePostException(postResult);
+            }
+        }
+        catch (JsonException ex)
+        {
+            throw CreateJsonException(postResult, ex);
+        }
+        return result;
+    }
+
+    private async Task<PostResult> GetPostResponse(string action, string modifier, object? model, string query, string contentType)
     {
         using var client = httpClientFactory.CreateClient();
         if (!action.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
@@ -55,57 +111,38 @@ public class AppClientGroup
         {
             transformedModel = form.Export();
         }
-        var serialized = model is string modelString 
-            ? modelString 
+        var serialized = model is string modelString
+            ? modelString
             : JsonSerializer.Serialize(model, jsonSerializerOptions);
         using var content = new StringContent(serialized, Encoding.UTF8, contentType);
         using var response = await client.PostAsync(url, content);
         var responseContent = await response.Content.ReadAsStringAsync();
-        TResult result;
-        try
-        {
-            if (response.IsSuccessStatusCode)
-            {
-                var resultContainer = JsonSerializer.Deserialize<ResultContainer<TResult>>
-                (
-                    responseContent, jsonSerializerOptions
-                );
-                if (resultContainer == null) { throw new ArgumentNullException(nameof(resultContainer)); }
-                result = resultContainer.Data ?? throw new ArgumentNullException("resultContainer.Data");
-            }
-            else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
-            {
-                xtiTokenAccessor.Reset();
-                result = await Post<TResult, TModel>(action, modifier, model, query, isContent, contentType, false);
-            }
-            else if (isContent)
-            {
-                result = (TResult)(object)responseContent;
-            }
-            else
-            {
-                var resultContainer = string.IsNullOrWhiteSpace(responseContent)
-                    ? new ResultContainer<ErrorModel[]> { Data = new ErrorModel[0] }
-                    : JsonSerializer.Deserialize<ResultContainer<ErrorModel[]>>(responseContent);
-                throw new AppClientException
-                (
-                    url,
-                    response.StatusCode,
-                    responseContent,
-                    resultContainer?.Data ?? new ErrorModel[0]
-                );
-            }
-        }
-        catch (JsonException ex)
-        {
-            throw new AppClientException
-            (
-                url,
-                response.StatusCode,
-                responseContent,
-                new[] { new ErrorModel { Message = ex.Message } }
-            );
-        }
-        return result;
+        return new PostResult(response.IsSuccessStatusCode, response.StatusCode, responseContent, url);
     }
+
+    private static AppClientException CreatePostException(PostResult postResult)
+    {
+        var resultContainer = string.IsNullOrWhiteSpace(postResult.Content)
+            ? new ResultContainer<ErrorModel[]> { Data = new ErrorModel[0] }
+            : JsonSerializer.Deserialize<ResultContainer<ErrorModel[]>>(postResult.Content);
+        var ex = new AppClientException
+        (
+            postResult.Url,
+            postResult.StatusCode,
+            postResult.Content,
+            resultContainer?.Data ?? new ErrorModel[0]
+        );
+        return ex;
+    }
+
+    private static AppClientException CreateJsonException(PostResult postResult, JsonException ex) =>
+        new AppClientException
+        (
+            postResult.Url,
+            postResult.StatusCode,
+            postResult.Content,
+            new[] { new ErrorModel { Message = ex.Message } }
+        );
+
+    private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, string Content, string Url);
 }

@@ -91,6 +91,11 @@ public sealed class AppApiActionTemplate
         return formTemplates.Distinct();
     }
 
+    public IEnumerable<QueryableValueTemplate> QueryableTemplates() =>
+        ResultTemplate is QueryableValueTemplate queryable
+            ? new[] { queryable }
+            : new QueryableValueTemplate[0];
+
     public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>
         IsView() || IsPartialView() || IsRedirect()
             ? ModelTemplate.ObjectTemplates()
