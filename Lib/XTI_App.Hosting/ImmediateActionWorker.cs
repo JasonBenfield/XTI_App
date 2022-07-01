@@ -22,8 +22,8 @@ public sealed class ImmediateActionWorker : BackgroundService, IWorker
             var actionExecutor = new ActionRunner
             (
                 sp,
-                agendaItem.GroupName.Value,
-                agendaItem.ActionName.Value
+                agendaItem.GroupName.DisplayText,
+                agendaItem.ActionName.DisplayText
             );
             await actionExecutor.Run(stoppingToken);
         }
