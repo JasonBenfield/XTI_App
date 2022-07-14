@@ -36,7 +36,7 @@ public sealed class PageContext : IPageContext
     {
         CacheBust = await cacheBust.Value();
         var app = await appContext.App();
-        AppTitle = app.Title;
+        AppTitle = app.App.Title;
         EnvironmentName = xtiEnv.EnvironmentName;
         var userName = await currentUserName.Value();
         if (userName.Equals(AppUserName.Anon))

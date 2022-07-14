@@ -68,7 +68,7 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             queryToExcel.DownloadName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
                 ? queryToExcel.DownloadName
-                : $"{queryToExcel.DownloadName}.xlsx"
+                : $"{queryToExcel.DownloadName}_{DateTime.Now:yyMMdd_HHmmss}.xlsx"
         );
     }
 

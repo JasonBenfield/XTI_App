@@ -50,7 +50,11 @@ public sealed class AppKey : IEquatable<AppKey>
     public AppName Name { get; }
     public AppType Type { get; }
 
+    public string Format() => $"{Name.DisplayText} {Type.DisplayText}";
+
     public string Serialize() => value;
+
+    public override string ToString() => $"{nameof(AppKey)} {Format()}";
 
     public bool Equals(AppKey? other) => value == other?.value;
 

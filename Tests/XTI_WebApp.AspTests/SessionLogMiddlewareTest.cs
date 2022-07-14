@@ -114,7 +114,7 @@ internal sealed class SessionLogMiddlewareTest
         input.UserContext.SetCurrentUser(userName);
         input.TestAuthOptions.IsEnabled = true;
         input.TestAuthOptions.SessionKey = Guid.NewGuid().ToString("N");
-        input.TestAuthOptions.User = input.UserContext.User(userName);
+        input.TestAuthOptions.User = await input.UserContext.User(userName);
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         var sessionFiles = input.CurrentAction.TempLog?.StartSessionFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
         Assert.That(sessionFiles.Length, Is.EqualTo(0), "Should not start session when session key exists");
@@ -126,12 +126,12 @@ internal sealed class SessionLogMiddlewareTest
         var input = await setup();
         input.UserContext.SetCurrentUser(AppUserName.Anon);
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var anonUser = input.UserContext.User(AppUserName.Anon);
+        var anonUser = await input.UserContext.User(AppUserName.Anon);
         var sessionFiles = input.CurrentAction.TempLog?.StartSessionFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
         Assert.That(sessionFiles.Length, Is.EqualTo(1), "Should use session for authenticated user");
         var serializedSession = await sessionFiles[0].Read();
         var session = XtiSerializer.Deserialize<StartSessionModel>(serializedSession);
-        Assert.That(session.UserName, Is.EqualTo(anonUser.UserName().Value), "Should create session with anonymous user");
+        Assert.That(session.UserName, Is.EqualTo(anonUser.User.UserName.Value), "Should create session with anonymous user");
     }
 
     [Test]
@@ -169,12 +169,12 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldLogExplicitVersionWithRequest()
     {
         var input = await setup();
-        var explicitVersion = await input.AppContext.Version();
-        var uri = $"/Fake/{explicitVersion.Key().Value}/Controller1/Action1";
+        var explicitVersion = input.AppContext.GetCurrentApp().Version;
+        var uri = $"/Fake/{explicitVersion.VersionKey.Value}/Controller1/Action1";
         await input.GetAsync(uri);
         var request = await getStartRequest(input);
         var path = XtiPath.Parse(request.Path);
-        Assert.That(path.Version, Is.EqualTo(explicitVersion.Key()), "Should log explicit version");
+        Assert.That(path.Version, Is.EqualTo(explicitVersion.VersionKey), "Should log explicit version");
     }
 
     private static async Task<StartRequestModel> getStartRequest(TestInput input)

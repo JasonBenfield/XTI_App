@@ -8,9 +8,9 @@ public sealed class FakeHttpUser
 {
     public ClaimsPrincipal Create() => new ClaimsPrincipal();
 
-    public ClaimsPrincipal Create(string sessionKey, IAppUser user)
+    public ClaimsPrincipal Create(string sessionKey, UserContextModel userContextModel)
     {
-        var claims = new XtiClaimsCreator(sessionKey, user.UserName()).Values();
+        var claims = new XtiClaimsCreator(sessionKey, userContextModel.User.UserName).Values();
         var identity = new ClaimsIdentity(claims, "Test");
         return new ClaimsPrincipal(identity);
     }

@@ -41,10 +41,4 @@ internal static class Extensions
         var setup = services.GetRequiredService<FakeAppSetup>();
         return setup.Run(AppVersionKey.Current);
     }
-
-    public static FakeApp FakeApp(this IServiceProvider services)
-    {
-        var setup = services.GetRequiredService<FakeAppSetup>();
-        return setup.App;
-    }
 }

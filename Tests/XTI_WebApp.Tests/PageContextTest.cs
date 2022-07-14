@@ -20,7 +20,7 @@ internal sealed class PageContextTest
         var pageContext = await execute(services);
         var appContext = services.GetRequiredService<IAppContext>();
         var app = await appContext.App();
-        Assert.That(pageContext.AppTitle, Is.EqualTo(app.Title), "Should set app title");
+        Assert.That(pageContext.AppTitle, Is.EqualTo(app.App.Title), "Should set app title");
     }
 
     [Test]
@@ -76,8 +76,8 @@ internal sealed class PageContextTest
         var services = await setup(AppVersionKey.Current);
         var pageContext = await execute(services);
         var appContext = services.GetRequiredService<FakeAppContext>();
-        var version = await appContext.Version();
-        Assert.That(pageContext?.CacheBust, Is.EqualTo(version.Key().DisplayText), "Should set cacheBust to current version");
+        var version = appContext.GetCurrentApp().Version;
+        Assert.That(pageContext?.CacheBust, Is.EqualTo(version.VersionKey.DisplayText), "Should set cacheBust to current version");
     }
 
     [Test]

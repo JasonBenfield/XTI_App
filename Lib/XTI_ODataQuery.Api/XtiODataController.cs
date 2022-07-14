@@ -17,9 +17,10 @@ public class XtiODataController<TEntity> : ODataController
     [HttpPost]
     [HttpGet]
     [EnableQuery]
-    public IQueryable<TEntity> Get(ODataQueryOptions<TEntity> model, CancellationToken ct) =>
+    public Task<IQueryable<TEntity>> Get(ODataQueryOptions<TEntity> model, CancellationToken ct) =>
         groupApi.Query<TEntity>(nameof(Get)).Execute(model, ct);
 
+    [Route("ToExcel")]
     public async Task<IActionResult> ToExcel(ODataQueryOptions<TEntity> model, CancellationToken ct)
     {
         var result = await groupApi.QueryToExcel<TEntity>(nameof(ToExcel)).Execute(model, ct);

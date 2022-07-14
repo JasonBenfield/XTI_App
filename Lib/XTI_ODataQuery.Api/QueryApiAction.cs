@@ -34,9 +34,9 @@ public sealed class QueryApiAction<TEntity> : IAppApiAction
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
 
-    public IQueryable<TEntity> Execute(ODataQueryOptions<TEntity> options, CancellationToken stoppingToken = default)
+    public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, CancellationToken stoppingToken = default)
     {
-        user.EnsureUserHasAccess(Access).Wait(60000, stoppingToken);
+        await user.EnsureUserHasAccess(Access);
         var query = createQuery();
         return query.Execute(options);
     }

@@ -8,8 +8,8 @@ public sealed class FakeAppSetup : IAppSetup
     private readonly FakeAppContext appContext;
     private readonly FakeUserContext userContext;
 
-    private FakeApp? app;
-    private FakeAppUser? user;
+    private AppContextModel? app;
+    private UserContextModel? user;
 
     public FakeAppSetup(FakeAppApiFactory apiFactory, FakeAppContext appContext, FakeUserContext userContext)
     {
@@ -18,13 +18,13 @@ public sealed class FakeAppSetup : IAppSetup
         this.userContext = userContext;
     }
 
-    public FakeApp App
+    public AppContextModel App
     {
         get => app ?? throw new ArgumentNullException(nameof(app));
         private set => app = value;
     }
 
-    public FakeAppUser User
+    public UserContextModel User
     {
         get => user ?? throw new ArgumentNullException(nameof(user));
         private set => user = value;
@@ -36,9 +36,8 @@ public sealed class FakeAppSetup : IAppSetup
         await setup.Run(versionKey);
         App = setup.App;
         var departmentModCategoryName = new ModifierCategoryName("Department");
-        var departmentModCategory = App.ModCategory(departmentModCategoryName);
-        departmentModCategory.AddModifier(new ModifierKey("IT"), "IT");
-        departmentModCategory.AddModifier(new ModifierKey("HR"), "HR");
+        App = appContext.AddModifier(App, departmentModCategoryName,new ModifierKey("IT"), "IT");
+        App = appContext.AddModifier(App, departmentModCategoryName, new ModifierKey("HR"), "HR");
         var userName = new AppUserName("xartogg");
         User = userContext.AddUser(userName);
         userContext.SetCurrentUser(userName);
