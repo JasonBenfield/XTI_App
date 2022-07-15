@@ -2,13 +2,12 @@
 
 public sealed record AppContextModifierCategoryModel
 (
-    int ID,
-    ModifierCategoryName Name,
+    ModifierCategoryModel ModifierCategory,
     ModifierModel[] Modifiers
 )
 {
     public AppContextModifierCategoryModel()
-        :this(0, ModifierCategoryName.Default, new ModifierModel[0])
+        :this(new ModifierCategoryModel(), new ModifierModel[0])
     {
     }
 }

@@ -58,10 +58,6 @@ public class ValueTemplateFromType
         {
             valueTemplate = new ArrayValueTemplate(source);
         }
-        else if (isQueryable(source))
-        {
-            valueTemplate = new QueryableValueTemplate(source);
-        }
         else if (isDerivedFromNumericValue(source))
         {
             valueTemplate = new NumericValueTemplate(source);
@@ -102,9 +98,6 @@ public class ValueTemplateFromType
     private static bool isEnumerable(Type targetType) =>
         targetType.IsGenericType &&
         (typeof(IEnumerable<>)).IsAssignableFrom(targetType.GetGenericTypeDefinition());
-
-    private static bool isQueryable(Type targetType) =>
-        targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(IQueryable<>);
 
     private static bool isDerivedFromNumericValue(Type objectType) =>
         typeof(NumericValue).IsAssignableFrom(objectType);

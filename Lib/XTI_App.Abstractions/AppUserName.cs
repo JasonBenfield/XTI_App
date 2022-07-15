@@ -6,10 +6,10 @@ public sealed class AppUserName : TextValue, IEquatable<AppUserName>
 {
     public static readonly AppUserName Anon = new AppUserName("xti_anon");
 
-    public static AppUserName InstallationUser(string machineName) =>
+    internal static AppUserName InstallerUser(string machineName) =>
         new AppUserName($"xti_inst[{machineName}]", $"xti installer [{machineName}]");
 
-    public static AppUserName SystemUser(AppKey appKey, string machineName) =>
+    internal static AppUserName SystemUser(AppKey appKey, string machineName) =>
         new AppUserName
         (
             $"xti_sys[{appKey.Serialize()}][{machineName}]",

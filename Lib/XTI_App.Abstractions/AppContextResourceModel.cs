@@ -2,20 +2,14 @@
 
 public sealed record AppContextResourceModel
 (
-    int ID,
-    ResourceName Name,
-    bool IsAnonymousAllowed,
-    ResourceResultType ResultType,
+    ResourceModel Resource,
     AppRoleModel[] AllowedRoles
 )
 {
     public AppContextResourceModel()
-        :this
+        : this
         (
-            0, 
-            ResourceName.Unknown, 
-            false, 
-            ResourceResultType.Values.GetDefault(), 
+            new ResourceModel(),
             new AppRoleModel[0]
         )
     {

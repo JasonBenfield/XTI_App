@@ -7,10 +7,10 @@ public sealed record UserContextModel(AppUserModel User, UserContextRoleModel[] 
     {
     }
 
-    public AppRoleModel[] GetRoles(ModifierKey modKey)
+    public AppRoleModel[] GetRoles(int modCategoryID, ModifierKey modKey)
     {
-        var role = ModifiedRoles.FirstOrDefault(r => r.ModifierKey.Equals(modKey));
-        if (role == null && !modKey.Equals(ModifierKey.Default))
+        var role = ModifiedRoles.FirstOrDefault(r => r.ModifierCategoryID == modCategoryID && r.ModifierKey.Equals(modKey));
+        if (role == null)
         {
             role = ModifiedRoles.FirstOrDefault(r => r.ModifierKey.Equals(ModifierKey.Default));
         }

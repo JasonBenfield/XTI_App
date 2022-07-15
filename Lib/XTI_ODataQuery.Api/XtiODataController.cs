@@ -5,7 +5,7 @@ using XTI_App.Api;
 
 namespace XTI_ODataQuery.Api;
 
-public class XtiODataController<TEntity> : ODataController
+public class XtiODataController<TArgs, TEntity> : ODataController
 {
     private readonly IAppApiGroup groupApi;
 
@@ -17,13 +17,13 @@ public class XtiODataController<TEntity> : ODataController
     [HttpPost]
     [HttpGet]
     [EnableQuery]
-    public Task<IQueryable<TEntity>> Get(ODataQueryOptions<TEntity> model, CancellationToken ct) =>
-        groupApi.Query<TEntity>(nameof(Get)).Execute(model, ct);
+    public Task<IQueryable<TEntity>> Get(ODataQueryOptions<TEntity> odataQuery, TArgs model, CancellationToken ct)=>
+        groupApi.Query<TArgs, TEntity>(nameof(Get)).Execute(odataQuery, model, ct);
 
     [Route("ToExcel")]
-    public async Task<IActionResult> ToExcel(ODataQueryOptions<TEntity> model, CancellationToken ct)
+    public async Task<IActionResult> ToExcel(ODataQueryOptions<TEntity> odataQuery, TArgs model, CancellationToken ct)
     {
-        var result = await groupApi.QueryToExcel<TEntity>(nameof(ToExcel)).Execute(model, ct);
+        var result = await groupApi.QueryToExcel<TArgs, TEntity>(nameof(ToExcel)).Execute(odataQuery, model, ct);
         return File(result.FileStream, result.ContentType, result.DownloadName);
     }
 }

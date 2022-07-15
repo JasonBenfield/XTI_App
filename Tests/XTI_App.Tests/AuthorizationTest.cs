@@ -224,34 +224,8 @@ internal sealed class AuthorizationTest
 
     private void addRolesToUser(IServiceProvider services, ModifierKey modifierKey, params AppRoleName[] roles)
     {
-        var user = retrieveCurrentUser(services);
         var userContext = services.GetRequiredService<FakeUserContext>();
-        var appContext = services.GetRequiredService<FakeAppContext>();
-        var modifiedRole = user.ModifiedRoles
-            .Where(mr => mr.ModifierKey.Equals(modifierKey))
-            .FirstOrDefault()
-            ?? new UserContextRoleModel(modifierKey, new AppRoleModel[0]);
-        modifiedRole = modifiedRole with
-        {
-            Roles = modifiedRole.Roles
-                .Union
-                (
-                    roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
-                )
-                .Distinct()
-                .ToArray()
-        };
-        userContext.Update
-        (
-            user,
-            u => u with
-            {
-                ModifiedRoles = u.ModifiedRoles
-                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
-                    .Union(new[] { modifiedRole })
-                    .ToArray()
-            }
-        );
+        userContext.AddRolesToUser(modifierKey, roles);
     }
 
     private async Task<IServiceProvider> setup()

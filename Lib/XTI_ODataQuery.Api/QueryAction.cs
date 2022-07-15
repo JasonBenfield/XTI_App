@@ -2,7 +2,7 @@
 
 namespace XTI_ODataQuery.Api;
 
-public interface QueryAction<TEntity>
+public interface QueryAction<TArgs, TEntity>
 {
-    IQueryable<TEntity> Execute(ODataQueryOptions<TEntity> options);
+    Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TArgs model);
 }

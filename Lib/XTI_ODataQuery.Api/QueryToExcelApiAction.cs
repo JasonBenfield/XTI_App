@@ -7,10 +7,10 @@ using XTI_WebApp.Api;
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
+public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
 {
     private readonly IAppApiUser user;
-    private readonly Func<QueryAction<TEntity>> createQuery;
+    private readonly Func<QueryAction<TArgs, TEntity>> createQuery;
     private readonly Func<IQueryToExcel> createQueryToExcel;
 
     public QueryToExcelApiAction
@@ -18,7 +18,7 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
         XtiPath path,
         ResourceAccess access,
         IAppApiUser user,
-        Func<QueryAction<TEntity>> createQuery,
+        Func<QueryAction<TArgs, TEntity>> createQuery,
         Func<IQueryToExcel> createQueryToExcel,
         string friendlyName
     )
@@ -36,11 +36,12 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
 
-    public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, CancellationToken stoppingToken = default)
+    public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TArgs model, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Access);
-        var query = createQuery();
-        var finalQuery = options.ApplyTo(query.Execute(options));
+        var queryAction = createQuery();
+        var queryable = await queryAction.Execute(options, model);
+        var finalQuery = options.ApplyTo(queryable);
         var selectFields = options.SelectExpand.SelectExpandClause.SelectedItems
             .OfType<PathSelectItem>()
             .Select(item => item.SelectedPath)
@@ -74,7 +75,7 @@ public sealed class QueryToExcelApiAction<TEntity> : IAppApiAction
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(ODataQueryOptions<TEntity>)).Template();
+        var modelTemplate = new ValueTemplateFromType(typeof(TArgs)).Template();
         var resultTemplate = new ValueTemplateFromType(typeof(WebFileResult)).Template();
         return new AppApiActionTemplate
         (

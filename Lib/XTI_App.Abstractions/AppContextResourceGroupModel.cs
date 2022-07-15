@@ -2,20 +2,14 @@
 
 public sealed record AppContextResourceGroupModel
 (
-    int ID,
-    ResourceGroupName Name,
-    bool IsAnonymousAllowed,
-    AppContextModifierCategoryModel ModifierCategory,
+    ResourceGroupModel ResourceGroup,
     AppContextResourceModel[] Resources
 )
 {
     public AppContextResourceGroupModel()
         :this
         (
-            0,
-            ResourceGroupName.Unknown, 
-            false, 
-            new AppContextModifierCategoryModel(), 
+            new ResourceGroupModel(), 
             new AppContextResourceModel[0]
         )
     {

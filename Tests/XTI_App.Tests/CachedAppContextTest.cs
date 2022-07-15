@@ -41,7 +41,8 @@ internal sealed class CachedAppContextTest
                     originalApp.App.ID,
                     originalApp.App.AppKey,
                     originalApp.App.VersionName,
-                    "New Title"
+                    "New Title",
+                    new ModifierKey(originalApp.App.AppKey.Format())
                 )
             }
         );
@@ -85,6 +86,6 @@ internal sealed class CachedAppContextTest
     private FakeAppContext getSourceAppContext(IServiceProvider services) =>
         (FakeAppContext)services.GetRequiredService<ISourceAppContext>();
 
-    private IAppContext getAppContext(IServiceProvider services) => 
+    private IAppContext getAppContext(IServiceProvider services) =>
         services.GetRequiredService<IAppContext>();
 }

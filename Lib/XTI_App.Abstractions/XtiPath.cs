@@ -6,12 +6,13 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     {
         var parts = str.Split('/', StringSplitOptions.RemoveEmptyEntries);
         var names = new List<string>(parts.Concat(Enumerable.Repeat("", 5 - parts.Length)));
+        var isOData = names[2] == "odata";
         return new XtiPath
         (
             names[0],
             AppVersionKey.Parse(names[1]),
-            new ResourceGroupName(names[2]),
-            new ResourceName(names[3]),
+            new ResourceGroupName(isOData ? names[3] : names[2]),
+            new ResourceName(isOData ? "Get" : names[3]),
             ModifierKey.FromValue(names[4])
         );
     }

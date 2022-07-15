@@ -21,9 +21,10 @@ public sealed class WebActionRunnerFactory : IActionRunnerFactory
     {
         var apiFactory = services.GetRequiredService<AppApiFactory>();
         var userContext = services.GetRequiredService<IUserContext>();
+        var appContext = services.GetRequiredService<IAppContext>();
         var systemUserName = services.GetRequiredService<SystemCurrentUserName>();
         var pathAccessor = services.GetRequiredService<ActionRunnerXtiPathAccessor>();
-        var apiUser = new AppApiUser(userContext, systemUserName, pathAccessor);
+        var apiUser = new AppApiUser(userContext, appContext, systemUserName, pathAccessor);
         return apiFactory.Create(apiUser);
     }
 

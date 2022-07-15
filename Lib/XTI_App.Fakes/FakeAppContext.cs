@@ -61,7 +61,7 @@ public sealed class FakeAppContext : ISourceAppContext
         string targetKey
     )
     {
-        var modCategory = appContext.ModCategory(categoryName);
+        var modCategory = GetModifierCategory(appContext, categoryName);
         modCategory = modCategory with
         {
             Modifiers = modCategory.Modifiers
@@ -69,7 +69,7 @@ public sealed class FakeAppContext : ISourceAppContext
                 (
                     new[]
                     {
-                        new ModifierModel(modifierID, modCategory.ID, modifierKey, targetKey, targetKey)
+                        new ModifierModel(modifierID, modCategory.ModifierCategory.ID, modifierKey, targetKey, targetKey)
                     }
                 )
                 .ToArray()
@@ -80,24 +80,18 @@ public sealed class FakeAppContext : ISourceAppContext
             appContext,
             a => a with
             {
-                ResourceGroups = appContext.ResourceGroups
-                    .Select
-                    (
-                        rg => new AppContextResourceGroupModel
-                        (
-                            rg.ID,
-                            rg.Name,
-                            rg.IsAnonymousAllowed,
-                            rg.ModifierCategory.Equals(categoryName)
-                                ? modCategory
-                                : rg.ModifierCategory,
-                            rg.Resources
-                        )
-                    )
+                ModifierCategories = a.ModifierCategories
+                    .Where(mc => !mc.ModifierCategory.Name.Equals(categoryName))
+                    .Union(new[] { modCategory })
                     .ToArray()
             }
         );
         return updated;
+    }
+
+    public AppContextModifierCategoryModel GetModifierCategory(AppContextModel appContext, ModifierCategoryName categoryName)
+    {
+        return appContext.ModifierCategories.First(mc => mc.ModifierCategory.Name.Equals(categoryName));
     }
 
     private AppContextModel AddNewApp(AppApiTemplateModel appTemplate)
@@ -112,14 +106,18 @@ public sealed class FakeAppContext : ISourceAppContext
                 {
                     var modCategory = new AppContextModifierCategoryModel
                     (
-                        modCategoryID,
-                        new ModifierCategoryName(mc),
+                        new ModifierCategoryModel
+                        (
+                            modCategoryID,
+                            new ModifierCategoryName(mc)
+                        ),
                         new ModifierModel[0]
                     );
                     modCategoryID++;
                     return modCategory;
                 }
-            );
+            )
+            .ToArray();
         var roles = appTemplate.RecursiveRoles()
             .Union(AppRoleName.DefaultRoles().Select(r => r.DisplayText))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -140,9 +138,9 @@ public sealed class FakeAppContext : ISourceAppContext
                 id,
                 appTemplate.AppKey,
                 new AppVersionName("Fake"),
-                appTemplate.AppKey.Name.DisplayText
+                appTemplate.AppKey.Name.DisplayText,
+                new ModifierKey(appTemplate.AppKey.Format())
             ),
-            new ModifierKey(appTemplate.AppKey.Serialize()),
             new XtiVersionModel
             (
                 1,
@@ -154,26 +152,33 @@ public sealed class FakeAppContext : ISourceAppContext
                 DateTimeOffset.Now
             ),
             roles,
+            modCategories,
             appTemplate.GroupTemplates.Select
             (
                 g =>
                 {
                     var group = new AppContextResourceGroupModel
                     (
-                        resourceGroupID,
-                        new ResourceGroupName(g.Name),
-                        g.IsAnonymousAllowed,
-                        modCategories.First(mc => mc.Name.Equals(g.ModCategory)),
+                        new ResourceGroupModel
+                        (
+                            resourceGroupID,
+                            modCategories.First(mc => mc.ModifierCategory.Name.Equals(g.ModCategory)).ModifierCategory.ID,
+                            new ResourceGroupName(g.Name),
+                            g.IsAnonymousAllowed
+                        ),
                         g.ActionTemplates.Select
                         (
                             a =>
                             {
                                 var resource = new AppContextResourceModel
                                 (
-                                    resourceID,
-                                    new ResourceName(a.Name),
-                                    a.IsAnonymousAllowed,
-                                    a.ResultType,
+                                    new ResourceModel
+                                    (
+                                        resourceID,
+                                        new ResourceName(a.Name),
+                                        a.IsAnonymousAllowed,
+                                        a.ResultType
+                                    ),
                                     a.Roles
                                         .Select(r => roles.First(role => role.Name.Equals(r)))
                                         .ToArray()

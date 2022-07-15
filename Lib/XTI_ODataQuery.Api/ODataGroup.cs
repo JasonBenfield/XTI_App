@@ -2,12 +2,12 @@
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class ODataGroup<TEntity> : AppApiGroupWrapper
+public sealed class ODataGroup<TArgs, TEntity> : AppApiGroupWrapper
 {
     public ODataGroup
     (
         AppApiGroup source,
-        Func<QueryAction<TEntity>> createQuery,
+        Func<QueryAction<TArgs, TEntity>> createQuery,
         Func<DefaultQueryToExcelBuilder>? createQueryToExcelBuilder = null,
         ResourceAccess? access = null
     )
@@ -28,6 +28,6 @@ public sealed class ODataGroup<TEntity> : AppApiGroupWrapper
         );
     }
 
-    public QueryApiAction<TEntity> Get { get; }
-    public QueryToExcelApiAction<TEntity> ToExcel { get; }
+    public QueryApiAction<TArgs, TEntity> Get { get; }
+    public QueryToExcelApiAction<TArgs, TEntity> ToExcel { get; }
 }

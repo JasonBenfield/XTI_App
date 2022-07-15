@@ -1,17 +1,20 @@
-﻿using XTI_App.Abstractions;
+﻿using System.Linq;
+using XTI_App.Abstractions;
 using XTI_App.Api;
 
 namespace XTI_App.Fakes;
 
 public sealed class FakeUserContext : ISourceUserContext
 {
+    private readonly FakeAppContext appContext;
     private readonly FakeCurrentUserName currentUserName;
     private readonly List<UserContextModel> userContexts = new();
 
     private static int userID = 1001;
 
-    public FakeUserContext(FakeCurrentUserName currentUserName)
+    public FakeUserContext(FakeAppContext appContext, FakeCurrentUserName currentUserName)
     {
+        this.appContext = appContext;
         AddUser(AppUserName.Anon);
         this.currentUserName = currentUserName;
     }
@@ -61,6 +64,76 @@ public sealed class FakeUserContext : ISourceUserContext
             userContexts.Add(user);
         }
         return user;
+    }
+
+    public void AddRolesToUser(params AppRoleName[] roles) =>
+        AddRolesToUser(ModifierKey.Default, roles);
+
+    public void AddRolesToUser(ModifierKey modifierKey, params AppRoleName[] roles)
+    {
+        var user = GetUser(GetCurrentUserName());
+        var modCategory = appContext.GetModifierCategory
+        (
+            appContext.GetCurrentApp(),
+            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
+        );
+        var modifiedRole = user.ModifiedRoles
+            .Where(mr => mr.ModifierKey.Equals(modifierKey))
+            .FirstOrDefault()
+            ?? new UserContextRoleModel(modCategory.ModifierCategory.ID, modifierKey, new AppRoleModel[0]);
+        modifiedRole = modifiedRole with
+        {
+            Roles = modifiedRole.Roles
+                .Union
+                (
+                    roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
+                )
+                .Distinct()
+                .ToArray()
+        };
+        Update
+        (
+            user,
+            u => u with
+            {
+                ModifiedRoles = u.ModifiedRoles
+                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
+                    .Union(new[] { modifiedRole })
+                    .ToArray()
+            }
+        );
+    }
+
+    public void SetUserRoles(params AppRoleName[] roles) =>
+        SetUserRoles(ModifierKey.Default, roles);
+
+    public void SetUserRoles(ModifierKey modifierKey, params AppRoleName[] roles)
+    {
+        var user = GetUser(GetCurrentUserName());
+        var modCategory = appContext.GetModifierCategory
+        (
+            appContext.GetCurrentApp(),
+            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
+        );
+        var modifiedRole = user.ModifiedRoles
+            .Where(mr => mr.ModifierKey.Equals(modifierKey))
+            .FirstOrDefault()
+            ?? new UserContextRoleModel(modCategory.ModifierCategory.ID, modifierKey, new AppRoleModel[0]);
+        modifiedRole = modifiedRole with
+        {
+            Roles = roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
+        };
+        Update
+        (
+            user,
+            u => u with
+            {
+                ModifiedRoles = u.ModifiedRoles
+                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
+                    .Union(new[] { modifiedRole })
+                    .ToArray()
+            }
+        );
     }
 
     private int getUniqueID()

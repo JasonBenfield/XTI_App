@@ -5,17 +5,17 @@ using XTI_Core;
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class QueryApiAction<TEntity> : IAppApiAction
+public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
 {
     private readonly IAppApiUser user;
-    private readonly Func<QueryAction<TEntity>> createQuery;
+    private readonly Func<QueryAction<TModel, TEntity>> createQuery;
 
     public QueryApiAction
     (
         XtiPath path,
         ResourceAccess access,
         IAppApiUser user,
-        Func<QueryAction<TEntity>> createQuery,
+        Func<QueryAction<TModel, TEntity>> createQuery,
         string friendlyName
     )
     {
@@ -34,17 +34,18 @@ public sealed class QueryApiAction<TEntity> : IAppApiAction
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
 
-    public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, CancellationToken stoppingToken = default)
+    public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TModel model, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Access);
-        var query = createQuery();
-        return query.Execute(options);
+        var queryAction = createQuery();
+        var queryable = await queryAction.Execute(options, model);
+        return queryable;
     }
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(ODataQueryOptions<TEntity>)).Template();
-        var resultTemplate = new ValueTemplateFromType(typeof(IQueryable<TEntity>)).Template();
+        var modelTemplate = new ValueTemplateFromType(typeof(TModel)).Template();
+        var resultTemplate = new QueryableValueTemplate(typeof(IQueryable<TEntity>));
         return new AppApiActionTemplate
         (
             Path.Action.DisplayText, 

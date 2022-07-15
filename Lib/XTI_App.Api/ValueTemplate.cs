@@ -173,7 +173,7 @@ public sealed class QueryableValueTemplate : ValueTemplate, IEquatable<Queryable
     private readonly string value;
     private readonly int hashCode;
 
-    internal QueryableValueTemplate(Type source)
+    public QueryableValueTemplate(Type source)
     {
         DataType = source;
         ElementTemplate = new ValueTemplateFromType(source.GetGenericArguments()[0]).Template();

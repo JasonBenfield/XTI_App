@@ -14,8 +14,8 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRetrieveUserFromSource()
     {
-        var services = await setup();
-        var userContext = getUserContext(services);
+        var sp = await setup();
+        var userContext = getUserContext(sp);
         var userFromContext = await userContext.User();
         Assert.That
         (
@@ -28,21 +28,24 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRefreshUser()
     {
-        var services = await setup();
-        var sourceUserContext = services.GetRequiredService<FakeUserContext>();
+        var sp = await setup();
+        var appContext = sp.GetRequiredService<FakeAppContext>();
+        var sourceUserContext = sp.GetRequiredService<FakeUserContext>();
         var user = await sourceUserContext.User();
-        var appSetup = services.GetRequiredService<FakeAppSetup>();
-        var cachedUserContext = services.GetRequiredService<ICachedUserContext>();
+        var appSetup = sp.GetRequiredService<FakeAppSetup>();
+        var cachedUserContext = sp.GetRequiredService<ICachedUserContext>();
         var cachedUser1 = await cachedUserContext.User();
+        var modCategoryID = GetDefaultModCategoryID(sp);
         sourceUserContext.Update
         (
             user,
-            u => u with
+            u => (u with
             {
                 ModifiedRoles = new[]
                 {
                     new UserContextRoleModel
                     (
+                        modCategoryID,
                         ModifierKey.Default,
                         new []
                         {
@@ -50,25 +53,31 @@ internal sealed class CachedUserContextTest
                         }
                     )
                 }
-            }
+            })
         );
         cachedUserContext.ClearCache(user.User.UserName);
         var cachedUser2 = await cachedUserContext.User();
         Assert.That
         (
-            cachedUser2.GetRoles(ModifierKey.Default).Select(r => r.Name),
+            cachedUser2.GetRoles(modCategoryID, ModifierKey.Default).Select(r => r.Name),
             Has.One.EqualTo(AppRoleName.Admin),
             "Should clear cache"
         );
     }
 
+    private static int GetDefaultModCategoryID(IServiceProvider sp)
+    {
+        var appContext = sp.GetRequiredService<FakeAppContext>();
+        return appContext.GetModifierCategory(appContext.GetCurrentApp(), ModifierCategoryName.Default).ModifierCategory.ID;
+    }
+
     [Test]
     public async Task ShouldRetrieveDifferentUser()
     {
-        var services = await setup();
-        var userContext = getUserContext(services);
+        var sp = await setup();
+        var userContext = getUserContext(sp);
         await userContext.User();
-        var sourceUserContext = (FakeUserContext)services.GetRequiredService<ISourceUserContext>();
+        var sourceUserContext = (FakeUserContext)sp.GetRequiredService<ISourceUserContext>();
         var anotherUserName = new AppUserName("another.user");
         sourceUserContext.AddUser(anotherUserName);
         sourceUserContext.SetCurrentUser(anotherUserName);
@@ -79,12 +88,13 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRetrieveUserRolesFromSource()
     {
-        var services = await setup();
-        var userContext = getUserContext(services);
+        var sp = await setup();
+        var userContext = getUserContext(sp);
         var user = await userContext.User();
+        var modCategoryID = GetDefaultModCategoryID(sp);
         Assert.That
         (
-            user.GetRoles(ModifierKey.Default).Select(ur => ur.Name),
+            user.GetRoles(modCategoryID, ModifierKey.Default).Select(ur => ur.Name),
             Is.EquivalentTo(new[] { FakeAppRoles.Instance.Viewer }),
             "Should retrieve user roles from source"
         );
@@ -93,12 +103,13 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRetrieveUserRolesFromCache()
     {
-        var services = await setup();
-        var cachedUserContext = services.GetRequiredService<ICachedUserContext>();
+        var sp = await setup();
+        var cachedUserContext = sp.GetRequiredService<ICachedUserContext>();
         var cachedUser1 = await cachedUserContext.User();
-        var userContext = services.GetRequiredService<FakeUserContext>();
-        var appContext = services.GetRequiredService<FakeAppContext>();
+        var userContext = sp.GetRequiredService<FakeUserContext>();
+        var appContext = sp.GetRequiredService<FakeAppContext>();
         var user = await userContext.User();
+        var modCategoryID = GetDefaultModCategoryID(sp);
         userContext.Update
         (
             user,
@@ -108,6 +119,7 @@ internal sealed class CachedUserContextTest
                 {
                     new UserContextRoleModel
                     (
+                        modCategoryID,
                         ModifierKey.Default,
                         new []
                         {
@@ -120,7 +132,7 @@ internal sealed class CachedUserContextTest
         var cachedUser2 = await cachedUserContext.User();
         Assert.That
         (
-            cachedUser2.GetRoles(ModifierKey.Default).Select(r => r.Name),
+            cachedUser2.GetRoles(modCategoryID, ModifierKey.Default).Select(r => r.Name),
             Is.EquivalentTo(new[] { FakeAppRoles.Instance.Viewer }),
             "Should retrieve user roles from source"
         );
@@ -140,6 +152,7 @@ internal sealed class CachedUserContextTest
         var userContext = sp.GetRequiredService<FakeUserContext>();
         var userName = new AppUserName("test.user");
         var user = userContext.AddUser(userName);
+        var modCategoryID = GetDefaultModCategoryID(sp);
         userContext.Update
         (
             user,
@@ -149,6 +162,7 @@ internal sealed class CachedUserContextTest
                 {
                     new UserContextRoleModel
                     (
+                        modCategoryID,
                         ModifierKey.Default,
                         new []
                         {
