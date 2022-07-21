@@ -12,14 +12,25 @@ public sealed record AppContextModel
     public AppContextModel()
         : this
         (
-            new AppModel(), 
-            new XtiVersionModel(), 
-            new AppRoleModel[0], 
+            new AppModel(),
+            new XtiVersionModel(),
+            new AppRoleModel[0],
             new AppContextModifierCategoryModel[0],
             new AppContextResourceGroupModel[0]
         )
     {
     }
+
+    public AppContextResourceModel Resource(ResourceGroupName groupName, ResourceName resourceName)
+    {
+        var resourceGroup = ResourceGroup(groupName);
+        var resource = resourceGroup.Resources.First(r => r.Resource.Name.Equals(resourceName));
+        return resource;
+    }
+
+    public AppContextResourceGroupModel ResourceGroup(ResourceGroupName groupName) =>
+        ResourceGroups
+            .First(rg => rg.ResourceGroup.Name.Equals(groupName));
 
     public AppContextModifierCategoryModel ModCategory(ResourceGroupName name)
     {

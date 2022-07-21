@@ -7,11 +7,11 @@ public sealed class UserGroup : AppApiGroupWrapper
 {
     public UserGroup(AppApiGroup source, IServiceProvider sp) : base(source)
     {
-        Index = source.AddAction
+        GetUserAccess = source.AddAction
         (
-            nameof(Index),
-            () => ViewAppAction<UserStartRequest>.Index()
-        );
+            nameof(GetUserAccess),
+            () => sp.GetRequiredService<GetUserAccessAction>()
+        ); ;
         AccessDenied = source.AddAction
         (
             nameof(AccessDenied),
@@ -24,12 +24,12 @@ public sealed class UserGroup : AppApiGroupWrapper
         );
         Logout = source.AddAction
         (
-            nameof(Logout), 
+            nameof(Logout),
             () => sp.GetRequiredService<LogoutAction>()
         );
     }
 
-    public AppApiAction<UserStartRequest, WebViewResult> Index { get; }
+    public AppApiAction<ResourcePath[], ResourcePathAccess[]> GetUserAccess { get; }
 
     public AppApiAction<EmptyRequest, WebViewResult> AccessDenied { get; }
 

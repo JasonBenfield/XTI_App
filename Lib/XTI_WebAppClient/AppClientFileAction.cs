@@ -3,14 +3,14 @@ using System.Net.Http.Headers;
 
 namespace XTI_WebAppClient;
 
-public sealed class AppClientGetAction<TModel>
+public sealed class AppClientFileAction<TModel>
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientUrl clientUrl;
     private readonly string actionName;
 
-    public AppClientGetAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string actionName)
+    public AppClientFileAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string actionName)
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
@@ -33,10 +33,10 @@ public sealed class AppClientGetAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<string> GetContent(string modifier, TModel model)
-        => _GetContent(modifier, model, true);
+    public Task<AppClientFileResult> GetFile(string modifier, TModel model)
+        => _GetFile(modifier, model, true);
 
-    private async Task<string> _GetContent(string modifier, TModel model, bool retryUnauthorized)
+    private async Task<AppClientFileResult> _GetFile(string modifier, TModel model, bool retryUnauthorized)
     {
         using var client = httpClientFactory.CreateClient();
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
@@ -62,15 +62,21 @@ public sealed class AppClientGetAction<TModel>
             url += $"?{serialized}";
         }
         var response = await client.GetAsync(url);
-        string result;
+        AppClientFileResult result;
         if (response.IsSuccessStatusCode)
         {
-            result = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsByteArrayAsync();
+            result = new AppClientFileResult
+            (
+                content, 
+                response.Content.Headers.ContentType?.MediaType ?? "",
+                response.Content.Headers.ContentDisposition?.FileName ?? ""
+            );
         }
         else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
         {
             xtiTokenAccessor.Reset();
-            result = await _GetContent(modifier, model, false);
+            result = await _GetFile(modifier, model, false);
         }
         else
         {

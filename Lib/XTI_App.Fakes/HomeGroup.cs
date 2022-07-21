@@ -7,6 +7,7 @@ public sealed class HomeGroup : AppApiGroupWrapper
     public HomeGroup(AppApiGroup source)
         : base(source)
     {
+
         DoSomething = source.AddAction
         (
             nameof(DoSomething),

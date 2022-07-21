@@ -113,20 +113,35 @@ internal sealed class FormTest
     }
 
     [Test]
+    public void ShouldNotBeValid_WhenFieldsAreNotEqual()
+    {
+        var form = new FakeForm();
+        form.Password.SetValue("Password");
+        form.Confirm.SetValue("Different");
+        var errorList = new ErrorList();
+        form.Validate(errorList);
+        var errors = errorList.Errors().ToArray();
+        Assert.That(errors.Length, Is.EqualTo(1), "Should not be valid when fields are not equal");
+        Assert.That(errors[0].Message, Is.EqualTo(string.Format(FormErrors.FieldsMustBeEqual, "Password", "Confirm")));
+    }
+
+    [Test]
     public void ShouldImportValues()
     {
         var form = new FakeForm();
         form.Import(new Dictionary<string, object?>
-            {
-                { "TestForm_TestText", "Test Import" },
-                { "TestForm_NegativeNumber", -100 },
-                { "TestForm_PositiveNumber", 100 },
-                { "TestForm_RangedNumber", 11 },
-                { "TestForm_DecimalDropDown", 5.2 },
-                { "TestForm_Question", true },
-                { "TestForm_TestComplex_Field1", "Something" },
-                { "TestForm_TestComplex_Field2", 55 }
-            });
+        {
+            { "TestForm_TestText", "Test Import" },
+            { "TestForm_Password", "Password" },
+            { "TestForm_Confirm", "Password" },
+            { "TestForm_NegativeNumber", -100 },
+            { "TestForm_PositiveNumber", 100 },
+            { "TestForm_RangedNumber", 11 },
+            { "TestForm_DecimalDropDown", 5.2 },
+            { "TestForm_Question", true },
+            { "TestForm_TestComplex_Field1", "Something" },
+            { "TestForm_TestComplex_Field2", 55 }
+        });
         Assert.That(form.TestText.Value(), Is.EqualTo("Test Import"));
         Assert.That(form.NegativeNumber.Value(), Is.EqualTo(-100));
         Assert.That(form.PositiveNumber.Value(), Is.EqualTo(100));
@@ -144,6 +159,8 @@ internal sealed class FormTest
         var imported = new Dictionary<string, object?>
         {
             { "TestForm_TestText", "Test Import" },
+            { "TestForm_Password", "" },
+            { "TestForm_Confirm", "" },
             { "TestForm_NegativeNumber", -100 },
             { "TestForm_PositiveNumber", 100 },
             { "TestForm_RangedNumber", 11 },

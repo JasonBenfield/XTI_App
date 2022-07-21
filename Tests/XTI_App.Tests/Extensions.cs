@@ -36,9 +36,9 @@ internal static class Extensions
         );
     }
 
-    public static Task Setup(this IServiceProvider services)
+    public static async Task Setup(this IServiceProvider services)
     {
         var setup = services.GetRequiredService<FakeAppSetup>();
-        return setup.Run(AppVersionKey.Current);
+        await setup.Run(AppVersionKey.Current);
     }
 }

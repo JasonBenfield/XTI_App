@@ -34,7 +34,7 @@ public sealed class AppApiGroup : IAppApiGroup
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
 
-    public Task<bool> HasAccess() => user.HasAccess(Access);
+    public Task<bool> HasAccess() => user.HasAccess(Path);
 
     public AppApiGroupTemplate Template()
     {

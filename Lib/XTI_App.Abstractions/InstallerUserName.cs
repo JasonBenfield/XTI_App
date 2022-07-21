@@ -5,6 +5,9 @@ namespace XTI_App.Abstractions;
 public sealed class InstallerUserName
 {
     private static readonly Regex regex = new Regex("^xti_inst\\[(?<MachineName>[^\\]]+)\\]$");
+
+    public static bool CanParse(AppUserName userName) => regex.IsMatch(userName.Value);
+
     public static InstallerUserName Parse(AppUserName userName)
     {
         InstallerUserName installerUserName;

@@ -1,6 +1,6 @@
 ﻿namespace XTI_Forms;
 
-public sealed class NotWhitespaceConstraint : IConstraint<string>
+public sealed class NotWhiteSpaceConstraint : IConstraint<string>
 {
     public ConstraintResult Test(object value) => Test((string)value);
 
@@ -9,7 +9,7 @@ public sealed class NotWhitespaceConstraint : IConstraint<string>
             ? ConstraintResult.Failed(FormErrors.MustNotBeNullOrWhitespace)
             : ConstraintResult.Passed();
 
-    public ConstraintModel ToModel() => new NotWhitespaceConstraintModel
+    public ConstraintModel ToModel() => new NotWhiteSpaceConstraintModel
     {
         FailureMessage = FormErrors.MustNotBeNullOrWhitespace
     };

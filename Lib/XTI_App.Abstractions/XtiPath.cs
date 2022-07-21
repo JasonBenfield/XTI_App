@@ -13,7 +13,7 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
             AppVersionKey.Parse(names[1]),
             new ResourceGroupName(isOData ? names[3] : names[2]),
             new ResourceName(isOData ? "Get" : names[3]),
-            ModifierKey.FromValue(names[4])
+            ModifierKey.FromValue(isOData ? names[3] : names[4])
         );
     }
 

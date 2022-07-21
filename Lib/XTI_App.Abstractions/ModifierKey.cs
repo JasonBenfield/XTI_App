@@ -8,13 +8,18 @@ public sealed class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
     private static readonly Regex replaceRegex = new("\\s+");
 
 
-    public static readonly ModifierKey Default = new ModifierKey("");
+    public static readonly ModifierKey Default = new ModifierKey();
 
     public static ModifierKey FromValue(string value) =>
         string.IsNullOrWhiteSpace(value) ? Default : new ModifierKey(value);
 
+    public ModifierKey()
+        :this("")
+    {
+    }
+
     public ModifierKey(string value)
-        : base(replaceRegex.Replace(value, ""))
+        : base(replaceRegex.Replace(value, "").ToLower(), replaceRegex.Replace(value, ""))
     {
     }
 

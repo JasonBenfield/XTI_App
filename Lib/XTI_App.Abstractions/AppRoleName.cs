@@ -26,4 +26,5 @@ public sealed class AppRoleName : TextKeyValue, IEquatable<AppRoleName>
     }
 
     public bool Equals(AppRoleName? other) => _Equals(other);
+    public bool EqualsAny(params AppRoleName[] others) => _EqualsAny(others);
 }

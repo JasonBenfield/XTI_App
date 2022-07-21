@@ -7,8 +7,8 @@ public sealed class GenericAppClient : AppClient
     {
         UserCache = CreateGroup
         (
-            (_httpClientFactory, _tokenAccessor, _clientUrl) =>
-                new UserCacheClientGroup(_httpClientFactory, _tokenAccessor, _clientUrl)
+            (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
+                new UserCacheClientGroup(_httpClientFactory, _tokenAccessor, _clientUrl, _options)
         );
     }
 
@@ -17,8 +17,8 @@ public sealed class GenericAppClient : AppClient
     public GenericAppClientGroup Group(string name) =>
         CreateGroup
         (
-            (_httpClientFactory, _tokenAccessor, _clientUrl) =>
-                new GenericAppClientGroup(_httpClientFactory, _tokenAccessor, _clientUrl, name)
+            (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
+                new GenericAppClientGroup(_httpClientFactory, _tokenAccessor, _clientUrl, _options, name)
         );
 
 }

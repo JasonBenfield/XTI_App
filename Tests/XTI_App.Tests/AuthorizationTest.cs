@@ -256,12 +256,6 @@ internal sealed class AuthorizationTest
         pathAccessor.SetPath(action.Path.WithModifier(new ModifierKey(department)));
     }
 
-    private UserContextModel retrieveCurrentUser(IServiceProvider sp)
-    {
-        var userContext = getUserContext(sp);
-        return userContext.GetUser();
-    }
-
     private FakeUserContext getUserContext(IServiceProvider sp)
         => (FakeUserContext)sp.GetRequiredService<IUserContext>();
 

@@ -15,7 +15,6 @@ public class XtiODataController<TArgs, TEntity> : ODataController
     }
 
     [HttpPost]
-    [HttpGet]
     [EnableQuery]
     public Task<IQueryable<TEntity>> Get(ODataQueryOptions<TEntity> odataQuery, TArgs model, CancellationToken ct)=>
         groupApi.Query<TArgs, TEntity>(nameof(Get)).Execute(odataQuery, model, ct);

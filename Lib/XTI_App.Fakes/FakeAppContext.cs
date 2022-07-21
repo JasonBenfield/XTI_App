@@ -187,7 +187,10 @@ public sealed class FakeAppContext : ISourceAppContext
                                 return resource;
                             }
                         )
-                        .ToArray()
+                        .ToArray(),
+                        g.Roles
+                            .Select(r => roles.First(role => role.Name.Equals(r)))
+                            .ToArray()
                     );
                     return group;
                 }

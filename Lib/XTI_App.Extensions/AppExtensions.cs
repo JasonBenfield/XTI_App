@@ -23,6 +23,7 @@ public static class AppExtensions
         services.AddScoped<CachedUserContext>();
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         services.AddScoped<ICachedUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
+        services.AddScoped<CurrentUserAccess>();
         services.AddScoped<IAppApiUser, AppApiUser>();
         services.AddScoped(sp =>
         {

@@ -42,4 +42,16 @@ public sealed class AppClientUrl
         }
         return url;
     }
+
+    public async Task<string> ODataGet(string modifier)
+    {
+        var domain = await clientDomain.Value(appName, version);
+        var url = $"https://{domain}/{appName}/{version}/odata/{groupName}";
+        if (!string.IsNullOrWhiteSpace(modifier))
+        {
+            url = $"{url}/{modifier}";
+        }
+        url = $"{url}/$query";
+        return url;
+    }
 }

@@ -36,7 +36,7 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
 
     public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TModel model, CancellationToken stoppingToken = default)
     {
-        await user.EnsureUserHasAccess(Access);
+        await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
         var queryable = await queryAction.Execute(options, model);
         return queryable;

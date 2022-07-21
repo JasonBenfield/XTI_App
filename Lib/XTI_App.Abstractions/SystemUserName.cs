@@ -5,6 +5,9 @@ namespace XTI_App.Abstractions;
 public sealed class SystemUserName
 {
     private static readonly Regex regex = new Regex("^xti_sys\\[(?<AppKey>[^\\]]+)\\]\\[(?<MachineName>[^\\]]+)\\]$");
+
+    public static bool CanParse(AppUserName userName) => regex.IsMatch(userName.Value);
+
     public static SystemUserName Parse(AppUserName userName)
     {
         SystemUserName systemUserName;

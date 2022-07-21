@@ -4,7 +4,8 @@ namespace XTI_Forms;
 
 public class ComplexField : IField
 {
-    private readonly List<IField> fields = new List<IField>();
+    private readonly List<IField> fields = new ();
+    private readonly ConstraintCollection<IField[]> constraints = new();
 
     protected ComplexField(string prefix, string name)
     {
@@ -113,9 +114,19 @@ public class ComplexField : IField
 
     public virtual void SetValue(object value)
     {
+        Import((Dictionary<string, object?>)value);
     }
 
     public IEnumerable<IField> Fields() => fields.ToArray();
+
+    public ComplexField AddConstraints(params IConstraint<IField[]>[] constraintsToAdd)
+        => AddConstraints((IEnumerable<IConstraint<IField[]>>)constraintsToAdd);
+
+    public ComplexField AddConstraints(IEnumerable<IConstraint<IField[]>> constraintsToAdd)
+    {
+        constraints.Add(constraintsToAdd);
+        return this;
+    }
 
     public void Validate(ErrorList errors)
     {
@@ -124,11 +135,17 @@ public class ComplexField : IField
         {
             field.Validate(errors);
         }
+        constraints.Validate(errors, this);
     }
 
     protected virtual void Validating(ErrorList errors) { }
 
-    public virtual object Value() => new object();
+    public virtual object Value()
+    {
+        var dict = new Dictionary<string, object?>();
+        Export(dict);
+        return dict;
+    }
 
     protected IEnumerable<ComplexFieldTemplate> ComplexFieldTemplates()
     {

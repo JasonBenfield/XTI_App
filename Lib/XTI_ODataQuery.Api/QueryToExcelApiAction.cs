@@ -38,7 +38,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
 
     public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TArgs model, CancellationToken stoppingToken = default)
     {
-        await user.EnsureUserHasAccess(Access);
+        await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
         var queryable = await queryAction.Execute(options, model);
         var finalQuery = options.ApplyTo(queryable);

@@ -8,42 +8,43 @@ public class AppClient
     private readonly IHttpClientFactory httpClientFactory;
     private readonly AppClientUrl clientUrl;
     private readonly XtiTokenAccessor xtiTokenAccessor;
-    private readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions();
+    private readonly AppClientOptions options = new();
 
     protected AppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string appName, string version)
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
         this.clientUrl = clientUrl.WithApp(appName, version);
+        var jsonSerializerOptions = new JsonSerializerOptions();
         jsonSerializerOptions.PropertyNameCaseInsensitive = true;
         jsonSerializerOptions.PropertyNamingPolicy = null;
         jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-        ConfigureJsonSerializerOptions(jsonSerializerOptions);
+        options.JsonSerializerOptions = jsonSerializerOptions;
     }
 
-    protected T CreateGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, T> createGroup)
+    protected T CreateGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, AppClientOptions, T> createGroup)
         where T : AppClientGroup
     {
         var group = createGroup
         (
             httpClientFactory,
             xtiTokenAccessor,
-            clientUrl
+            clientUrl,
+            options
         );
-        group.SetJsonSerializerOptions(jsonSerializerOptions);
         return group;
     }
 
-    protected AppClientODataGroup<TEntity> CreateODataGroup<TEntity>(string groupName)
+    protected AppClientODataGroup<TArgs, TEntity> CreateODataGroup<TArgs, TEntity>(string groupName)
     {
-        var odataGroup = new AppClientODataGroup<TEntity>
+        var odataGroup = new AppClientODataGroup<TArgs, TEntity>
         (
             httpClientFactory,
             xtiTokenAccessor,
             clientUrl,
+            options,
             groupName
         );
-        odataGroup.SetJsonSerializerOptions(jsonSerializerOptions);
         return odataGroup;
     }
 

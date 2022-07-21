@@ -2,11 +2,11 @@
 
 public sealed class UserCacheClientGroup : AppClientGroup
 {
-    public UserCacheClientGroup(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl)
-        : base(httpClientFactory, xtiTokenAccessor, clientUrl, "UserCache")
+    public UserCacheClientGroup(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, AppClientOptions options)
+        : base(httpClientFactory, xtiTokenAccessor, clientUrl, options, "UserCache")
     {
     }
 
-    public Task<EmptyActionResult> ClearCache(ClearUserCacheRequest request)
-        => Post<EmptyActionResult, ClearUserCacheRequest>(nameof(ClearCache), "", request);
+    public Task<EmptyActionResult> ClearCache(ClearUserCacheRequest request) =>
+        CreatePostAction<ClearUserCacheRequest, EmptyActionResult>(nameof(ClearCache)).Post("", request);
 }

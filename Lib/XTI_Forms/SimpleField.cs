@@ -5,13 +5,12 @@ namespace XTI_Forms;
 public abstract class SimpleField<T> : IField<T>
 {
     private T? value;
-    private readonly ConstraintCollection<T> constraints;
+    private readonly ConstraintCollection<T> constraints = new();
 
     protected SimpleField(string prefix, string name)
     {
         Key = new FieldKey(prefix, name);
         Caption = string.Join(" ", new CamelCasedWord(name).Words());
-        constraints = new ConstraintCollection<T>();
     }
 
     protected SimpleField()
