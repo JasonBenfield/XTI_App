@@ -56,6 +56,10 @@ public sealed class AppKey : IEquatable<AppKey>
 
     public override string ToString() => $"{nameof(AppKey)} {Format()}";
 
+    public bool IsAppType(AppType otherAppType) => Type.Equals(otherAppType);
+
+    public bool IsAnyAppType(params AppType[] otherAppTypes) => Type.EqualsAny(otherAppTypes);
+
     public bool Equals(AppKey? other) => value == other?.value;
 
     public override bool Equals(object? obj)

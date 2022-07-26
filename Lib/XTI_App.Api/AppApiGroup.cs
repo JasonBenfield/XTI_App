@@ -105,12 +105,6 @@ public sealed class AppApiGroup : IAppApiGroup
         return action;
     }
 
-    private AppApiAction<TModel, TResult> AddAction<TModel, TResult>(AppApiAction<TModel, TResult> action)
-    {
-        actions.Add(actionKey(action.ActionName), action);
-        return action;
-    }
-
     private static string actionKey(string actionName) =>
         actionName.ToLower().Replace(" ", "").Replace("_", "");
 

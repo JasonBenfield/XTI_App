@@ -20,6 +20,7 @@ public class AppClient
         jsonSerializerOptions.PropertyNamingPolicy = null;
         jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions = jsonSerializerOptions;
+        ConfigureJsonSerializerOptions(jsonSerializerOptions);
     }
 
     protected T CreateGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, AppClientOptions, T> createGroup)

@@ -13,10 +13,7 @@ public sealed class ImmediateAppAgendaItemBuilder : IAppAgendaItemBuilder
     internal ImmediateAppAgendaItemBuilder(ImmediateAppAgendaItemOptions options)
     {
         Action(new ResourceGroupName(options.GroupName), new ResourceName(options.ActionName));
-        if (options.IsDisabled)
-        {
-            Disable();
-        }
+        isEnabled = !options.IsDisabled;
     }
 
     public bool HasAction(string groupName, string actionName)
@@ -31,9 +28,7 @@ public sealed class ImmediateAppAgendaItemBuilder : IAppAgendaItemBuilder
         return this;
     }
 
-    public bool Disable() => isEnabled = false;
-
-    public ImmediateAppAgendaItem Build()
+    internal ImmediateAppAgendaItem Build()
         => new ImmediateAppAgendaItem(groupName, actionName, isEnabled);
 
     AppAgendaItem IAppAgendaItemBuilder.Build() => Build();

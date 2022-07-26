@@ -5,15 +5,20 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     public static XtiPath Parse(string str)
     {
         var parts = str.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var names = new List<string>(parts.Concat(Enumerable.Repeat("", 5 - parts.Length)));
+        var names = new List<string>(parts.Concat(Enumerable.Repeat("", parts.Length <= 5 ? 5 - parts.Length : 0)));
         var isOData = names[2] == "odata";
+        var modifier = names[4];
+        if (isOData && modifier == "$query")
+        {
+            modifier = "";
+        }
         return new XtiPath
         (
             names[0],
             AppVersionKey.Parse(names[1]),
             new ResourceGroupName(isOData ? names[3] : names[2]),
             new ResourceName(isOData ? "Get" : names[3]),
-            ModifierKey.FromValue(isOData ? names[3] : names[4])
+            ModifierKey.FromValue(modifier)
         );
     }
 

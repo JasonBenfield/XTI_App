@@ -2,7 +2,7 @@
 
 namespace XTI_App.Abstractions;
 
-public sealed class AppType : NumericValue
+public sealed class AppType : NumericValue, IEquatable<AppType>
 {
     public sealed class AppTypes : NumericValues<AppType>
     {
@@ -30,4 +30,8 @@ public sealed class AppType : NumericValue
     private AppType(int value, string displayText) : base(value, displayText)
     {
     }
+
+    public bool Equals(AppType? other) => _Equals(other);
+
+    public bool EqualsAny(params AppType[] others) => _EqualsAny(others);
 }
