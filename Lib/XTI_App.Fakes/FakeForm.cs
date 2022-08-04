@@ -10,18 +10,31 @@ public sealed class FakeForm : Form
         TestText.MaxLength = 100;
         TestText.SetValue("Initial Value");
         TestText.MustNotBeNull();
+
+        Password = AddTextInput(nameof(Password));
+        Password.MaxLength = 100;
+        Password.SetValue("");
+        Password.MustNotBeNull();
+        Password.Protect();
+
+        Confirm = AddTextInput(nameof(Confirm));
+        Confirm.MaxLength = 100;
+        Confirm.SetValue("");
+        Confirm.MustNotBeNull();
+        Confirm.MustBeEqualToField(Password);
+
         NegativeNumber = AddInt32Input(nameof(NegativeNumber));
         NegativeNumber.SetValue(-99);
         NegativeNumber.MustNotBeNull();
-        NegativeNumber.AddConstraints(Int32RangeConstraint.Negative());
+        NegativeNumber.MustBeNegative();
         PositiveNumber = AddInt32Input(nameof(PositiveNumber));
         PositiveNumber.SetValue(23);
         PositiveNumber.MustNotBeNull();
-        PositiveNumber.AddConstraints(Int32RangeConstraint.Positive());
+        PositiveNumber.MustBePositive();
         RangedNumber = AddInt32Input(nameof(RangedNumber));
         RangedNumber.SetValue(15);
         RangedNumber.MustNotBeNull();
-        RangedNumber.AddConstraints
+        RangedNumber.MustBeInRange
         (
             Int32RangeConstraint.FromOnOrAbove(10).ToBelow(20)
         );
@@ -38,6 +51,8 @@ public sealed class FakeForm : Form
     }
 
     public InputField<string> TestText { get; }
+    public InputField<string> Password { get; }
+    public InputField<string> Confirm { get; }
     public InputField<int?> NegativeNumber { get; }
     public InputField<int?> PositiveNumber { get; }
     public InputField<int?> RangedNumber { get; }

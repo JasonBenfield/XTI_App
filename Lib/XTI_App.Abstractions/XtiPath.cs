@@ -5,22 +5,42 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     public static XtiPath Parse(string str)
     {
         var parts = str.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var names = new List<string>(parts.Concat(Enumerable.Repeat("", 5 - parts.Length)));
+        var names = new List<string>(parts.Concat(Enumerable.Repeat("", parts.Length <= 5 ? 5 - parts.Length : 0)));
+        var isOData = names[2] == "odata";
+        var modifier = names[4];
+        if (isOData && modifier == "$query")
+        {
+            modifier = "";
+        }
         return new XtiPath
         (
-            names[0], names[1], names[2], names[3], ModifierKey.FromValue(names[4])
+            names[0],
+            AppVersionKey.Parse(names[1]),
+            new ResourceGroupName(isOData ? names[3] : names[2]),
+            new ResourceName(isOData ? "Get" : names[3]),
+            ModifierKey.FromValue(modifier)
         );
     }
 
-    public XtiPath(string appKey)
-        : this(appKey, AppVersionKey.Current.DisplayText, "", "", ModifierKey.Default)
+    private readonly string value;
+    private readonly int hashCode;
+
+    public XtiPath(AppKey appKey)
+        : this
+        (
+            appKey,
+            AppVersionKey.Current,
+            new ResourceGroupName(""),
+            new ResourceName(""),
+            ModifierKey.Default
+        )
     {
     }
 
     public XtiPath(string appName, string version, string group, string action, ModifierKey modifier)
         : this
         (
-             new AppName(appName),
+             appName,
              string.IsNullOrWhiteSpace(version) ? AppVersionKey.Current : AppVersionKey.Parse(version),
              new ResourceGroupName(group),
              new ResourceName(action),
@@ -29,23 +49,41 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     {
     }
 
-    public XtiPath(AppName appName, AppVersionKey version, ResourceGroupName group, ResourceName action, ModifierKey modifier)
+    public XtiPath
+    (
+        AppKey appKey,
+        AppVersionKey version,
+        ResourceGroupName group,
+        ResourceName action,
+        ModifierKey modifier
+    )
+        : this
+        (
+             appKey.Type.Equals(AppType.Values.WebService)
+                  ? $"{appKey.Name.DisplayText}Service"
+                  : appKey.Name.DisplayText,
+             version,
+             group,
+             action,
+             modifier
+        )
     {
-        if (string.IsNullOrWhiteSpace(appName.Value) && (!string.IsNullOrWhiteSpace(group.Value) || !string.IsNullOrWhiteSpace(action.Value))) { throw new ArgumentException($"{nameof(appName)} is required"); }
+    }
+
+    private XtiPath(string app, AppVersionKey version, ResourceGroupName group, ResourceName action, ModifierKey modifier)
+    {
+        if (string.IsNullOrWhiteSpace(app) && (!string.IsNullOrWhiteSpace(group.Value) || !string.IsNullOrWhiteSpace(action.Value))) { throw new ArgumentException($"{nameof(app)} is required"); }
         if (string.IsNullOrWhiteSpace(group.Value) && !string.IsNullOrWhiteSpace(action.Value)) { throw new ArgumentException($"{nameof(group)} is required when there is an action"); }
-        App = appName;
+        App = app;
         Version = version;
         Group = group;
         Action = action;
         Modifier = modifier;
-        value = $"/{App.Value}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
+        value = $"/{App}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
         hashCode = value.GetHashCode();
     }
 
-    private readonly string value;
-    private readonly int hashCode;
-
-    public AppName App { get; }
+    public string App { get; }
     public AppVersionKey Version { get; }
     public ResourceGroupName Group { get; }
     public ResourceName Action { get; }
@@ -91,14 +129,14 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
         => WithNewGroup(new ResourceGroupName(groupName));
 
     public XtiPath WithNewGroup(ResourceGroupName groupName)
-        => new XtiPath(App.DisplayText, Version.DisplayText, groupName.DisplayText, "", Modifier);
+        => new XtiPath(App, Version, groupName, new ResourceName(""), Modifier);
 
     public XtiPath WithGroup(string groupName) => WithGroup(new ResourceGroupName(groupName));
 
     public XtiPath WithGroup(ResourceGroupName groupName)
     {
         if (!string.IsNullOrWhiteSpace(Group)) { throw new ArgumentException("Cannot create group for a group"); }
-        return new XtiPath(App.DisplayText, Version.DisplayText, groupName.DisplayText, "", Modifier);
+        return new XtiPath(App, Version, groupName, new ResourceName(""), Modifier);
     }
 
     public XtiPath WithAction(string actionName) => WithAction(new ResourceName(actionName));
@@ -106,25 +144,29 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     public XtiPath WithAction(ResourceName action)
     {
         if (!string.IsNullOrWhiteSpace(Action)) { throw new ArgumentException("Cannot create action for an action"); }
-        return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, action.DisplayText, Modifier);
+        return new XtiPath(App, Version, Group, action, Modifier);
     }
 
     public XtiPath WithModifier(ModifierKey modKey)
     {
         EnsureActionResource();
-        return new XtiPath(App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, modKey);
+        return new XtiPath(App, Version, Group, Action, modKey);
     }
 
     public XtiPath WithVersion(AppVersionKey versionKey)
     {
-        return new XtiPath(App.DisplayText, versionKey.DisplayText, Group.DisplayText, Action.DisplayText, Modifier);
+        return new XtiPath(App, versionKey, Group, Action, Modifier);
     }
 
     public string Format()
     {
-        var parts = new string[]
+        var parts = new[]
         {
-                App.DisplayText, Version.DisplayText, Group.DisplayText, Action.DisplayText, Modifier.DisplayText
+            App,
+            Version.DisplayText,
+            Group.DisplayText,
+            Action.DisplayText,
+            Modifier.DisplayText
         }
         .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
         var joined = string.Join("/", parts.Select(part => part.Replace(" ", "")));
@@ -150,7 +192,7 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
 
     public override string ToString()
     {
-        var str = string.IsNullOrWhiteSpace(App.Value) ? "Empty" : Format();
+        var str = string.IsNullOrWhiteSpace(App) ? "Empty" : Format();
         return $"{nameof(XtiPath)} {str}";
     }
 

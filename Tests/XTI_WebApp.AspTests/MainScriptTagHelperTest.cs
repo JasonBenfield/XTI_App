@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 using XTI_App.Fakes;
 using XTI_Core;
 using XTI_Core.Extensions;
@@ -20,7 +21,7 @@ internal sealed class MainScriptTagHelperTest
     [Test]
     public async Task ShouldOutputScript()
     {
-        var sp = setup();
+        var sp = await setup();
         var result = await execute(sp);
         Assert.That(result.TagName, Is.EqualTo("script"));
     }
@@ -28,7 +29,7 @@ internal sealed class MainScriptTagHelperTest
     [Test]
     public async Task ShouldAddSrcAttribute()
     {
-        var sp = setup();
+        var sp = await setup();
         var result = await execute(sp);
         Assert.That(result.Attributes.Count, Is.EqualTo(1));
         Assert.That(result.Attributes[0].Name, Is.EqualTo("src"));
@@ -37,7 +38,7 @@ internal sealed class MainScriptTagHelperTest
     [Test]
     public async Task ShouldUsePageNameInSrc()
     {
-        var sp = setup();
+        var sp = await setup();
         var tagHelper = sp.GetRequiredService<MainScriptTagHelper>();
         tagHelper.PageName = "home";
         var result = await execute(sp);
@@ -49,7 +50,7 @@ internal sealed class MainScriptTagHelperTest
     public async Task ShouldIncludeCacheBustFromWebAppOptions()
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
-        var sp = setup(cacheBust: "X");
+        var sp = await setup(cacheBust: "X");
         var result = await execute(sp);
         var src = result.Attributes[0].Value;
         Assert.That(src, Does.EndWith("?cacheBust=X"));
@@ -59,7 +60,7 @@ internal sealed class MainScriptTagHelperTest
     public async Task ShouldIncludeImplicitCacheBust_WhenNotSetInOptions()
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
-        var sp = setup("/Shared/Current/Home/Index");
+        var sp = await setup("/Shared/Current/Home/Index");
         var result = await execute(sp);
         var src = result.Attributes[0].Value;
         var cacheBust = await sp.GetRequiredService<CacheBust>().Value();
@@ -75,13 +76,13 @@ internal sealed class MainScriptTagHelperTest
     public async Task ShouldChangePathBasedOnEnvironment(string envName, string expectedPath)
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", envName);
-        var sp = setup();
+        var sp = await setup();
         var result = await execute(sp);
         var src = result.Attributes[0].Value;
         Assert.That(src, Does.StartWith($"/js/{expectedPath}/"));
     }
 
-    private IServiceProvider setup(string path = "/Shared/Current/Home/Index", string cacheBust = "")
+    private async Task<IServiceProvider> setup(string path = "/Shared/Current/Home/Index", string cacheBust = "")
     {
         var envName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Test";
         var hostBuilder = new XtiHostBuilder();
@@ -91,6 +92,12 @@ internal sealed class MainScriptTagHelperTest
         });
         hostBuilder.Services.AddFakesForXtiWebApp();
         hostBuilder.Services.AddSingleton(sp => FakeInfo.AppKey);
+        hostBuilder.Services.AddSingleton<FakeAppOptions>();
+        hostBuilder.Services.AddScoped<FakeAppApiFactory>();
+        hostBuilder.Services.AddScoped<AppApiFactory>(sp => sp.GetRequiredService<FakeAppApiFactory>());
+        hostBuilder.Services.AddScoped(sp => sp.GetRequiredService<FakeAppApiFactory>().CreateForSuperUser());
+        hostBuilder.Services.AddScoped<FakeAppSetup>();
+        hostBuilder.Services.AddScoped<IAppSetup>(sp => sp.GetRequiredService<FakeAppSetup>());
         hostBuilder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
         hostBuilder.Services.AddMemoryCache();
         hostBuilder.Services.AddScoped<AppClientDomainSelector>();
@@ -108,9 +115,10 @@ internal sealed class MainScriptTagHelperTest
             RequestServices = sp
         };
         httpContextAccessor.HttpContext.Request.Path = path;
+        var fakeSetup = sp.GetRequiredService<FakeAppSetup>();
+        await fakeSetup.Run(AppVersionKey.Current);
         var appContext = sp.GetRequiredService<FakeAppContext>();
-        var app = appContext.AddApp(FakeInfo.AppKey);
-        appContext.SetCurrentApp(app);
+        appContext.SetCurrentApp(fakeSetup.App);
         var tagHelper = sp.GetRequiredService<MainScriptTagHelper>();
         tagHelper.PageName = "home";
         tagHelper.ViewContext = new Microsoft.AspNetCore.Mvc.Rendering.ViewContext()

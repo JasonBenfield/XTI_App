@@ -36,8 +36,8 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
                     var actionExecutor = new ActionRunner
                     (
                         sp,
-                        scheduledItem.GroupName.Value,
-                        scheduledItem.ActionName.Value
+                        scheduledItem.GroupName.DisplayText,
+                        scheduledItem.ActionName.DisplayText
                     );
                     var result = await actionExecutor.Run(stoppingToken);
                     if (result == ActionRunner.Results.Succeeded)

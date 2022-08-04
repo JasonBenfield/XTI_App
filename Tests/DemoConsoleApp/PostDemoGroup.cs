@@ -7,30 +7,20 @@ public sealed class PostDemoGroup : AppApiGroupWrapper
     public PostDemoGroup(AppApiGroup source)
         : base(source)
     {
-        var actions = new AppApiActionFactory(source);
         First = source.AddAction
         (
-            actions.Action
-            (
-                nameof(First),
-                () => new PostFirstAction()
-            )
+            nameof(First),
+            () => new PostFirstAction()
         );
         Second = source.AddAction
         (
-            actions.Action
-            (
-                nameof(Second),
-                () => new PostSecondAction()
-            )
+            nameof(Second),
+            () => new PostSecondAction()
         );
         Third = source.AddAction
         (
-            actions.Action
-            (
-                nameof(Third),
-                () => new PostThirdAction()
-            )
+            nameof(Third),
+            () => new PostThirdAction()
         );
     }
     public AppApiAction<EmptyRequest, EmptyActionResult> First { get; }

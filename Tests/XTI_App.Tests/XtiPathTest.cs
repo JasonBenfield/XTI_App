@@ -44,4 +44,22 @@ internal sealed class XtiPathTest
         var xtiPath = XtiPath.Parse("/Fake/Current/Group1/Action1/Modifier");
         Assert.That(xtiPath.Modifier, Is.EqualTo("Modifier"), "Should parse path with modifier");
     }
+
+    [Test]
+    public void ShouldParseODataQuery()
+    {
+        var xtiPath = XtiPath.Parse("/Fake/Current/odata/SomeQuery/$query");
+        Assert.That(xtiPath.Group, Is.EqualTo("SomeQuery"));
+        Assert.That(xtiPath.Action, Is.EqualTo("Get"));
+        Assert.That(xtiPath.Modifier, Is.EqualTo(""));
+    }
+
+    [Test]
+    public void ShouldParseODataQueryWithModifier()
+    {
+        var xtiPath = XtiPath.Parse("/Fake/Current/odata/SomeQuery/Mod1/$query");
+        Assert.That(xtiPath.Group, Is.EqualTo("SomeQuery"));
+        Assert.That(xtiPath.Action, Is.EqualTo("Get"));
+        Assert.That(xtiPath.Modifier, Is.EqualTo(new ModifierKey("Mod1")));
+    }
 }

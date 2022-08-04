@@ -48,6 +48,7 @@ public static class WebAppExtensions
         services.AddConfigurationOptions<XtiAuthenticationOptions>(XtiAuthenticationOptions.XtiAuthentication);
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
+        services.AddScoped<GetUserAccessAction>();
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();

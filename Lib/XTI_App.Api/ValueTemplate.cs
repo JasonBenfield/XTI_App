@@ -7,6 +7,7 @@ public interface ValueTemplate
     Type DataType { get; }
     IEnumerable<ObjectValueTemplate> ObjectTemplates();
 }
+
 public sealed class DictionaryValueTemplate : ValueTemplate, IEquatable<DictionaryValueTemplate>
 {
     internal DictionaryValueTemplate(Type dataType)
@@ -164,5 +165,63 @@ public sealed class ArrayValueTemplate : ValueTemplate, IEquatable<ArrayValueTem
     public override int GetHashCode() => hashCode;
 
     public override string ToString() => $"{nameof(ArrayValueTemplate)} {value}";
+
+}
+
+public sealed class QueryableValueTemplate : ValueTemplate, IEquatable<QueryableValueTemplate>
+{
+    private readonly string value;
+    private readonly int hashCode;
+
+    public QueryableValueTemplate(Type source)
+    {
+        DataType = source;
+        ElementTemplate = new ValueTemplateFromType(source.GetGenericArguments()[0]).Template();
+        value = $"{DataType}|{ElementTemplate}";
+        hashCode = value.GetHashCode();
+    }
+
+    public Type DataType { get; }
+    public ValueTemplate ElementTemplate { get; }
+
+    public IEnumerable<ObjectValueTemplate> ObjectTemplates()
+        => ElementTemplate.ObjectTemplates();
+
+    public override bool Equals(object? obj) => Equals(obj as QueryableValueTemplate);
+
+    public bool Equals(QueryableValueTemplate? other) => value == other?.value;
+
+    public override int GetHashCode() => hashCode;
+
+    public override string ToString() => $"{nameof(QueryableValueTemplate)} {value}";
+
+}
+
+public sealed class QueryOptionsTemplate : ValueTemplate, IEquatable<QueryOptionsTemplate>
+{
+    private readonly string value;
+    private readonly int hashCode;
+
+    internal QueryOptionsTemplate(Type source)
+    {
+        DataType = source;
+        EntityTemplate = new ValueTemplateFromType(source.GetGenericArguments()[0]).Template();
+        value = $"{DataType}|{EntityTemplate}";
+        hashCode = value.GetHashCode();
+    }
+
+    public Type DataType { get; }
+    public ValueTemplate EntityTemplate { get; }
+
+    public IEnumerable<ObjectValueTemplate> ObjectTemplates()
+        => EntityTemplate.ObjectTemplates();
+
+    public override bool Equals(object? obj) => Equals(obj as QueryOptionsTemplate);
+
+    public bool Equals(QueryOptionsTemplate? other) => value == other?.value;
+
+    public override int GetHashCode() => hashCode;
+
+    public override string ToString() => $"{nameof(QueryOptionsTemplate)} {value}";
 
 }

@@ -11,6 +11,10 @@ public sealed class AppKey : IEquatable<AppKey>
 
     public static AppKey WebApp(string name) => WebApp(new AppName(name));
     public static AppKey WebApp(AppName name) => new AppKey(name, AppType.Values.WebApp);
+    public static AppKey WebService(string name) => WebService(new AppName(name));
+    public static AppKey WebService(AppName name) => new AppKey(name, AppType.Values.WebService);
+    public static AppKey WebPackage(string name) => WebPackage(new AppName(name));
+    public static AppKey WebPackage(AppName name) => new AppKey(name, AppType.Values.WebPackage);
     public static AppKey ServiceApp(string name) => ServiceApp(new AppName(name));
     public static AppKey ServiceApp(AppName name) => new AppKey(name, AppType.Values.ServiceApp);
     public static AppKey ConsoleApp(string name) => ConsoleApp(new AppName(name));
@@ -46,7 +50,15 @@ public sealed class AppKey : IEquatable<AppKey>
     public AppName Name { get; }
     public AppType Type { get; }
 
+    public string Format() => $"{Name.DisplayText} {Type.DisplayText}";
+
     public string Serialize() => value;
+
+    public override string ToString() => $"{nameof(AppKey)} {Format()}";
+
+    public bool IsAppType(AppType otherAppType) => Type.Equals(otherAppType);
+
+    public bool IsAnyAppType(params AppType[] otherAppTypes) => Type.EqualsAny(otherAppTypes);
 
     public bool Equals(AppKey? other) => value == other?.value;
 

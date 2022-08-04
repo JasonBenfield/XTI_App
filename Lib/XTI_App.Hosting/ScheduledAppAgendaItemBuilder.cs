@@ -1,4 +1,5 @@
 ﻿using XTI_App.Abstractions;
+using XTI_App.Api;
 using XTI_Core;
 using XTI_Schedule;
 
@@ -78,52 +79,54 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
     public bool HasAction(string groupName, string actionName)
         => this.groupName.Equals(groupName) && this.actionName.Equals(actionName);
 
-    public ScheduledAppAgendaItemBuilder Action(XtiPath path) => Action(path.Group, path.Action);
+    public ScheduledAppAgendaItemActionBuilder Action(IAppApiAction action) => Action(action.Path);
 
-    public ScheduledAppAgendaItemBuilder Action(ResourceGroupName groupName, ResourceName actionName)
+    public ScheduledAppAgendaItemActionBuilder Action(XtiPath path) => Action(path.Group, path.Action);
+
+    public ScheduledAppAgendaItemActionBuilder Action(ResourceGroupName groupName, ResourceName actionName)
     {
         this.groupName = groupName;
         this.actionName = actionName;
-        return this;
+        return new ScheduledAppAgendaItemActionBuilder(this);
     }
 
-    public ScheduledAppAgendaItemBuilder Disable()
+    internal ScheduledAppAgendaItemBuilder Disable()
     {
         isEnabled = false;
         return this;
     }
 
-    public ScheduledAppAgendaItemBuilder RunContinuously()
+    internal ScheduledAppAgendaItemBuilder RunContinuously()
     {
         type = ScheduledActionTypes.Continuous;
         return this;
     }
 
-    public ScheduledAppAgendaItemBuilder RunUntilSuccess()
+    internal ScheduledAppAgendaItemBuilder RunUntilSuccess()
     {
         type = ScheduledActionTypes.PeriodicUntilSuccess;
         return this;
     }
 
-    public ScheduledAppAgendaItemBuilder AddSchedule(Schedule schedule)
+    internal ScheduledAppAgendaItemBuilder AddSchedule(Schedule schedule)
     {
         schedules.Add(schedule);
         return this;
     }
 
-    public ScheduledAppAgendaItemBuilder DelayAfterStart(TimeSpan delayAfterStart)
+    internal ScheduledAppAgendaItemBuilder DelayAfterStart(TimeSpan delayAfterStart)
     {
         this.delayAfterStart = delayAfterStart;
         return this;
     }
 
-    public ScheduledAppAgendaItemBuilder Interval(TimeSpan interval)
+    internal ScheduledAppAgendaItemBuilder Interval(TimeSpan interval)
     {
         this.interval = interval;
         return this;
     }
 
-    public ScheduledAppAgendaItem Build()
+    internal ScheduledAppAgendaItem Build()
         => new ScheduledAppAgendaItem
         (
             groupName,
@@ -136,4 +139,50 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
         );
 
     AppAgendaItem IAppAgendaItemBuilder.Build() => Build();
+}
+
+public sealed class ScheduledAppAgendaItemActionBuilder
+{
+    private readonly ScheduledAppAgendaItemBuilder builder;
+
+    internal ScheduledAppAgendaItemActionBuilder(ScheduledAppAgendaItemBuilder builder)
+    {
+        this.builder = builder;
+    }
+
+    public ScheduledAppAgendaItemActionBuilder Disable()
+    {
+        builder.Disable();
+        return this;
+    }
+
+    public ScheduledAppAgendaItemActionBuilder RunContinuously()
+    {
+        builder.RunContinuously();
+        return this;
+    }
+
+    public ScheduledAppAgendaItemActionBuilder RunUntilSuccess()
+    {
+        builder.RunUntilSuccess();
+        return this;
+    }
+
+    public ScheduledAppAgendaItemActionBuilder AddSchedule(Schedule schedule)
+    {
+        builder.AddSchedule(schedule);
+        return this;
+    }
+
+    public ScheduledAppAgendaItemActionBuilder DelayAfterStart(TimeSpan delayAfterStart)
+    {
+        builder.DelayAfterStart(delayAfterStart);
+        return this;
+    }
+
+    public ScheduledAppAgendaItemActionBuilder Interval(TimeSpan interval)
+    {
+        builder.Interval(interval);
+        return this;
+    }
 }

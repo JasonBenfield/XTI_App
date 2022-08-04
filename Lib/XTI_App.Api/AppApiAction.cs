@@ -54,7 +54,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
 
     public async Task<ResultContainer<TResult>> Execute(TModel model, CancellationToken stoppingToken = default)
     {
-        await user.EnsureUserHasAccess(Access);
+        await user.EnsureUserHasAccess(Path);
         var errors = new ErrorList();
         if (model is Form form)
         {

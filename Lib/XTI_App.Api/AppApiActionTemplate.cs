@@ -4,13 +4,16 @@ namespace XTI_App.Api;
 
 public sealed class AppApiActionTemplate
 {
+    private readonly ResourceResultType resultType;
+
     public AppApiActionTemplate
     (
         string name,
         string friendlyName,
         ResourceAccess access,
         ValueTemplate modelTemplate,
-        ValueTemplate resultTemplate
+        ValueTemplate resultTemplate,
+        ResourceResultType? resultType = null
     )
     {
         Name = name.Replace(" ", "");
@@ -18,6 +21,45 @@ public sealed class AppApiActionTemplate
         Access = access;
         ModelTemplate = modelTemplate;
         ResultTemplate = resultTemplate;
+        this.resultType = resultType ?? ResultTypeFromResultTemplate(resultTemplate);
+    }
+
+    private static ResourceResultType ResultTypeFromResultTemplate(ValueTemplate resultTemplate)
+    {
+        ResourceResultType type;
+        if (resultTemplate.DataType.Name == "WebViewResult")
+        {
+            type = ResourceResultType.Values.View;
+        }
+        else if (resultTemplate.DataType.Name == "WebPartialViewResult")
+        {
+            type = ResourceResultType.Values.PartialView;
+        }
+        else if (resultTemplate.DataType.Name == "WebRedirectResult")
+        {
+            type = ResourceResultType.Values.Redirect;
+        }
+        else if (resultTemplate.DataType.Name == "WebFileResult")
+        {
+            type = ResourceResultType.Values.File;
+        }
+        else if (resultTemplate.DataType.Name == "WebContentResult")
+        {
+            type = ResourceResultType.Values.Content;
+        }
+        else if
+        (
+            resultTemplate.DataType.IsGenericType &&
+            resultTemplate.DataType.GetGenericTypeDefinition() == typeof(IQueryable<>)
+        )
+        {
+            type = ResourceResultType.Values.Query;
+        }
+        else
+        {
+            type = ResourceResultType.Values.Json;
+        }
+        return type;
     }
 
     public string Name { get; }
@@ -26,30 +68,13 @@ public sealed class AppApiActionTemplate
     public ValueTemplate ModelTemplate { get; }
     public ValueTemplate ResultTemplate { get; }
 
-    public ResourceResultType ResultType()
-    {
-        ResourceResultType type;
-        if (ResultTemplate.DataType.Name == "WebViewResult")
-        {
-            type = ResourceResultType.Values.View;
-        }
-        else if (ResultTemplate.DataType.Name == "WebPartialViewResult")
-        {
-            type = ResourceResultType.Values.PartialView;
-        }
-        else if (ResultTemplate.DataType.Name == "WebRedirectResult")
-        {
-            type = ResourceResultType.Values.Redirect;
-        }
-        else
-        {
-            type = ResourceResultType.Values.Json;
-        }
-        return type;
-    }
-    public bool IsView() => ResultType().Equals(ResourceResultType.Values.View);
-    public bool IsPartialView() => ResultType().Equals(ResourceResultType.Values.PartialView);
-    public bool IsRedirect() => ResultType().Equals(ResourceResultType.Values.Redirect);
+    public bool IsView() => resultType.Equals(ResourceResultType.Values.View);
+    public bool IsPartialView() => resultType.Equals(ResourceResultType.Values.PartialView);
+    public bool IsRedirect() => resultType.Equals(ResourceResultType.Values.Redirect);
+    public bool IsFile() => resultType.Equals(ResourceResultType.Values.File);
+    public bool IsContent() => resultType.Equals(ResourceResultType.Values.Content);
+    public bool IsQuery() => resultType.Equals(ResourceResultType.Values.Query);
+    public bool IsQueryToExcel() => resultType.Equals(ResourceResultType.Values.QueryToExcel);
     public bool HasEmptyModel() => ModelTemplate.DataType == typeof(EmptyRequest);
 
     public IEnumerable<FormValueTemplate> FormTemplates()
@@ -65,6 +90,11 @@ public sealed class AppApiActionTemplate
         }
         return formTemplates.Distinct();
     }
+
+    public IEnumerable<QueryableValueTemplate> QueryableTemplates() =>
+        ResultTemplate is QueryableValueTemplate queryable
+            ? new[] { queryable }
+            : new QueryableValueTemplate[0];
 
     public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>
         IsView() || IsPartialView() || IsRedirect()
@@ -120,6 +150,6 @@ public sealed class AppApiActionTemplate
             Name = Name,
             IsAnonymousAllowed = Access.IsAnonymousAllowed,
             Roles = Access.Allowed.Select(r => r.Value).ToArray(),
-            ResultType = ResultType()
+            ResultType = resultType
         };
 }

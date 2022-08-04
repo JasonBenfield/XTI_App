@@ -7,7 +7,7 @@ public sealed class DefaultFakeSetup : IAppSetup
 {
     private readonly AppApiFactory apiFactory;
     private readonly FakeAppContext appContext;
-    private FakeApp? app;
+    private AppContextModel? app;
 
     public DefaultFakeSetup(AppApiFactory apiFactory, FakeAppContext appContext)
     {
@@ -15,7 +15,7 @@ public sealed class DefaultFakeSetup : IAppSetup
         this.appContext = appContext;
     }
 
-    public FakeApp App
+    public AppContextModel App
     {
         get => app ?? throw new ArgumentNullException(nameof(app));
         private set => app = value;
@@ -25,33 +25,8 @@ public sealed class DefaultFakeSetup : IAppSetup
     {
         var template = apiFactory.CreateTemplate();
         var templateModel = template.ToModel();
-        App = appContext.AddApp(template.AppKey);
+        App = appContext.AddApp(templateModel);
         appContext.SetCurrentApp(App);
-        var modCategories = templateModel.GroupTemplates.Select(g => g.ModCategory).Distinct();
-        foreach (var modCategory in modCategories)
-        {
-            App.AddModCategory(new ModifierCategoryName(modCategory));
-        }
-        var existingRoles = App.Roles();
-        var roles = templateModel.RecursiveRoles();
-        foreach (var role in roles)
-        {
-            var roleName = new AppRoleName(role);
-            App.AddRole(roleName);
-        }
-        var version = App.AddVersion(versionKey);
-        foreach (var groupTemplate in templateModel.GroupTemplates)
-        {
-            var group = version.AddResourceGroup
-            (
-                new ResourceGroupName(groupTemplate.Name),
-                new ModifierCategoryName(groupTemplate.ModCategory)
-            );
-            foreach (var actionTemplate in groupTemplate.ActionTemplates)
-            {
-                group.AddResource(new ResourceName(actionTemplate.Name));
-            }
-        }
         return Task.CompletedTask;
     }
 }

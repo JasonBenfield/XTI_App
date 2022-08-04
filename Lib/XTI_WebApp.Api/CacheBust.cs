@@ -35,9 +35,8 @@ public sealed class CacheBust
                 }
                 else if (xtiPath.IsCurrentVersion())
                 {
-                    var app = await appContext.App();
-                    var version = await app.Version(AppVersionKey.Current);
-                    value = version.Key().DisplayText;
+                    var appContext = await this.appContext.App();
+                    value = appContext.Version.VersionKey.DisplayText;
                 }
             }
             else
