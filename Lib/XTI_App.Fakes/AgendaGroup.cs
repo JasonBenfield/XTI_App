@@ -8,38 +8,25 @@ public sealed class AgendaGroup : AppApiGroupWrapper
 {
     public AgendaGroup(AppApiGroup source, IServiceProvider sp) : base(source)
     {
-        var actions = new AppApiActionFactory(source);
         FirstAgendaItem = source.AddAction
         (
-            actions.Action
-            (
-                nameof(FirstAgendaItem),
-                () => new FirstAgendaItemAction(sp.GetRequiredService<FirstAgendaItemCounter>())
-            )
+            nameof(FirstAgendaItem),
+            () => new FirstAgendaItemAction(sp.GetRequiredService<FirstAgendaItemCounter>())
         );
         SecondAgendaItem = source.AddAction
         (
-            actions.Action
-            (
-                nameof(SecondAgendaItem),
-                () => new SecondAgendaItemAction()
-            )
+            nameof(SecondAgendaItem),
+            () => new SecondAgendaItemAction()
         );
         ThirdAgendaItem = source.AddAction
         (
-            actions.Action
-            (
-                nameof(ThirdAgendaItem),
-                () => new ThirdAgendaItemAction()
-            )
+            nameof(ThirdAgendaItem),
+            () => new ThirdAgendaItemAction()
         );
         Stop = source.AddAction
         (
-            actions.Action
-            (
-                nameof(Stop),
-                () => new StopApplicationAction(sp.GetRequiredService<IHostApplicationLifetime>())
-            )
+            nameof(Stop),
+            () => new StopApplicationAction(sp.GetRequiredService<IHostApplicationLifetime>())
         );
     }
 

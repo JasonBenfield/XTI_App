@@ -31,11 +31,27 @@ public sealed class AppClientUrl
     public async Task<string> Value(string actionName, string modifier)
     {
         var domain = await clientDomain.Value(appName, version);
-        var url = $"https://{domain}/{appName}/{version}/{groupName}/{actionName}";
+        var url = $"https://{domain}/{appName}/{version}/{groupName}";
+        if (!string.IsNullOrWhiteSpace(actionName))
+        {
+            url = $"{url}/{actionName}";
+        }
         if (!string.IsNullOrWhiteSpace(modifier))
         {
             url = $"{url}/{modifier}";
         }
+        return url;
+    }
+
+    public async Task<string> ODataGet(string modifier)
+    {
+        var domain = await clientDomain.Value(appName, version);
+        var url = $"https://{domain}/{appName}/{version}/odata/{groupName}";
+        if (!string.IsNullOrWhiteSpace(modifier))
+        {
+            url = $"{url}/{modifier}";
+        }
+        url = $"{url}/$query";
         return url;
     }
 }

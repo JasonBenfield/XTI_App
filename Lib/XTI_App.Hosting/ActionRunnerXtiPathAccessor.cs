@@ -37,7 +37,7 @@ public sealed class ActionRunnerXtiPathAccessor : IXtiPathAccessor
         {
             versionKey = AppVersionKey.Current;
         }
-        return new XtiPath(appKey.Name.DisplayText)
+        return new XtiPath(appKey)
             .WithVersion(versionKey)
             .WithGroup(groupName)
             .WithAction(actionName);

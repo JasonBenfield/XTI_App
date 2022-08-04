@@ -9,27 +9,27 @@ public sealed class CachedAppContext : IAppContext
     private readonly IMemoryCache cache;
     private readonly ISourceAppContext sourceAppContext;
     private readonly AppKey appKey;
-    private readonly AppVersionKey versionKey;
 
-    public CachedAppContext(IMemoryCache cache, ISourceAppContext sourceAppContext, AppKey appKey, AppVersionKey versionKey)
+    public CachedAppContext(IMemoryCache cache, ISourceAppContext sourceAppContext, AppKey appKey)
     {
         this.cache = cache;
         this.sourceAppContext = sourceAppContext;
         this.appKey = appKey;
-        this.versionKey = versionKey;
     }
 
-    public async Task<IApp> App()
+    public async Task<AppContextModel> App()
     {
-        var cachedApp = new CachedApp(cache, sourceAppContext, appKey);
-        await cachedApp.Load();
+        var cacheKey = $"xti_{appKey.Type.Value}_{appKey.Name.Value}";
+        if(!cache.TryGetValue<AppContextModel>(cacheKey, out var cachedApp))
+        {
+            cachedApp = await sourceAppContext.App();
+            cache.Set
+            (
+                cacheKey, 
+                cachedApp,
+                TimeSpan.FromHours(4)
+            );
+        }
         return cachedApp;
-    }
-
-    public async Task<IAppVersion> Version()
-    {
-        var app = await App();
-        var version = await app.Version(versionKey);
-        return version;
     }
 }

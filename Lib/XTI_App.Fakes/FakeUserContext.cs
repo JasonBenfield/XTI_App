@@ -1,4 +1,5 @@
-﻿using XTI_App.Abstractions;
+﻿using System.Linq;
+using XTI_App.Abstractions;
 using XTI_App.Api;
 
 namespace XTI_App.Fakes;
@@ -7,7 +8,9 @@ public sealed class FakeUserContext : ISourceUserContext
 {
     private readonly FakeAppContext appContext;
     private readonly FakeCurrentUserName currentUserName;
-    private readonly List<FakeAppUser> users = new();
+    private readonly List<UserContextModel> userContexts = new();
+
+    private static int userID = 1001;
 
     public FakeUserContext(FakeAppContext appContext, FakeCurrentUserName currentUserName)
     {
@@ -16,52 +19,129 @@ public sealed class FakeUserContext : ISourceUserContext
         this.currentUserName = currentUserName;
     }
 
-    public Task<AppUserName> CurrentUserName() => Task.FromResult(GetCurrentUserName());
-
     public AppUserName GetCurrentUserName() => currentUserName.GetUserName();
 
-    Task<IAppUser> IUserContext.User() => Task.FromResult<IAppUser>(User());
+    public Task<UserContextModel> User() => User(GetCurrentUserName());
 
-    public FakeAppUser User() => User(currentUserName.GetUserName());
+    public Task<UserContextModel> User(AppUserName userName)
+    {
+        return Task.FromResult(GetUser(userName));
+    }
 
-    Task<IAppUser> IUserContext.User(AppUserName userName) =>
-        Task.FromResult<IAppUser>(User(userName));
+    public UserContextModel GetUser() => GetUser(GetCurrentUserName());
 
-    public FakeAppUser User(AppUserName userName) =>
-        users.First(u => u.UserName().Equals(userName));
+    public UserContextModel GetUser(AppUserName userName)=>
+        userContexts.First(u => u.User.UserName.Equals(userName));
 
     public void SetCurrentUser(AppUserName userName) => currentUserName.SetUserName(userName);
 
-    public FakeAppUser AddUser(IAppUser appUser)
+    public UserContextModel Update(UserContextModel original, Func<UserContextModel, UserContextModel> update)
     {
-        var user = users.FirstOrDefault(u => u.ID.Equals(appUser.ID));
+        userContexts.Remove(original);
+        var updated = update(original);
+        userContexts.Add(updated);
+        return updated;
+    }
+
+    public UserContextModel AddUser(UserContextModel userContext)
+    {
+        userContexts.RemoveAll(u => u.User.ID == userContext.User.ID);
+        userContexts.Add(userContext);
+        return userContext;
+    }
+
+    public UserContextModel AddUser(AppUserName userName)
+    {
+        var user = userContexts.FirstOrDefault(u => u.User.UserName.Equals(userName));
         if (user == null)
         {
-            user = new FakeAppUser(appContext, appUser.ID, appUser.UserName());
-            users.Add(user);
+            var id = getUniqueID();
+            user = new UserContextModel
+            (
+                new AppUserModel(id, userName, new PersonName(userName.Value), ""),
+                new UserContextRoleModel[0]
+            );
+            userContexts.Add(user);
         }
         return user;
     }
 
-    public FakeAppUser AddUser(AppUserName userName)
+    public void AddRolesToUser(params AppRoleName[] roles) =>
+        AddRolesToUser(ModifierKey.Default, roles);
+
+    public void AddRolesToUser(ModifierKey modifierKey, params AppRoleName[] roles)
     {
-        var user = users.FirstOrDefault(u => u.UserName().Equals(userName));
-        if (user == null)
+        var user = GetUser(GetCurrentUserName());
+        var modCategory = appContext.GetModifierCategory
+        (
+            appContext.GetCurrentApp(),
+            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
+        );
+        var modifiedRole = user.ModifiedRoles
+            .Where(mr => mr.ModifierKey.Equals(modifierKey))
+            .FirstOrDefault()
+            ?? new UserContextRoleModel(modCategory.ModifierCategory.ID, modifierKey, new AppRoleModel[0]);
+        modifiedRole = modifiedRole with
         {
-            var id = getUniqueID();
-            user = new FakeAppUser(appContext, id, userName);
-            users.Add(user);
-        }
-        return user;
+            Roles = modifiedRole.Roles
+                .Union
+                (
+                    roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
+                )
+                .Distinct()
+                .ToArray()
+        };
+        Update
+        (
+            user,
+            u => u with
+            {
+                ModifiedRoles = u.ModifiedRoles
+                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
+                    .Union(new[] { modifiedRole })
+                    .ToArray()
+            }
+        );
+    }
+
+    public void SetUserRoles(params AppRoleName[] roles) =>
+        SetUserRoles(ModifierKey.Default, roles);
+
+    public void SetUserRoles(ModifierKey modifierKey, params AppRoleName[] roles)
+    {
+        var user = GetUser(GetCurrentUserName());
+        var modCategory = appContext.GetModifierCategory
+        (
+            appContext.GetCurrentApp(),
+            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
+        );
+        var modifiedRole = user.ModifiedRoles
+            .Where(mr => mr.ModifierKey.Equals(modifierKey))
+            .FirstOrDefault()
+            ?? new UserContextRoleModel(modCategory.ModifierCategory.ID, modifierKey, new AppRoleModel[0]);
+        modifiedRole = modifiedRole with
+        {
+            Roles = roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
+        };
+        Update
+        (
+            user,
+            u => u with
+            {
+                ModifiedRoles = u.ModifiedRoles
+                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
+                    .Union(new[] { modifiedRole })
+                    .ToArray()
+            }
+        );
     }
 
     private int getUniqueID()
     {
-        var id = FakeAppUser.NextID();
-        while (users.Any(u => u.ID.Equals(id)))
+        while (userContexts.Any(u => u.User.ID.Equals(userID)))
         {
-            id = FakeAppUser.NextID();
+            userID++;
         }
-        return id;
+        return userID;
     }
 }

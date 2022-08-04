@@ -7,16 +7,12 @@ public sealed class UserCacheGroup : AppApiGroupWrapper
 {
     public UserCacheGroup(AppApiGroup source, IServiceProvider sp) : base(source)
     {
-        var actions = new WebAppApiActionFactory(source);
         ClearCache = source.AddAction
         (
-            actions.Action
+            nameof(ClearCache),
+            () => new ClearCacheAction
             (
-                nameof(ClearCache),
-                () => new ClearCacheAction
-                (
-                    sp.GetRequiredService<ICachedUserContext>()
-                )
+                sp.GetRequiredService<ICachedUserContext>()
             )
         );
     }

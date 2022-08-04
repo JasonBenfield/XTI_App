@@ -2,7 +2,7 @@
 
 public interface IAppAgendaItemBuilder
 {
-    bool HasAction(string groupName, string actionName);
+    internal bool HasAction(string groupName, string actionName);
 
-    AppAgendaItem Build();
+    internal AppAgendaItem Build();
 }

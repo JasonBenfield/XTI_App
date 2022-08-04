@@ -72,6 +72,10 @@ public class ValueTemplateFromType
             var form = (Form)obj;
             valueTemplate = new FormValueTemplate(form);
         }
+        else if(source.Name.StartsWith("ODataQueryOptions"))
+        {
+            valueTemplate = new QueryOptionsTemplate(source);
+        }
         else
         {
             valueTemplate = new ObjectValueTemplate(source);
@@ -79,28 +83,22 @@ public class ValueTemplateFromType
         return valueTemplate;
     }
 
-    private static bool isNullableType(Type targetType)
-    {
-        return targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>);
-    }
+    private static bool isNullableType(Type targetType) =>
+        targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>);
 
-    private static Type getNullableType(Type targetType)
-    {
-        return targetType.GetGenericArguments()[0];
-    }
+    private static Type getNullableType(Type targetType) => targetType.GetGenericArguments()[0];
 
-    private static bool isArrayOrEnumerable(Type targetType)
-    {
-        return targetType != typeof(string) && (targetType.IsArray || isEnumerable(targetType));
-    }
+    private static bool isArrayOrEnumerable(Type targetType) =>
+        targetType != typeof(string) &&
+        (
+            targetType.IsArray ||
+            isEnumerable(targetType)
+        );
 
-    private static bool isEnumerable(Type targetType)
-    {
-        return targetType.IsGenericType && (typeof(IEnumerable<>)).IsAssignableFrom(targetType.GetGenericTypeDefinition());
-    }
+    private static bool isEnumerable(Type targetType) =>
+        targetType.IsGenericType &&
+        (typeof(IEnumerable<>)).IsAssignableFrom(targetType.GetGenericTypeDefinition());
 
-    private static bool isDerivedFromNumericValue(Type objectType)
-    {
-        return typeof(NumericValue).IsAssignableFrom(objectType);
-    }
+    private static bool isDerivedFromNumericValue(Type objectType) =>
+        typeof(NumericValue).IsAssignableFrom(objectType);
 }

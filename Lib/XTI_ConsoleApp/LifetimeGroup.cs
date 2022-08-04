@@ -9,10 +9,9 @@ public sealed class LifetimeGroup : AppApiGroupWrapper
     public LifetimeGroup(AppApiGroup source, IServiceProvider sp)
         : base(source)
     {
-        var actions = new AppApiActionFactory(source);
         StopApplication = source.AddAction
         (
-            actions.Action(nameof(StopApplication), () => createStopApplication(sp))
+            nameof(StopApplication), () => createStopApplication(sp)
         );
     }
 

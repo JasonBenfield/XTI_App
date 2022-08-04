@@ -28,6 +28,11 @@ public sealed class AppApiGroupTemplate
             .SelectMany(a => a.ObjectTemplates())
             .Distinct();
 
+    public IEnumerable<QueryableValueTemplate> QueryableTemplates() =>
+        ActionTemplates
+            .SelectMany(a => a.QueryableTemplates())
+            .Distinct();
+
     public IEnumerable<NumericValueTemplate> NumericValueTemplates() =>
         ActionTemplates
             .SelectMany(a => a.NumericValueTemplates())

@@ -9,7 +9,13 @@ public sealed class AppRoleName : TextKeyValue, IEquatable<AppRoleName>
     public static AppRoleName ManageUserCache = new AppRoleName(nameof(ManageUserCache));
     public static AppRoleName DenyAccess = new AppRoleName(nameof(DenyAccess));
 
-    public static AppRoleName[] DefaultRoles() => new[] { Admin, System, ManageUserCache, DenyAccess };
+    public static AppRoleName[] DefaultRoles() => new[] 
+    {
+        Admin, 
+        System, 
+        ManageUserCache, 
+        DenyAccess
+    };
 
     public AppRoleName(string value) : base(value)
     {
@@ -20,4 +26,5 @@ public sealed class AppRoleName : TextKeyValue, IEquatable<AppRoleName>
     }
 
     public bool Equals(AppRoleName? other) => _Equals(other);
+    public bool EqualsAny(params AppRoleName[] others) => _EqualsAny(others);
 }

@@ -10,7 +10,9 @@ public sealed class InputField<T> : SimpleField<T>
     }
 
     public int? MaxLength { get; set; }
-    public bool IsProtected { get; set; }
+    public bool IsProtected { get; private set; }
+
+    public void Protect() => IsProtected = true;
 
     protected override void Validating(ErrorList errors)
     {

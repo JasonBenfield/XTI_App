@@ -2,13 +2,6 @@
 
 namespace XTI_App.Api;
 
-public enum ApiCodeGenerators
-{
-    Dotnet = 0,
-    TypeScript = 1,
-    Other = 99
-}
-
 public sealed class AppApiTemplate
 {
     private List<Func<ValueTemplate, ApiCodeGenerators, bool>> isExcludedFunctions = new List<Func<ValueTemplate, ApiCodeGenerators, bool>>();
@@ -35,6 +28,15 @@ public sealed class AppApiTemplate
         (
             GroupTemplates
                 .SelectMany(g => g.FormTemplates())
+                .Distinct(),
+            codeGenerator
+        );
+
+    public IEnumerable<QueryableValueTemplate> QueryableTemplates(ApiCodeGenerators codeGenerator) =>
+        excluding
+        (
+            GroupTemplates
+                .SelectMany(g => g.QueryableTemplates())
                 .Distinct(),
             codeGenerator
         );

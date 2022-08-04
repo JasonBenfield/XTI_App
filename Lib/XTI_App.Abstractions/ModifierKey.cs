@@ -1,26 +1,27 @@
-﻿using XTI_Core;
+﻿using System.Text.RegularExpressions;
+using XTI_Core;
 
 namespace XTI_App.Abstractions;
 
-public sealed class ModifierKey : TextValue, IEquatable<ModifierKey>
+public sealed class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
 {
-    public static bool operator ==(ModifierKey a, ModifierKey b) => Equals(a, b);
-    public static bool operator !=(ModifierKey a, ModifierKey b) => !(a == b);
+    private static readonly Regex replaceRegex = new("\\s+");
 
-    public static readonly ModifierKey Default = new ModifierKey("");
 
-    public static ModifierKey Generate() => new ModifierKey(new GeneratedKey().Value());
+    public static readonly ModifierKey Default = new ModifierKey();
 
     public static ModifierKey FromValue(string value) =>
         string.IsNullOrWhiteSpace(value) ? Default : new ModifierKey(value);
 
-    public ModifierKey(string value) : base(value?.ToLower() ?? "")
+    public ModifierKey()
+        :this("")
     {
     }
 
-    public override bool Equals(object? obj) => base.Equals(obj);
-
-    public override int GetHashCode() => base.GetHashCode();
+    public ModifierKey(string value)
+        : base(replaceRegex.Replace(value, "").ToLower(), replaceRegex.Replace(value, ""))
+    {
+    }
 
     public bool Equals(ModifierKey? other) => _Equals(other);
 }

@@ -32,7 +32,11 @@ internal sealed class ErrorHandlingMiddleware
         if (xtiRequestContext.HasError())
         {
             var ex = xtiRequestContext.Error();
-            context.Response.StatusCode = getErrorStatusCode(ex);
+            try
+            {
+                context.Response.StatusCode = getErrorStatusCode(ex);
+            }
+            catch { }
             if (IsApiRequest(context.Request))
             {
                 context.Response.ContentType = "application/json";
@@ -60,7 +64,11 @@ internal sealed class ErrorHandlingMiddleware
     private static bool IsApiRequest(HttpRequest request)
         => request != null
             && request.Method == "POST"
-            && request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true;
+            && 
+            (
+                request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true ||
+                request.ContentType?.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) == true
+            );
 
     private int getErrorStatusCode(Exception ex)
     {

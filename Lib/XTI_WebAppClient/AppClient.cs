@@ -8,30 +8,45 @@ public class AppClient
     private readonly IHttpClientFactory httpClientFactory;
     private readonly AppClientUrl clientUrl;
     private readonly XtiTokenAccessor xtiTokenAccessor;
-    private readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions();
+    private readonly AppClientOptions options = new();
 
     protected AppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string appName, string version)
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
         this.clientUrl = clientUrl.WithApp(appName, version);
+        var jsonSerializerOptions = new JsonSerializerOptions();
         jsonSerializerOptions.PropertyNameCaseInsensitive = true;
         jsonSerializerOptions.PropertyNamingPolicy = null;
         jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions = jsonSerializerOptions;
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
     }
 
-    protected T GetGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, T> createGroup)
+    protected T CreateGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, AppClientOptions, T> createGroup)
         where T : AppClientGroup
     {
         var group = createGroup
         (
             httpClientFactory,
             xtiTokenAccessor,
-            clientUrl
+            clientUrl,
+            options
         );
-        group.SetJsonSerializerOptions(jsonSerializerOptions);
         return group;
+    }
+
+    protected AppClientODataGroup<TArgs, TEntity> CreateODataGroup<TArgs, TEntity>(string groupName)
+    {
+        var odataGroup = new AppClientODataGroup<TArgs, TEntity>
+        (
+            httpClientFactory,
+            xtiTokenAccessor,
+            clientUrl,
+            options,
+            groupName
+        );
+        return odataGroup;
     }
 
     protected virtual void ConfigureJsonSerializerOptions(JsonSerializerOptions options)

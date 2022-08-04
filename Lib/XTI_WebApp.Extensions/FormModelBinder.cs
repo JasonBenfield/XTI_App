@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Text.Json;
 using XTI_Forms;
+using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
@@ -19,7 +20,7 @@ public sealed class FormModelBinder : IModelBinder
             model = (Form?)Activator.CreateInstance(bindingContext.ModelType);
         }
         if (model == null) { throw new ArgumentNullException(nameof(model)); }
-        var serialized = await new JsonFromRequest(bindingContext.HttpContext.Request).Serialize();
+        var serialized = await new BodyFromRequest(bindingContext.HttpContext.Request).Serialize();
         var options = new JsonSerializerOptions();
         options.Converters.Add(new JsonObjectConverter());
         var values = JsonSerializer.Deserialize<ExpandoObject>(serialized, options);

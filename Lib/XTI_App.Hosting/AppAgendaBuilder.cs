@@ -88,7 +88,7 @@ public sealed class AppAgendaBuilder
         return this;
     }
 
-    public AppAgenda Build()
+    internal AppAgenda Build()
         => new AppAgenda
         (
             sp,

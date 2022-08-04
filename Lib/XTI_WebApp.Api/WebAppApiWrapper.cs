@@ -47,6 +47,12 @@ public class WebAppApiWrapper : AppApiWrapper
             return templ.DataType == typeof(EmptyRequest)
                 || templ.DataType == typeof(EmptyActionResult);
         }
+        else if(codeGenerator == ApiCodeGenerators.TypeScript)
+        {
+            return templ.DataType == typeof(EmptyRequest)
+                || templ.DataType == typeof(ResourcePath)
+                || templ.DataType == typeof(ResourcePathAccess);
+        }
         return false;
     }
 }

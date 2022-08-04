@@ -104,7 +104,7 @@ public sealed class AppMiddlewareImmediateActionTest
     private IHostBuilder BuildHost()
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
-        return Host.CreateDefaultBuilder(new string[] { })
+        return Host.CreateDefaultBuilder(new string[0])
             .UseWindowsService()
             .ConfigureServices((hostContext, services) =>
             {
