@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using XTI_Core;
 
 namespace XTI_App.Api;
 
@@ -105,6 +106,12 @@ public sealed class ObjectPropertyTemplate : IEquatable<ObjectPropertyTemplate>
     {
         Name = propertyInfo.Name;
         ValueTemplate = new ValueTemplateFromType(propertyInfo.PropertyType).Template();
+        var numAttrs = propertyInfo.GetCustomAttributes(typeof(NumericValueAttribute), true);
+        if (numAttrs.Length > 0)
+        {
+            var numAttr = (NumericValueAttribute)numAttrs[0];
+            NumericValueTemplate = new NumericValueTemplate(numAttr.DataType);
+        }
         CanRead = propertyInfo.CanRead;
         CanWrite = propertyInfo.CanWrite;
         value = $"{Name}|{ValueTemplate}|{CanRead}|{CanWrite}";
@@ -113,6 +120,7 @@ public sealed class ObjectPropertyTemplate : IEquatable<ObjectPropertyTemplate>
 
     public string Name { get; }
     public ValueTemplate ValueTemplate { get; }
+    public NumericValueTemplate? NumericValueTemplate { get; }
     public bool CanRead { get; }
     public bool CanWrite { get; }
 

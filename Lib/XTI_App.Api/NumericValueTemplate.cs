@@ -23,7 +23,7 @@ public sealed class NumericValueTemplate : ValueTemplate, IEquatable<NumericValu
         if (valuesField != null)
         {
             var methodInfo = valuesField.GetType().GetMethod("GetAll");
-            values = (object[]?)methodInfo?.Invoke(valuesField, new object[] { }) ?? new object[0];
+            values = (object[]?)methodInfo?.Invoke(valuesField, new object[0]) ?? new object[0];
         }
         return values.Cast<NumericValue>().ToArray();
     }
@@ -44,5 +44,5 @@ public sealed class NumericValueTemplate : ValueTemplate, IEquatable<NumericValu
 
     public bool Equals(NumericValueTemplate? other) => DataType == other?.DataType;
 
-    public IEnumerable<ObjectValueTemplate> ObjectTemplates() => new ObjectValueTemplate[] { };
+    public IEnumerable<ObjectValueTemplate> ObjectTemplates() => new ObjectValueTemplate[0];
 }

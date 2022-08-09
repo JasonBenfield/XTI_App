@@ -12,7 +12,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.7" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-		<PackageReference Include="XTI_Core.Fakes" Version="1.10.12" />
+		<PackageReference Include="XTI_Core.Fakes" Version="1.10.14" />
 		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.27" />
 	</ItemGroup>
 

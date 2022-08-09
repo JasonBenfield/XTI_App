@@ -117,10 +117,22 @@ public sealed class AppApiActionTemplate
         {
             numericTemplates.Add(resultNumTempl);
         }
+        if(ModelTemplate is FormValueTemplate formTempl)
+        {
+            numericTemplates.AddRange(formTempl.NumericValueTemplates());
+        }
+        if (ResultTemplate is FormValueTemplate formResultTempl)
+        {
+            numericTemplates.AddRange(formResultTempl.NumericValueTemplates());
+        }
         foreach (var objTempl in ObjectTemplates())
         {
             var propNumTempls = objTempl.PropertyTemplates.Select(pt => pt.ValueTemplate).OfType<NumericValueTemplate>();
             numericTemplates.AddRange(propNumTempls);
+            var actualNumTempls = objTempl.PropertyTemplates
+                .Select(pt => pt.NumericValueTemplate)
+                .Where(nt => nt != null);
+            numericTemplates.AddRange(actualNumTempls!);
         }
         return numericTemplates.Distinct();
     }
