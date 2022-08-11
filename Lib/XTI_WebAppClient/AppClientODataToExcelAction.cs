@@ -32,6 +32,10 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
     {
         var url = await clientUrl.Value(actionName, modifier);
         var query = new ObjectToQueryString(model).Value;
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            query = $"?{query}";
+        }
         return $"{url}{query}";
     }
 
@@ -59,7 +63,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
             {
                 query += "&";
             }
-            query += modelAsQuery.Substring(1);
+            query += modelAsQuery;
         }
         var postResult = await GetPostResponse(modKey, query);
         AppClientFileResult fileResult;

@@ -22,7 +22,7 @@ internal sealed class ObjectToQueryStringTest
                 ID = 1
             }
         );
-        Assert.That(objToQuery.Value, Is.EqualTo("?ID=1"));
+        Assert.That(objToQuery.Value, Is.EqualTo("ID=1"));
     }
 
     [Test]
@@ -36,7 +36,7 @@ internal sealed class ObjectToQueryStringTest
                 Name = "xartogg"
             }
         );
-        Assert.That(objToQuery.Value, Is.EqualTo("?ID=1&Name=xartogg"));
+        Assert.That(objToQuery.Value, Is.EqualTo("ID=1&Name=xartogg"));
     }
 
     [Test]
@@ -50,7 +50,7 @@ internal sealed class ObjectToQueryStringTest
                 Name = (string?)null
             }
         );
-        Assert.That(objToQuery.Value, Is.EqualTo("?ID=1"));
+        Assert.That(objToQuery.Value, Is.EqualTo("ID=1"));
     }
 
     [Test]
@@ -68,6 +68,6 @@ internal sealed class ObjectToQueryStringTest
                 }
             }
         );
-        Assert.That(objToQuery.Value, Is.EqualTo("?ID=1&Department.DepartmentNumber=16&Department.Description=IT"));
+        Assert.That(objToQuery.Value, Is.EqualTo("ID=1&Department.DepartmentNumber=16&Department.Description=IT"));
     }
 }

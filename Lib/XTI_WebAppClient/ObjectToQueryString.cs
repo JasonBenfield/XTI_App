@@ -6,8 +6,7 @@ public sealed class ObjectToQueryString
     {
         var nameValues = new List<string>();
         addNameValues(nameValues, "", obj);
-        var value = string.Join("&", nameValues);
-        Value = string.IsNullOrWhiteSpace(value) ? "" : $"?{value}";
+        Value = string.Join("&", nameValues);
     }
 
     private void addNameValues(List<string> nameValues, string prefix, object? obj)
