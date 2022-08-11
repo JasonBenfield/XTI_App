@@ -30,6 +30,10 @@ public sealed class AppClientFileAction<TModel>
     {
         var url = await clientUrl.Value(actionName, modifier);
         var query = new ObjectToQueryString(model).Value;
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            query = $"?{query}";
+        }
         return $"{url}{query}";
     }
 
@@ -59,7 +63,11 @@ public sealed class AppClientFileAction<TModel>
             : new ObjectToQueryString(transformedModel).Value;
         if (!string.IsNullOrWhiteSpace(serialized))
         {
-            url += $"?{serialized}";
+            if (!serialized.StartsWith("?"))
+            {
+                url += "?";
+            }
+            url += serialized;
         }
         var response = await client.GetAsync(url);
         AppClientFileResult result;

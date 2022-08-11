@@ -34,6 +34,10 @@ public sealed class AppClientPostAction<TModel, TResult>
     {
         var url = await clientUrl.Value(actionName, modifier);
         var query = new ObjectToQueryString(model).Value;
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            query = $"?{query}";
+        }
         return $"{url}{query}";
     }
 
