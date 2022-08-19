@@ -39,10 +39,10 @@ public sealed class AppClientFileAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<AppClientFileResult> GetFile(string modifier, TModel model)
-        => _GetFile(modifier, model, true);
+    public Task<AppClientFileResult> GetFile(string modifier, TModel model, CancellationToken ct)
+        => _GetFile(modifier, model, true, ct);
 
-    private async Task<AppClientFileResult> _GetFile(string modifier, TModel model, bool retryUnauthorized)
+    private async Task<AppClientFileResult> _GetFile(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
         client.Timeout = options.Timeout;
@@ -72,14 +72,14 @@ public sealed class AppClientFileAction<TModel>
             }
             url += serialized;
         }
-        var response = await client.GetAsync(url);
+        var response = await client.GetAsync(url, ct);
         AppClientFileResult result;
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsByteArrayAsync();
             result = new AppClientFileResult
             (
-                content, 
+                content,
                 response.Content.Headers.ContentType?.MediaType ?? "",
                 response.Content.Headers.ContentDisposition?.FileName ?? ""
             );
@@ -87,7 +87,7 @@ public sealed class AppClientFileAction<TModel>
         else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
         {
             xtiTokenAccessor.Reset();
-            result = await _GetFile(modifier, model, false);
+            result = await _GetFile(modifier, model, false, ct);
         }
         else
         {
