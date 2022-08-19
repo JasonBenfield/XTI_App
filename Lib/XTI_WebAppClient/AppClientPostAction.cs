@@ -41,12 +41,12 @@ public sealed class AppClientPostAction<TModel, TResult>
         return $"{url}{query}";
     }
 
-    public Task<TResult> Post(string modifier, TModel model) =>
-        _Post(modifier, model, true);
+    public Task<TResult> Post(string modifier, TModel model, CancellationToken ct) =>
+        _Post(modifier, model, true, ct);
 
-    private async Task<TResult> _Post(string modifier, TModel model, bool retryUnauthorized)
+    private async Task<TResult> _Post(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
     {
-        var postResult = await GetPostResponse(modifier, model);
+        var postResult = await GetPostResponse(modifier, model, ct);
         TResult result;
         try
         {
@@ -62,7 +62,7 @@ public sealed class AppClientPostAction<TModel, TResult>
             else if (postResult.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                result = await _Post(modifier, model, false);
+                result = await _Post(modifier, model, false, ct);
             }
             else
             {
@@ -76,10 +76,10 @@ public sealed class AppClientPostAction<TModel, TResult>
         return result;
     }
 
-    private async Task<PostResult> GetPostResponse(string modifier, object? model)
+    private async Task<PostResult> GetPostResponse(string modifier, object? model, CancellationToken ct)
     {
         PostResult postResult;
-        var response = await GetPostResponseMessage(modifier, model);
+        var response = await GetPostResponseMessage(modifier, model, ct);
         try
         {
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -98,9 +98,10 @@ public sealed class AppClientPostAction<TModel, TResult>
         return postResult;
     }
 
-    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model)
+    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
+        client.Timeout = options.Timeout;
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();
@@ -120,7 +121,7 @@ public sealed class AppClientPostAction<TModel, TResult>
             ? modelString
             : JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
         using var content = new StringContent(serialized, Encoding.UTF8, "application/json");
-        var response = await client.PostAsync(url, content);
+        var response = await client.PostAsync(url, content, ct);
         return response;
     }
 

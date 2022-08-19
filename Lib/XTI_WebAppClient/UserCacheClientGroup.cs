@@ -7,6 +7,6 @@ public sealed class UserCacheClientGroup : AppClientGroup
     {
     }
 
-    public Task<EmptyActionResult> ClearCache(ClearUserCacheRequest request) =>
-        CreatePostAction<ClearUserCacheRequest, EmptyActionResult>(nameof(ClearCache)).Post("", request);
+    public Task<EmptyActionResult> ClearCache(ClearUserCacheRequest request, CancellationToken ct) =>
+        CreatePostAction<ClearUserCacheRequest, EmptyActionResult>(nameof(ClearCache)).Post("", request, ct);
 }

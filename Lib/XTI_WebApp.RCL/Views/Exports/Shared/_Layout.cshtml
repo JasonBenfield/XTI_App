@@ -1,4 +1,7 @@
 ﻿@inject XTI_WebApp.Abstractions.IPageContext pageContext
+@{
+    var serializedPageContext = await pageContext.Serialize();
+}
 <!doctype html>
 <html lang="en">
 <head>
@@ -17,9 +20,6 @@
 <body>
     @RenderBody()
     <script>
-        @{
-            var serializedPageContext = await pageContext.Serialize();
-        }
         pageContext = @Html.Raw(serializedPageContext);
     </script>
     @RenderSection("Scripts", required: false)

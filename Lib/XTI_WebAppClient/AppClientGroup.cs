@@ -22,15 +22,15 @@ public class AppClientGroup
         new AppClientContentAction<TModel>(httpClientFactory, xtiTokenAccessor, clientUrl, options, actionName);
 
     protected AppClientGetAction<TModel> CreateGetAction<TModel>(string actionName) =>
-        new AppClientGetAction<TModel>(httpClientFactory, xtiTokenAccessor, clientUrl, actionName);
+        new AppClientGetAction<TModel>(httpClientFactory, xtiTokenAccessor, clientUrl, options, actionName);
 
     protected AppClientFileAction<TModel> CreateFileAction<TModel>(string actionName) =>
-        new AppClientFileAction<TModel>(httpClientFactory, xtiTokenAccessor, clientUrl, actionName);
+        new AppClientFileAction<TModel>(httpClientFactory, xtiTokenAccessor, clientUrl, options, actionName);
 
     protected AppClientODataAction<TModel, TEntity> CreateODataAction<TModel, TEntity>(string actionName) =>
         new AppClientODataAction<TModel, TEntity>(httpClientFactory, xtiTokenAccessor, clientUrl, options, actionName);
 
     protected AppClientODataToExcelAction<TModel, TEntity> CreateODataToExcelAction<TModel, TEntity>(string actionName) =>
-        new AppClientODataToExcelAction<TModel, TEntity>(httpClientFactory, xtiTokenAccessor, clientUrl, actionName);
+        new AppClientODataToExcelAction<TModel, TEntity>(httpClientFactory, xtiTokenAccessor, clientUrl, options, actionName);
 
 }

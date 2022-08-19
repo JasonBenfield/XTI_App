@@ -57,5 +57,10 @@ public class AppClient
 
     public void UseToken<T>() where T : IXtiToken => xtiTokenAccessor.UseToken<T>();
 
+    public void SetTimeOut(TimeSpan timeOut)
+    {
+        options.Timeout = timeOut;
+    }
+
     public override string ToString() => $"{GetType().Name}";
 }

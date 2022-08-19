@@ -14,15 +14,15 @@ public sealed class AppClientODataGroup<TArgs, TEntity> : AppClientGroup
 
     public AppClientODataGroupActions Actions { get; }
 
-    public Task<ODataResult<TEntity>> Get(string modKey, string odataOptions, TArgs model) =>
-        Actions.Get.Post(modKey, odataOptions, model);
+    public Task<ODataResult<TEntity>> Get(string modKey, string odataOptions, TArgs model, CancellationToken ct) =>
+        Actions.Get.Post(modKey, odataOptions, model, ct);
 
-    public Task<AppClientFileResult> ToExcel(string modKey, string odataOptions, TArgs model) =>
-        Actions.ToExcel.GetFile(modKey, odataOptions, model);
+    public Task<AppClientFileResult> ToExcel(string modKey, string odataOptions, TArgs model, CancellationToken ct) =>
+        Actions.ToExcel.GetFile(modKey, odataOptions, model, ct);
 
     public sealed record AppClientODataGroupActions
     (
-        AppClientODataAction<TArgs, TEntity> Get, 
+        AppClientODataAction<TArgs, TEntity> Get,
         AppClientODataToExcelAction<TArgs, TEntity> ToExcel
     );
 }
