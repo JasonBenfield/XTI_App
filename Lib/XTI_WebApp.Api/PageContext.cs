@@ -13,6 +13,7 @@ public sealed class PageContext : IPageContext
     private readonly IAppContext appContext;
     private readonly ICurrentUserName currentUserName;
     private readonly XtiEnvironment xtiEnv;
+    private bool hasLoaded = false;
 
     public PageContext(AppClients appClients, CacheBust cacheBust, IAppContext appContext, ICurrentUserName currentUserName, XtiEnvironment xtiEnv)
     {
@@ -34,22 +35,26 @@ public sealed class PageContext : IPageContext
 
     public async Task<string> Serialize()
     {
-        CacheBust = await cacheBust.Value();
-        var app = await appContext.App();
-        AppTitle = app.App.AppKey.Name.DisplayText;
-        EnvironmentName = xtiEnv.EnvironmentName;
-        var userName = await currentUserName.Value();
-        if (userName.Equals(AppUserName.Anon))
+        if (!hasLoaded)
         {
-            IsAuthenticated = false;
-            UserName = "";
+            CacheBust = await cacheBust.Value();
+            var app = await appContext.App();
+            AppTitle = app.App.AppKey.Name.DisplayText;
+            EnvironmentName = xtiEnv.EnvironmentName;
+            var userName = await currentUserName.Value();
+            if (userName.Equals(AppUserName.Anon))
+            {
+                IsAuthenticated = false;
+                UserName = "";
+            }
+            else
+            {
+                IsAuthenticated = true;
+                UserName = userName.Value;
+            }
+            WebAppDomains = await appClients.Domains();
+            hasLoaded = true;
         }
-        else
-        {
-            IsAuthenticated = true;
-            UserName = userName.Value;
-        }
-        WebAppDomains = await appClients.Domains();
         return JsonSerializer.Serialize(this);
     }
 }

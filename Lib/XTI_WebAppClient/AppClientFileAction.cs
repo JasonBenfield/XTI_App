@@ -8,13 +8,15 @@ public sealed class AppClientFileAction<TModel>
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientUrl clientUrl;
+    private readonly AppClientOptions options;
     private readonly string actionName;
 
-    public AppClientFileAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string actionName)
+    public AppClientFileAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, AppClientOptions options, string actionName)
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
         this.clientUrl = clientUrl;
+        this.options = options;
         this.actionName = actionName;
     }
 
@@ -43,6 +45,7 @@ public sealed class AppClientFileAction<TModel>
     private async Task<AppClientFileResult> _GetFile(string modifier, TModel model, bool retryUnauthorized)
     {
         using var client = httpClientFactory.CreateClient();
+        client.Timeout = options.Timeout;
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();

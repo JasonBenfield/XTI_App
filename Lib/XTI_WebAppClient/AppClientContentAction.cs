@@ -41,12 +41,12 @@ public sealed class AppClientContentAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<AppClientContentResult> Post(string modifier, TModel model) =>
-        _Post(modifier, model, true);
+    public Task<AppClientContentResult> Post(string modifier, TModel model, CancellationToken ct) =>
+        _Post(modifier, model, true, ct);
 
-    private async Task<AppClientContentResult> _Post(string modifier, TModel model, bool retryUnauthorized)
+    private async Task<AppClientContentResult> _Post(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
     {
-        using var response = await GetPostResponseMessage(modifier, model);
+        using var response = await GetPostResponseMessage(modifier, model, ct);
         var responseContent = await response.Content.ReadAsStringAsync();
         AppClientContentResult result;
         try
@@ -58,7 +58,7 @@ public sealed class AppClientContentAction<TModel>
             else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                result = await _Post(modifier, model, false);
+                result = await _Post(modifier, model, false, ct);
             }
             else
             {
@@ -72,9 +72,10 @@ public sealed class AppClientContentAction<TModel>
         return result;
     }
 
-    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model)
+    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
+        client.Timeout = options.Timeout;
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();
@@ -94,7 +95,7 @@ public sealed class AppClientContentAction<TModel>
             ? modelString
             : JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
         using var content = new StringContent(serialized, Encoding.UTF8, "application/json");
-        var response = await client.PostAsync(url, content);
+        var response = await client.PostAsync(url, content, ct);
         return response;
     }
 

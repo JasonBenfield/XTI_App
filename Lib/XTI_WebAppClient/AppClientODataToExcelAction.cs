@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 namespace XTI_WebAppClient;
@@ -10,13 +9,15 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientUrl clientUrl;
+    private readonly AppClientOptions options;
     private readonly string actionName;
 
-    public AppClientODataToExcelAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string actionName)
+    public AppClientODataToExcelAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, AppClientOptions options, string actionName)
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
         this.clientUrl = clientUrl;
+        this.options = options;
         this.actionName = actionName;
     }
 
@@ -39,13 +40,13 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         return $"{url}{query}";
     }
 
-    public Task<AppClientFileResult> GetFile(string odataOptions, TArgs model) =>
-        GetFile("", odataOptions, model);
+    public Task<AppClientFileResult> GetFile(string odataOptions, TArgs model, CancellationToken ct) =>
+        GetFile("", odataOptions, model, ct);
 
-    public Task<AppClientFileResult> GetFile(string modKey, string odataOptions, TArgs model) =>
-        _GetFile(modKey, odataOptions, model, true);
+    public Task<AppClientFileResult> GetFile(string modKey, string odataOptions, TArgs model, CancellationToken ct) =>
+        _GetFile(modKey, odataOptions, model, true, ct);
 
-    private async Task<AppClientFileResult> _GetFile(string modKey, string odataOptions, TArgs model, bool retryUnauthorized)
+    private async Task<AppClientFileResult> _GetFile(string modKey, string odataOptions, TArgs model, bool retryUnauthorized, CancellationToken ct)
     {
         var query = "";
         if (!string.IsNullOrWhiteSpace(odataOptions))
@@ -65,7 +66,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
             }
             query += modelAsQuery;
         }
-        var postResult = await GetPostResponse(modKey, query);
+        var postResult = await GetPostResponse(modKey, query, ct);
         AppClientFileResult fileResult;
         try
         {
@@ -81,7 +82,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
             else if (postResult.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                fileResult = await _GetFile(modKey, odataOptions, model, false);
+                fileResult = await _GetFile(modKey, odataOptions, model, false, ct);
             }
             else
             {
@@ -95,9 +96,10 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         return fileResult;
     }
 
-    private async Task<PostResult> GetPostResponse(string modKey, string query)
+    private async Task<PostResult> GetPostResponse(string modKey, string query, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
+        client.Timeout = options.Timeout;
         var token = await xtiTokenAccessor.Value();
         if (!string.IsNullOrWhiteSpace(token))
         {
@@ -108,7 +110,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         {
             url += query;
         }
-        using var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url, ct);
         var responseContent = await response.Content.ReadAsByteArrayAsync();
         return new PostResult
         (
