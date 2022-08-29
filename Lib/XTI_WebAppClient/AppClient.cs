@@ -19,6 +19,7 @@ public class AppClient
         jsonSerializerOptions.PropertyNameCaseInsensitive = true;
         jsonSerializerOptions.PropertyNamingPolicy = null;
         jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        jsonSerializerOptions.Converters.Add(new ClientNumericValueConverterJsonFactory());
         options.JsonSerializerOptions = jsonSerializerOptions;
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
     }

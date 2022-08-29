@@ -51,8 +51,8 @@ public static class AppExtensions
     }
 
     public static ThrottledPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action)
-        => builder.Throttle(action.Path.Format());
+        => builder.Throttle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}");
 
     public static ThrottledPathBuilder AndThrottle(this ThrottledPathBuilder builder, IAppApiAction action)
-        => builder.AndThrottle(action.Path.Format());
+        => builder.AndThrottle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}");
 }
