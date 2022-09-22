@@ -22,6 +22,16 @@ public class AppClient
         jsonSerializerOptions.Converters.Add(new ClientNumericValueConverterJsonFactory());
         options.JsonSerializerOptions = jsonSerializerOptions;
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
+        UserCache = CreateGroup
+        (
+            (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
+                new UserCacheClientGroup(_httpClientFactory, _tokenAccessor, _clientUrl, _options)
+        );
+        User = CreateGroup
+        (
+            (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
+                new UserClientGroup(_httpClientFactory, _tokenAccessor, _clientUrl, _options)
+        );
     }
 
     protected T CreateGroup<T>(Func<IHttpClientFactory, XtiTokenAccessor, AppClientUrl, AppClientOptions, T> createGroup)
@@ -53,6 +63,10 @@ public class AppClient
     protected virtual void ConfigureJsonSerializerOptions(JsonSerializerOptions options)
     {
     }
+
+    public UserCacheClientGroup UserCache { get; }
+
+    public UserClientGroup User { get; }
 
     public Task<string> UserName() => xtiTokenAccessor.UserName();
 

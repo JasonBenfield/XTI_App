@@ -42,17 +42,10 @@ public class WebAppApiWrapper : AppApiWrapper
 
     private static bool IsValueTemplateExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator)
     {
-        if(codeGenerator == ApiCodeGenerators.Dotnet)
-        {
-            return templ.DataType == typeof(EmptyRequest)
-                || templ.DataType == typeof(EmptyActionResult);
-        }
-        else if(codeGenerator == ApiCodeGenerators.TypeScript)
-        {
-            return templ.DataType == typeof(EmptyRequest)
-                || templ.DataType == typeof(ResourcePath)
-                || templ.DataType == typeof(ResourcePathAccess);
-        }
-        return false;
+        return templ.DataType == typeof(EmptyRequest)
+            || templ.DataType == typeof(EmptyActionResult)
+            || templ.DataType == typeof(LogoutRequest)
+            || templ.DataType == typeof(ResourcePath)
+            || templ.DataType == typeof(ResourcePathAccess);
     }
 }

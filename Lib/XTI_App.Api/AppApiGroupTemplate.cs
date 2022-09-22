@@ -45,6 +45,8 @@ public sealed class AppApiGroupTemplate
 
     public bool IsUser() => Name.Equals("User", StringComparison.OrdinalIgnoreCase);
 
+    public bool IsUserCache() => Name.Equals("UserCache", StringComparison.OrdinalIgnoreCase);
+
     public AppApiGroupTemplateModel ToModel()
         => new AppApiGroupTemplateModel
         {

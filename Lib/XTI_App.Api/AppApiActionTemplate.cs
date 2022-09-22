@@ -1,4 +1,5 @@
-﻿using XTI_App.Abstractions;
+﻿using System.Runtime.InteropServices;
+using XTI_App.Abstractions;
 
 namespace XTI_App.Api;
 
@@ -77,6 +78,64 @@ public sealed class AppApiActionTemplate
     public bool IsQueryToExcel() => resultType.Equals(ResourceResultType.Values.QueryToExcel);
     public bool HasEmptyModel() => ModelTemplate.DataType == typeof(EmptyRequest);
 
+    public bool HasFileUploadTemplates() => HasFileUploadTemplates(ModelTemplate);
+
+    private bool HasFileUploadTemplates(ValueTemplate valueTemplate)
+    {
+        var hasFileUploads = false;
+        if (valueTemplate is FileUploadValueTemplate modelFileUploadTempl)
+        {
+            hasFileUploads = true;
+        }
+        else if (valueTemplate is ArrayValueTemplate arrTempl && arrTempl.ElementTemplate is FileUploadValueTemplate arrElFileUploadTempl)
+        {
+            hasFileUploads = true;
+        }
+        else
+        {
+            foreach (var objTempl in valueTemplate.ObjectTemplates())
+            {
+                var propFileUploadTempls = objTempl.PropertyTemplates
+                    .Select(pt => pt.ValueTemplate)
+                    .OfType<FileUploadValueTemplate>();
+                if (propFileUploadTempls.Any())
+                {
+                    hasFileUploads = true;
+                    break;
+                }
+                else
+                {
+                    var arrObjectTempls = objTempl.PropertyTemplates
+                        .Select(pt => pt.ValueTemplate)
+                        .OfType<ArrayValueTemplate>();
+                    foreach (var propObjectTempl in arrObjectTempls)
+                    {
+                        if (HasFileUploadTemplates(propObjectTempl))
+                        {
+                            hasFileUploads = true;
+                            break;
+                        }
+                    }
+                    if (!hasFileUploads)
+                    {
+                        var propObjectTempls = objTempl.PropertyTemplates
+                            .Select(pt => pt.ValueTemplate)
+                            .OfType<ObjectValueTemplate>();
+                        foreach (var propObjectTempl in propObjectTempls)
+                        {
+                            if (HasFileUploadTemplates(propObjectTempl))
+                            {
+                                hasFileUploads = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return hasFileUploads;
+    }
+
     public IEnumerable<FormValueTemplate> FormTemplates()
     {
         var formTemplates = new List<FormValueTemplate>();
@@ -117,7 +176,7 @@ public sealed class AppApiActionTemplate
         {
             numericTemplates.Add(resultNumTempl);
         }
-        if(ModelTemplate is FormValueTemplate formTempl)
+        if (ModelTemplate is FormValueTemplate formTempl)
         {
             numericTemplates.AddRange(formTempl.NumericValueTemplates());
         }

@@ -64,6 +64,30 @@ public sealed class SimpleValueTemplate : ValueTemplate, IEquatable<SimpleValueT
 
     public override string ToString() => $"{nameof(SimpleValueTemplate)} {value}";
 }
+public sealed class FileUploadValueTemplate : ValueTemplate, IEquatable<FileUploadValueTemplate>
+{
+    private readonly string value;
+    private readonly int hashCode;
+
+    internal FileUploadValueTemplate(Type dataType)
+    {
+        DataType = dataType;
+        value = $"{DataType}";
+        hashCode = value.GetHashCode();
+    }
+
+    public Type DataType { get; }
+
+    public IEnumerable<ObjectValueTemplate> ObjectTemplates() => new ObjectValueTemplate[0];
+
+    public override bool Equals(object? obj) => Equals(obj as FileUploadValueTemplate);
+
+    public bool Equals(FileUploadValueTemplate? other) => value == other?.value;
+
+    public override int GetHashCode() => hashCode;
+
+    public override string ToString() => $"{nameof(FileUploadValueTemplate)} {value}";
+}
 public sealed class ObjectValueTemplate : ValueTemplate, IEquatable<ObjectValueTemplate>
 {
     private readonly string value;
