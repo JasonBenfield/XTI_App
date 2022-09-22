@@ -39,6 +39,10 @@ public class ValueTemplateFromType
                 valueTemplate = new SimpleValueTemplate(source, false);
             }
         }
+        else if(source.Name == "IFormFile")
+        {
+            valueTemplate = new FileUploadValueTemplate(source);
+        }
         else if (source == typeof(string) || source == typeof(object))
         {
             valueTemplate = new SimpleValueTemplate(source, true);

@@ -91,9 +91,7 @@ public sealed class AppClientContentAction<TModel>
         {
             transformedModel = form.Export();
         }
-        var serialized = transformedModel is string modelString
-            ? modelString
-            : JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
+        var serialized = JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
         using var content = new StringContent(serialized, Encoding.UTF8, "application/json");
         var response = await client.PostAsync(url, content, ct);
         return response;
