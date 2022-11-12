@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using XTI_App.Api;
 using XTI_Core;
@@ -24,23 +23,25 @@ internal sealed class ErrorHandlingMiddleware
     (
         HttpContext context,
         XtiRequestContext xtiRequestContext,
-        ICompositeViewEngine viewEngine,
-        XtiEnvironment xtiEnv
+        ICompositeViewEngine viewEngine
     )
     {
         await _next(context);
         if (xtiRequestContext.HasError())
         {
-            var ex = xtiRequestContext.Error();
             try
             {
-                context.Response.StatusCode = getErrorStatusCode(ex);
+                var statusCode = xtiRequestContext.GetStatusCode();
+                if (statusCode.HasValue)
+                {
+                    context.Response.StatusCode = statusCode.Value;
+                }
             }
             catch { }
             if (IsApiRequest(context.Request))
             {
                 context.Response.ContentType = "application/json";
-                var errors = new ResultContainer<ErrorModel[]>(getErrors(xtiEnv, ex));
+                var errors = new ResultContainer<ErrorModel[]>(xtiRequestContext.GetErrors());
                 var serializedErrors = JsonSerializer.Serialize(errors);
                 await context.Response.WriteAsync(serializedErrors);
             }
@@ -64,64 +65,11 @@ internal sealed class ErrorHandlingMiddleware
     private static bool IsApiRequest(HttpRequest request)
         => request != null
             && request.Method == "POST"
-            && 
+            &&
             (
                 request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true ||
                 request.ContentType?.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) == true
             );
-
-    private int getErrorStatusCode(Exception ex)
-    {
-        int statusCode;
-        if (ex is AppException)
-        {
-            if (ex is AccessDeniedException)
-            {
-                statusCode = StatusCodes.Status403Forbidden;
-            }
-            else
-            {
-                statusCode = StatusCodes.Status400BadRequest;
-            }
-        }
-        else
-        {
-            statusCode = StatusCodes.Status500InternalServerError;
-        }
-        return statusCode;
-    }
-
-    private ErrorModel[] getErrors(XtiEnvironment xtiEnv, Exception ex)
-    {
-        ErrorModel[] errors;
-        if (xtiEnv.IsDevelopmentOrTest())
-        {
-            if (ex is ValidationFailedException validationFailedException)
-            {
-                errors = validationFailedException.Errors.ToArray();
-            }
-            else
-            {
-                errors = new[] { new ErrorModel(ex.StackTrace ?? "", ex.Message, "") };
-            }
-        }
-        else if (ex is AppException appException)
-        {
-            if (ex is ValidationFailedException validationFailedException)
-            {
-                errors = validationFailedException.Errors.ToArray();
-            }
-            else
-            {
-                errors = new[] { new ErrorModel(appException.DisplayMessage) };
-            }
-        }
-        else
-        {
-            errors = new[] { new ErrorModel("An unexpected error occurred") };
-        }
-        return errors;
-    }
 
     private static async Task<string> RenderViewToString(IViewEngine viewEngine, HttpContext httpContext, string viewPath, object? model = null)
     {
@@ -136,12 +84,7 @@ internal sealed class ErrorHandlingMiddleware
             RouteData = new RouteData()
         };
         var viewEngineResult = viewEngine.FindView(actionContext, viewPath, false);
-        // get the view and attach the model to view data
-        var view = viewEngineResult?.View;
-        if (view == null)
-        {
-            throw new FileNotFoundException("View cannot be found.");
-        }
+        var view = viewEngineResult?.View ?? throw new FileNotFoundException("View cannot be found.");
         string result;
         using (var sw = new StringWriter())
         {
