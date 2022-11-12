@@ -53,8 +53,9 @@ public sealed class CurrentUserAccess
             }
             else if (!userRoleNames.Intersect(allowedRoles).Any())
             {
-                var joinedRoles = string.Join(",", allowedRoles.Select(ar => ar.DisplayText));
-                error = $"'{userName.DisplayText}' is not allowed to '{formatPath(group, action, modifier)}'. Allowed roles: {joinedRoles}.";
+                var joinedAllowedRoles = string.Join(",", allowedRoles.Select(ar => ar.DisplayText));
+                var joinedUserRoles = string.Join(",", userRoleNames.Select(ar => ar.DisplayText));
+                error = $"'{userName.DisplayText}' is not allowed to '{formatPath(group, action, modifier)}'. Allowed roles: {joinedAllowedRoles}. User roles: {joinedUserRoles}";
             }
         }
         UserAccessResult result;
