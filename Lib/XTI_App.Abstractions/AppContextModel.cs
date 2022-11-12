@@ -1,4 +1,6 @@
-﻿namespace XTI_App.Abstractions;
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace XTI_App.Abstractions;
 
 public sealed record AppContextModel
 (
@@ -24,21 +26,29 @@ public sealed record AppContextModel
     public AppContextResourceModel Resource(ResourceGroupName groupName, ResourceName resourceName)
     {
         var resourceGroup = ResourceGroup(groupName);
-        var resource = resourceGroup.Resources.First(r => r.Resource.Name.Equals(resourceName));
-        return resource;
+        var resource = resourceGroup.Resources.FirstOrDefault(r => r.Resource.Name.Equals(resourceName));
+        return resource ?? 
+            throw new ArgumentException($"Resource '{groupName.DisplayText}'/'{resourceName.DisplayText}' not found.");
     }
 
-    public AppContextResourceGroupModel ResourceGroup(ResourceGroupName groupName) =>
-        ResourceGroups
-            .First(rg => rg.ResourceGroup.Name.Equals(groupName));
+    public AppContextResourceGroupModel ResourceGroup(ResourceGroupName groupName)
+    {
+        var resourceGroup = ResourceGroups
+            .FirstOrDefault(rg => rg.ResourceGroup.Name.Equals(groupName));
+        return resourceGroup ?? 
+            throw new ArgumentException($"Resource Group '{groupName.DisplayText}'.");
+    }
 
     public AppContextModifierCategoryModel ModCategory(ResourceGroupName name)
     {
         var resourceGroup = ResourceGroups
             .First(rg => rg.ResourceGroup.Name.Equals(name));
         var modCategoryID = resourceGroup.ResourceGroup.ModCategoryID;
-        return ModifierCategories.First(mc => mc.ModifierCategory.ID == modCategoryID);
+        return ModifierCategories.FirstOrDefault(mc => mc.ModifierCategory.ID == modCategoryID)
+            ?? throw new ArgumentException($"Modifier Category {modCategoryID} for Resource Group '{name.DisplayText}' not found.");
     }
 
-    public AppRoleModel Role(AppRoleName name) => Roles.First(r => r.Name.Equals(name));
+    public AppRoleModel Role(AppRoleName name) => 
+        Roles.FirstOrDefault(r => r.Name.Equals(name))
+            ?? throw new ArgumentException($"Role '{name.DisplayText}' not found.");
 }
