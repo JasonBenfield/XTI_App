@@ -35,7 +35,7 @@ public sealed class CurrentUserAccess
             isAnonymousAllowed = resource.Resource.IsAnonymousAllowed;
             allowedRoles = resource.AllowedRoles.Select(ar => ar.Name).ToArray();
         }
-        if (userName.Equals(AppUserName.Anon))
+        if (userName.IsAnon())
         {
             if (!isAnonymousAllowed)
             {
@@ -47,7 +47,7 @@ public sealed class CurrentUserAccess
             var modCategory = appContextModel.ModCategory(group);
             var userRoles = userContextModel.GetRoles(modCategory.ModifierCategory.ID, modifier);
             var userRoleNames = userRoles.Select(ur => ur.Name);
-            if (userRoles.Any(ur => ur.Name.Equals(AppRoleName.DenyAccess)))
+            if (userRoles.Any(ur => ur.IsDenyAccess()))
             {
                 error = $"'{userName.DisplayText}' is denied access to '{formatPath(group, action, modifier)}'";
             }

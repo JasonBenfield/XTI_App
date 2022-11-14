@@ -13,4 +13,6 @@ public sealed record AppModel
         :this(0, AppKey.Unknown, AppVersionName.Unknown, "", ModifierKey.Default)
     {
     }
+
+    public bool IsUnknown() => AppKey.IsUnknown();
 }

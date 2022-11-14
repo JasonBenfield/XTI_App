@@ -12,4 +12,6 @@ public sealed record AppUserModel
         : this(0, AppUserName.Anon, new PersonName(""), "")
     {
     }
+
+    public bool IsAnon() => UserName.IsAnon();
 }

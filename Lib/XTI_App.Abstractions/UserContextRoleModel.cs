@@ -6,4 +6,9 @@ public sealed record UserContextRoleModel(int ModifierCategoryID, ModifierKey Mo
         :this(0, ModifierKey.Default, new AppRoleModel[0])
     {
     }
+
+    public bool IsExactMatch(int modCategoryID, ModifierKey modKey) =>
+        ModifierCategoryID == modCategoryID && ModifierKey.Equals(modKey);
+
+    public bool IsDefaultModifier() => ModifierKey.Equals(ModifierKey.Default);
 }

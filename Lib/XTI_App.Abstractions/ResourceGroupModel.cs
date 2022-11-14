@@ -12,4 +12,6 @@ public sealed record ResourceGroupModel
         : this(0, 0, ResourceGroupName.Unknown, false)
     {
     }
+
+    public bool IsUnknown() => Name.Equals(ResourceGroupName.Unknown);
 }
