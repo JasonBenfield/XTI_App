@@ -42,7 +42,7 @@ public sealed class PageContext : IPageContext
             AppTitle = app.App.AppKey.Name.DisplayText;
             EnvironmentName = xtiEnv.EnvironmentName;
             var userName = await currentUserName.Value();
-            if (userName.Equals(AppUserName.Anon))
+            if (userName.IsAnon())
             {
                 IsAuthenticated = false;
                 UserName = "";

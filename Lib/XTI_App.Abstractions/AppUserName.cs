@@ -31,5 +31,7 @@ public sealed class AppUserName : TextValue, IEquatable<AppUserName>
     {
     }
 
+    public bool IsAnon() => Equals(Anon);
+
     public bool Equals(AppUserName? other) => _Equals(other);
 }

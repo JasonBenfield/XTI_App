@@ -48,5 +48,9 @@ public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
     {
     }
 
+    public bool IsNone() => Equals(None);
+
+    public bool IsCurrent() => Equals(Current);
+
     public bool Equals(AppVersionKey? other) => _Equals(other);
 }

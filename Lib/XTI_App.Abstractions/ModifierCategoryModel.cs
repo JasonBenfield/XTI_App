@@ -10,4 +10,6 @@ public sealed record ModifierCategoryModel
         :this(0,ModifierCategoryName.Default)
     {
     }
+
+    public bool IsDefault() => Name.Equals(ModifierCategoryName.Default);
 }
