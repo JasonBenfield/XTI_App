@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
@@ -11,15 +12,17 @@ public sealed class PageContext : IPageContext
     private readonly AppClients appClients;
     private readonly CacheBust cacheBust;
     private readonly IAppContext appContext;
+    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ICurrentUserName currentUserName;
     private readonly XtiEnvironment xtiEnv;
     private bool hasLoaded = false;
 
-    public PageContext(AppClients appClients, CacheBust cacheBust, IAppContext appContext, ICurrentUserName currentUserName, XtiEnvironment xtiEnv)
+    public PageContext(AppClients appClients, CacheBust cacheBust, IAppContext appContext, IHttpContextAccessor httpContextAccessor, ICurrentUserName currentUserName, XtiEnvironment xtiEnv)
     {
         this.appClients = appClients;
         this.cacheBust = cacheBust;
         this.appContext = appContext;
+        this.httpContextAccessor = httpContextAccessor;
         this.currentUserName = currentUserName;
         this.xtiEnv = xtiEnv;
     }
@@ -27,6 +30,7 @@ public sealed class PageContext : IPageContext
     public string CacheBust { get; private set; } = "";
     public string EnvironmentName { get; private set; } = "";
     public bool IsAuthenticated { get; private set; } = false;
+    public string RootUrl { get; private set; } = "";
     public string UserName { get; private set; } = "";
     public string AppTitle { get; private set; } = "";
     public string PageTitle { get; set; } = "";
@@ -41,6 +45,7 @@ public sealed class PageContext : IPageContext
             var app = await appContext.App();
             AppTitle = app.App.AppKey.Name.DisplayText;
             EnvironmentName = xtiEnv.EnvironmentName;
+            RootUrl = httpContextAccessor.HttpContext.Request.PathBase;
             var userName = await currentUserName.Value();
             if (userName.IsAnon())
             {

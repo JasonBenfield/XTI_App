@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using XTI_App.Abstractions;
 using XTI_App.Fakes;
 using XTI_Core.Extensions;
 using XTI_TempLog;
@@ -25,5 +24,10 @@ public static class FakeExtensions
         services.AddScoped<LogoutAction>();
         services.AddScoped<ILoginReturnKey, FakeLoginReturnKey>();
         services.AddScoped<LoginUrl>();
+        services.AddScoped<IIncludedLinkFactory, DefaultIncludedLinkFactory>();
+        services.AddScoped<FakeTransformedLinkFactory>();
+        services.AddScoped<ITransformedLinkFactory>(sp => sp.GetRequiredService<FakeTransformedLinkFactory>());
+        services.AddScoped<FakeLinkService>();
+        services.AddScoped<ILinkService>(sp=>sp.GetRequiredService<FakeLinkService>());
     }
 }

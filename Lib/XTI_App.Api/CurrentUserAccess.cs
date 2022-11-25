@@ -15,6 +15,9 @@ public sealed class CurrentUserAccess
         this.currentUserName = currentUserName;
     }
 
+    public Task<UserAccessResult> HasAccess(XtiPath xtiPath) =>
+        HasAccess(xtiPath.Group, xtiPath.Action, xtiPath.Modifier);
+
     public async Task<UserAccessResult> HasAccess(ResourceGroupName group, ResourceName action, ModifierKey modifier)
     {
         var error = "";

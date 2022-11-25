@@ -36,7 +36,7 @@ public sealed record AppContextModel
         var resourceGroup = ResourceGroups
             .FirstOrDefault(rg => rg.ResourceGroup.Name.Equals(groupName));
         return resourceGroup ?? 
-            throw new ArgumentException($"Resource Group '{groupName.DisplayText}'.");
+            throw new ArgumentException($"Resource Group '{groupName.DisplayText}' not found");
     }
 
     public AppContextModifierCategoryModel ModCategory(ResourceGroupName name)
