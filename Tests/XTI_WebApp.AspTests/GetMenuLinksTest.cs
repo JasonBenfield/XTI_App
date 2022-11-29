@@ -22,7 +22,7 @@ internal sealed class GetMenuLinksTest
         var sp = await Setup();
         var menuName = "Menu";
         var links = new[] { new LinkModel("link1", "Link 1", "/Link1") };
-        var linkService = sp.GetRequiredService<FakeLinkService>();
+        var linkService = sp.GetRequiredService<FakeMenuDefinitionBuilder>();
         linkService.AddMenu(menuName, links);
         var actualLinks = await GetLinks(sp, menuName);
         Assert.That(actualLinks, Is.EqualTo(links), "Should get links");
@@ -33,7 +33,7 @@ internal sealed class GetMenuLinksTest
     {
         var sp = await Setup();
         var menuName = "Menu1";
-        var linkService = sp.GetRequiredService<FakeLinkService>();
+        var linkService = sp.GetRequiredService<FakeMenuDefinitionBuilder>();
         linkService.AddMenu(menuName, new LinkModel("link1", "Link 1", "/Link1"));
         var otherMenuName = "Menu2";
         var otherLinks = new[] { new LinkModel("link2", "Link 2", "/Link2") };
@@ -47,7 +47,7 @@ internal sealed class GetMenuLinksTest
     {
         var sp = await Setup();
         var menuName = "Menu";
-        var linkService = sp.GetRequiredService<FakeLinkService>();
+        var linkService = sp.GetRequiredService<FakeMenuDefinitionBuilder>();
         linkService.AddMenu
         (
             menuName,
@@ -65,7 +65,7 @@ internal sealed class GetMenuLinksTest
     {
         var sp = await Setup();
         var menuName = "Menu";
-        var linkService = sp.GetRequiredService<FakeLinkService>();
+        var linkService = sp.GetRequiredService<FakeMenuDefinitionBuilder>();
         linkService.AddMenu
         (
             menuName,
@@ -83,7 +83,7 @@ internal sealed class GetMenuLinksTest
     {
         var sp = await Setup();
         var menuName = "Menu";
-        var linkService = sp.GetRequiredService<FakeLinkService>();
+        var linkService = sp.GetRequiredService<FakeMenuDefinitionBuilder>();
         linkService.AddMenu
         (
             menuName,
@@ -102,7 +102,7 @@ internal sealed class GetMenuLinksTest
     {
         var sp = await Setup();
         var menuName = "Menu";
-        var linkService = sp.GetRequiredService<FakeLinkService>();
+        var linkService = sp.GetRequiredService<FakeMenuDefinitionBuilder>();
         linkService.AddMenu
         (
             menuName,
@@ -127,8 +127,6 @@ internal sealed class GetMenuLinksTest
         hostBuilder.Services.AddFakesForXtiWebApp();
         hostBuilder.Services.AddSingleton(sp => FakeInfo.AppKey);
         hostBuilder.Services.AddSingleton(sp => AppVersionKey.Current);
-        hostBuilder.Services.AddScoped<FakeLinkService>();
-        hostBuilder.Services.AddScoped<ILinkService>(sp => sp.GetRequiredService<FakeLinkService>());
         hostBuilder.Services.AddScoped<ITransformedLinkFactory, DefaultTransformedLinkFactory>();
         hostBuilder.Services.AddScoped<GetMenuLinksAction>();
         hostBuilder.Services.AddSingleton<FakeAppOptions>();
@@ -143,6 +141,9 @@ internal sealed class GetMenuLinksTest
         hostBuilder.Services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
         hostBuilder.Services.AddScoped<ICurrentUserName>(sp => sp.GetRequiredService<FakeCurrentUserName>());
         hostBuilder.Services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
+        hostBuilder.Services.AddSingleton<FakeMenuDefinitionBuilder>();
+        hostBuilder.Services.AddSingleton<IMenuDefinitionBuilder>(sp => sp.GetRequiredService<FakeMenuDefinitionBuilder>());
+        hostBuilder.Services.AddSingleton(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
         var sp = hostBuilder.Build().Scope();
         var pathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
         pathAccessor.SetPath
@@ -175,4 +176,15 @@ internal sealed class GetMenuLinksTest
         return action.Execute(menuName, default);
     }
 
+    private sealed class FakeMenuDefinitionBuilder : IMenuDefinitionBuilder
+    {
+        private readonly List<MenuDefinition> menuDefinitions = new();
+
+        public void AddMenu(string menuName, params LinkModel[] links)
+        {
+            menuDefinitions.Add(new MenuDefinition(menuName, links));
+        }
+
+        public AppMenuDefinitions Build() => new AppMenuDefinitions(menuDefinitions.ToArray());
+    }
 }

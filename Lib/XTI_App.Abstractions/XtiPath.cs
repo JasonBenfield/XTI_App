@@ -173,6 +173,19 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
         return $"/{joined}";
     }
 
+    public string RootPath()
+    {
+        var parts = new[]
+        {
+            Group.DisplayText,
+            Action.DisplayText,
+            Modifier.DisplayText
+        }
+        .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
+        var joined = string.Join("/", parts.Select(part => part.Replace(" ", "")));
+        return $"~/{joined}";
+    }
+
     public string Value() => Format().ToLower();
 
     public override bool Equals(object? obj)

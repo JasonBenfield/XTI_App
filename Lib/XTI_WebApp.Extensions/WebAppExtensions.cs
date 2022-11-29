@@ -49,6 +49,8 @@ public static class WebAppExtensions
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
         services.AddScoped<GetUserAccessAction>();
+        services.AddScoped<GetMenuLinksAction>();
+        services.AddScoped<UserProfileAction>();
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();
@@ -74,6 +76,11 @@ public static class WebAppExtensions
         services.AddScoped<IAppEnvironmentContext, WebAppEnvironmentContext>();
         services.AddSingleton<SelfAppClientDomain>();
         services.AddScoped<LoginUrl>();
+        services.AddScoped<IIncludedLinkFactory, DefaultIncludedLinkFactory>();
+        services.AddScoped<ITransformedLinkFactory, DefaultTransformedLinkFactory>();
+        services.AddScoped<UserMenuDefinition>();
+        services.AddScoped<IMenuDefinitionBuilder, DefaultMenuDefinitionBuilder>();
+        services.AddScoped(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
     }
 
     public static void SetDefaultJsonOptions(this JsonOptions options)

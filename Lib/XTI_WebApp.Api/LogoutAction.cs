@@ -7,19 +7,19 @@ namespace XTI_WebApp.Api;
 public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
 {
     private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly ILogoutProcess logoff;
+    private readonly ILogoutProcess logoutProcess;
     private readonly LoginUrl loginUrl;
 
-    public LogoutAction(IHttpContextAccessor httpContextAccessor, ILogoutProcess logoff, LoginUrl loginUrl)
+    public LogoutAction(IHttpContextAccessor httpContextAccessor, ILogoutProcess logoutProcess, LoginUrl loginUrl)
     {
         this.httpContextAccessor = httpContextAccessor;
-        this.logoff = logoff;
+        this.logoutProcess = logoutProcess;
         this.loginUrl = loginUrl;
     }
 
     public async Task<WebRedirectResult> Execute(LogoutRequest model, CancellationToken stoppingToken)
     {
-        await logoff.Run();
+        await logoutProcess.Run();
         string returnUrl;
         try
         {
