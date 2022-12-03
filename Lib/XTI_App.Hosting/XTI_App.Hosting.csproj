@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.16" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.29-dev221111081347141" />
-		<PackageReference Include="XTI_Schedule" Version="1.10.16" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.17" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.29" />
+		<PackageReference Include="XTI_Schedule" Version="1.10.17" />
 	</ItemGroup>
 
 	<ItemGroup>

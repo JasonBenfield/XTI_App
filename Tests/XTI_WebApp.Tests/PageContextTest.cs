@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using XTI_App.Abstractions;
@@ -16,8 +17,8 @@ internal sealed class PageContextTest
     [Test]
     public async Task ShouldSetAppTitle()
     {
-        var services = await setup(AppVersionKey.Current);
-        var pageContext = await execute(services);
+        var services = await Setup(AppVersionKey.Current);
+        var pageContext = await Execute(services);
         var appContext = services.GetRequiredService<IAppContext>();
         var app = await appContext.App();
         Assert.That(pageContext.AppTitle, Is.EqualTo(app.App.Title), "Should set app title");
@@ -27,8 +28,8 @@ internal sealed class PageContextTest
     public async Task ShouldSetWebAppDomains()
     {
         var domain = "webapps.xartogg.com";
-        var services = await setup(AppVersionKey.Current, domain);
-        var pageContext = await execute(services);
+        var services = await Setup(AppVersionKey.Current, domain);
+        var pageContext = await Execute(services);
         Assert.That
         (
             pageContext.WebAppDomains.Select(d => new AppVersionDomain(d.App, d.Version, d.Domain)),
@@ -41,19 +42,19 @@ internal sealed class PageContextTest
     public async Task ShouldSetEnvironmentName()
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Staging");
-        var input = await setup(AppVersionKey.Current);
-        var pageContext = await execute(input);
+        var input = await Setup(AppVersionKey.Current);
+        var pageContext = await Execute(input);
         Assert.That(pageContext.EnvironmentName, Is.EqualTo("Staging"), "Should set environment name");
     }
 
     [Test]
     public async Task ShouldSetUserName()
     {
-        var services = await setup(AppVersionKey.Current);
+        var services = await Setup(AppVersionKey.Current);
         var userName = new AppUserName("someone");
         var userContext = services.GetRequiredService<FakeUserContext>();
         userContext.SetCurrentUser(userName);
-        var pageContext = await execute(services);
+        var pageContext = await Execute(services);
         Assert.That(pageContext.IsAuthenticated, Is.True, "Should be authenticated");
         Assert.That(pageContext.UserName, Is.EqualTo(userName.Value), "Should set user name");
     }
@@ -61,10 +62,10 @@ internal sealed class PageContextTest
     [Test]
     public async Task ShouldSetUserNameToBlankForAnon()
     {
-        var services = await setup(AppVersionKey.Current);
+        var services = await Setup(AppVersionKey.Current);
         var userContext = services.GetRequiredService<FakeUserContext>();
         userContext.SetCurrentUser(AppUserName.Anon);
-        var pageContext = await execute(services);
+        var pageContext = await Execute(services);
         Assert.That(pageContext.IsAuthenticated, Is.False, "Should not be authenticated");
         Assert.That(pageContext.UserName, Is.EqualTo(""), "Should set user name to blank for anon");
     }
@@ -73,8 +74,8 @@ internal sealed class PageContextTest
     public async Task ShouldSetCacheBustToCurrentVersion()
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
-        var services = await setup(AppVersionKey.Current);
-        var pageContext = await execute(services);
+        var services = await Setup(AppVersionKey.Current);
+        var pageContext = await Execute(services);
         var appContext = services.GetRequiredService<FakeAppContext>();
         var version = appContext.GetCurrentApp().Version;
         Assert.That(pageContext?.CacheBust, Is.EqualTo(version.VersionKey.DisplayText), "Should set cacheBust to current version");
@@ -84,14 +85,17 @@ internal sealed class PageContextTest
     public async Task ShouldNotSetCacheBust_WhenVersionIsNotCurrent()
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
-        var services = await setup(new AppVersionKey(2));
-        var pageContext = await execute(services);
+        var services = await Setup(new AppVersionKey(2));
+        var pageContext = await Execute(services);
         Assert.That(pageContext.CacheBust, Is.EqualTo(""), "Should not set cacheBust when version is null");
     }
 
-    private static async Task<PageContextRecord> execute(IServiceProvider services)
+    private static async Task<PageContextRecord> Execute(IServiceProvider sp)
     {
-        var pageContext = services.GetRequiredService<IPageContext>();
+        var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = new DefaultHttpContext();
+        httpContextAccessor.HttpContext.Request.PathBase = "/Fake/Current";
+        var pageContext = sp.GetRequiredService<IPageContext>();
         var serialized = await pageContext.Serialize();
         var deserialized = XtiSerializer.Deserialize<PageContextRecord>(serialized);
         return deserialized;
@@ -115,12 +119,13 @@ internal sealed class PageContextTest
         public string Domain { get; set; } = "";
     }
 
-    private async Task<IServiceProvider> setup(AppVersionKey versionKey, string domain = "www.xartogg.com")
+    private async Task<IServiceProvider> Setup(AppVersionKey versionKey, string domain = "www.xartogg.com")
     {
         var envName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Test";
         var hostBuilder = new XtiHostBuilder();
         hostBuilder.Services.AddMemoryCache();
         hostBuilder.Services.AddSingleton(_ => XtiEnvironment.Parse(envName));
+        hostBuilder.Services.AddHttpContextAccessor();
         hostBuilder.Services.AddFakesForXtiWebApp();
         hostBuilder.Services.AddSingleton<FakeAppOptions>();
         hostBuilder.Services.AddSingleton(sp => FakeInfo.AppKey);

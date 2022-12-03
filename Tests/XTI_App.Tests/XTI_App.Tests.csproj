@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.9" />
+		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="7.0.0" />
 		<PackageReference Include="nunit" Version="3.13.3" />
-		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.16" />
-		<PackageReference Include="XTI_Secrets.Fakes" Version="1.8.6" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.3.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.17" />
+		<PackageReference Include="XTI_Secrets.Fakes" Version="1.8.7" />
 	</ItemGroup>
 
 	<ItemGroup>
