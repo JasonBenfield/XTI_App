@@ -16,14 +16,14 @@ public sealed class AppApiUser : IAppApiUser
     public async Task<bool> HasAccess(XtiPath path)
     {
         path = GetModifiedPath(path);
-        var result = await currentUserAccess.HasAccess(path.Group, path.Action, path.Modifier);
+        var result = await currentUserAccess.HasAccess(path);
         return result.HasAccess;
     }
 
     public async Task EnsureUserHasAccess(XtiPath path)
     {
         path = GetModifiedPath(path);
-        var result = await currentUserAccess.HasAccess(path.Group, path.Action, path.Modifier);
+        var result = await currentUserAccess.HasAccess(path);
         if (!result.HasAccess)
         {
             throw new AccessDeniedException(result.AccessDeniedMessage);

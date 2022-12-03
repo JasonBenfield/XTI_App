@@ -1,63 +1,126 @@
-﻿using XTI_App.Api;
+﻿using Microsoft.AspNetCore.Http;
+using XTI_App.Api;
 using XTI_Core;
 
 namespace XTI_WebApp.Extensions;
 
 public sealed class XtiRequestContext
 {
-    private readonly XtiEnvironment xtiEnvAccessor;
+    private readonly XtiEnvironment xtiEnv;
     private Exception? error;
+    private string message = "";
+    private string caption = "";
 
-    public XtiRequestContext(XtiEnvironment xtiEnvAccessor)
+    public XtiRequestContext(XtiEnvironment xtiEnv)
     {
-        this.xtiEnvAccessor = xtiEnvAccessor;
+        this.xtiEnv = xtiEnv;
     }
 
-    public void Failed(Exception error) => this.error = error;
-
-    public bool HasError() => error != null;
-
-    public Exception Error() => error ?? throw new ArgumentNullException(nameof(error));
-
-    public string Serialize()
+    public int? GetStatusCode()
     {
-        var errorModel = ToModel();
-        return XtiSerializer.Serialize(errorModel);
-    }
-
-    private ErrorModel ToModel()
-    {
-        string message;
-        string caption;
-        if (HasError())
+        int? statusCode = null;
+        if (error != null)
         {
-            var error = Error();
-            var xtiEnv = xtiEnvAccessor;
-            if (error is AppException appError)
+            if (error is AppException)
             {
-                message = xtiEnv.IsProduction()
-                    ? appError.DisplayMessage
-                    : appError.ToString();
-                caption = error is AccessDeniedException
-                    ? "Access Denied"
-                    : "Unexpected error";
-            }
-            else if (xtiEnv.IsProduction())
-            {
-                message = "An unexpected error occurred";
-                caption = "Error";
+                if (error is AccessDeniedException)
+                {
+                    statusCode = StatusCodes.Status403Forbidden;
+                }
+                else
+                {
+                    statusCode = StatusCodes.Status400BadRequest;
+                }
             }
             else
             {
-                message = error.ToString();
-                caption = "An error occurred";
+                statusCode = StatusCodes.Status500InternalServerError;
             }
+        }
+        return statusCode;
+    }
+
+    public ErrorModel[] GetErrors()
+    {
+        ErrorModel[] errors;
+        if(error == null)
+        {
+            errors = new[] { new ErrorModel(message, caption, "") };
         }
         else
         {
-            message = "";
-            caption = "";
+            if (xtiEnv.IsDevelopmentOrTest())
+            {
+                if (error is ValidationFailedException validationFailedException)
+                {
+                    errors = validationFailedException.Errors.ToArray();
+                }
+                else
+                {
+                    errors = new[] { new ErrorModel(error.StackTrace ?? "", error.Message, "") };
+                }
+            }
+            else if (error is AppException appException)
+            {
+                if (error is ValidationFailedException validationFailedException)
+                {
+                    errors = validationFailedException.Errors.ToArray();
+                }
+                else
+                {
+                    errors = new[] { new ErrorModel(appException.DisplayMessage) };
+                }
+            }
+            else
+            {
+                errors = new[] { new ErrorModel("An unexpected error occurred") };
+            }
         }
-        return new ErrorModel(message, caption, "");
+        return errors;
+    }
+
+    public void Failed(Exception error)
+    {
+        string message;
+        string caption;
+        var xtiEnv = this.xtiEnv;
+        if (error is AppException appError)
+        {
+            message = xtiEnv.IsProduction()
+                ? appError.DisplayMessage
+                : appError.ToString();
+            caption = error is AccessDeniedException
+                ? "Access Denied"
+                : "Unexpected error";
+        }
+        else if (xtiEnv.IsProduction())
+        {
+            message = "An unexpected error occurred";
+            caption = "Error";
+        }
+        else
+        {
+            message = error.ToString();
+            caption = "An error occurred";
+        }
+        this.error = error;
+        Failed(message, caption);
+    }
+
+    public void Failed(string message, string caption)
+    {
+        this.message = message;
+        this.caption = caption;
+    }
+
+    public bool HasError() =>
+        error != null ||
+        !string.IsNullOrWhiteSpace(message) ||
+        !string.IsNullOrWhiteSpace(caption);
+
+    public string Serialize()
+    {
+        var errorModel = new ErrorModel(message, caption, "");
+        return XtiSerializer.Serialize(errorModel);
     }
 }

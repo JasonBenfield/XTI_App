@@ -13,4 +13,6 @@ public sealed record ModifierModel
         : this(0, 0, ModifierKey.Default, "", "")
     {
     }
+
+    public bool IsDefault() => ModKey.Equals(ModifierKey.Default);
 }

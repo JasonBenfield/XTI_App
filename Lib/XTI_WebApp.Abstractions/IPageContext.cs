@@ -6,6 +6,7 @@ public interface IPageContext
     string EnvironmentName { get; }
     string AppTitle { get; }
     bool IsAuthenticated { get; }
+    string RootUrl { get; }
     string UserName { get; }
     string PageTitle { get; set; }
     string PageName { get; set; }

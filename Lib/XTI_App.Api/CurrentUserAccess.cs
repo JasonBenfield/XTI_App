@@ -15,6 +15,9 @@ public sealed class CurrentUserAccess
         this.currentUserName = currentUserName;
     }
 
+    public Task<UserAccessResult> HasAccess(XtiPath xtiPath) =>
+        HasAccess(xtiPath.Group, xtiPath.Action, xtiPath.Modifier);
+
     public async Task<UserAccessResult> HasAccess(ResourceGroupName group, ResourceName action, ModifierKey modifier)
     {
         var error = "";
@@ -35,7 +38,7 @@ public sealed class CurrentUserAccess
             isAnonymousAllowed = resource.Resource.IsAnonymousAllowed;
             allowedRoles = resource.AllowedRoles.Select(ar => ar.Name).ToArray();
         }
-        if (userName.Equals(AppUserName.Anon))
+        if (userName.IsAnon())
         {
             if (!isAnonymousAllowed)
             {
@@ -47,14 +50,15 @@ public sealed class CurrentUserAccess
             var modCategory = appContextModel.ModCategory(group);
             var userRoles = userContextModel.GetRoles(modCategory.ModifierCategory.ID, modifier);
             var userRoleNames = userRoles.Select(ur => ur.Name);
-            if (userRoles.Any(ur => ur.Name.Equals(AppRoleName.DenyAccess)))
+            if (userRoles.Any(ur => ur.IsDenyAccess()))
             {
                 error = $"'{userName.DisplayText}' is denied access to '{formatPath(group, action, modifier)}'";
             }
             else if (!userRoleNames.Intersect(allowedRoles).Any())
             {
-                var joinedRoles = string.Join(",", allowedRoles.Select(ar => ar.DisplayText));
-                error = $"'{userName.DisplayText}' is not allowed to '{formatPath(group, action, modifier)}'. Allowed roles: {joinedRoles}.";
+                var joinedAllowedRoles = string.Join(",", allowedRoles.Select(ar => ar.DisplayText));
+                var joinedUserRoles = string.Join(",", userRoleNames.Select(ar => ar.DisplayText));
+                error = $"'{userName.DisplayText}' is not allowed to '{formatPath(group, action, modifier)}'. Allowed roles: {joinedAllowedRoles}. User roles: {joinedUserRoles}";
             }
         }
         UserAccessResult result;

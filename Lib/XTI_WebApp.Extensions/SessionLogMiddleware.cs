@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http.Extensions;
+using System.Net;
 using XTI_App.Api;
 using XTI_Core;
 using XTI_TempLog;
@@ -27,7 +28,6 @@ public sealed class SessionLogMiddleware
         XtiRequestContext xtiRequestContext
     )
     {
-        Console.WriteLine("SessionLogMiddleware Start");
         anonClient.Load();
         if (isAnonSessionExpired(anonClient, clock))
         {
@@ -49,9 +49,45 @@ public sealed class SessionLogMiddleware
         await tempLogSession.StartRequest($"{context.Request.PathBase}{context.Request.Path}");
         try
         {
-            Console.WriteLine("SessionLogMiddleware Before next");
             await _next(context);
-            Console.WriteLine("SessionLogMiddleware After next");
+            if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 300)
+            {
+                var message = $"Request failed with error {context.Response.StatusCode}. Url: {context.Request.GetDisplayUrl()}";
+                var caption = "An unexpected http error occurred";
+                if(context.Response.StatusCode == (int)HttpStatusCode.NotFound)
+                {
+                    message = $"'{context.Request.GetDisplayUrl()}' was not found";
+                    caption = "Not Found";
+                }
+                else if (context.Response.StatusCode == (int)HttpStatusCode.Forbidden)
+                {
+                    message = $"'{context.Request.GetDisplayUrl()}' is forbidden";
+                    caption = "Forbidden";
+                }
+                else if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
+                {
+                    message = $"'{context.Request.GetDisplayUrl()}' is unauthorized";
+                    caption = "Unauthorized";
+                }
+                else if (context.Response.StatusCode == (int)HttpStatusCode.BadGateway)
+                {
+                    message = $"Bad Gateway for '{context.Request.GetDisplayUrl()}'";
+                    caption = "Bad Gateway";
+                }
+                else if (context.Response.StatusCode == (int)HttpStatusCode.UnsupportedMediaType)
+                {
+                    message = $"Unsupported Media Type for '{context.Request.GetDisplayUrl()}'";
+                    caption = "Unsupported Media Type";
+                }
+                xtiRequestContext.Failed(message, caption);
+                await tempLogSession.LogError
+                (
+                    AppEventSeverity.Values.CriticalError,
+                    message,
+                    "",
+                    caption
+                );
+            }
         }
         catch (Exception ex)
         {
@@ -62,7 +98,6 @@ public sealed class SessionLogMiddleware
         {
             await tempLogSession.EndRequest();
         }
-        Console.WriteLine("SessionLogMiddleware End");
     }
 
     private static bool isAnonSessionExpired(IAnonClient anonClient, IClock clock)

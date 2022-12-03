@@ -58,7 +58,7 @@ public sealed class FakeUserContext : ISourceUserContext
             var id = getUniqueID();
             user = new UserContextModel
             (
-                new AppUserModel(id, userName, new PersonName(userName.Value), ""),
+                new AppUserModel(id, userName, new PersonName(userName.DisplayText), ""),
                 new UserContextRoleModel[0]
             );
             userContexts.Add(user);

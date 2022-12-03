@@ -26,4 +26,6 @@ public sealed record XtiVersionModel
     }
 
     public AppVersionNumber NextPatch() => VersionNumber.NextPatch();
+
+    public bool IsCurrent() => Status.Equals(AppVersionStatus.Values.Current);
 }

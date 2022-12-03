@@ -59,9 +59,7 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     )
         : this
         (
-             appKey.Type.Equals(AppType.Values.WebService)
-                  ? $"{appKey.Name.DisplayText}Service"
-                  : appKey.Name.DisplayText,
+             appKey.Name.DisplayText,
              version,
              group,
              action,
@@ -171,6 +169,19 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
         .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
         var joined = string.Join("/", parts.Select(part => part.Replace(" ", "")));
         return $"/{joined}";
+    }
+
+    public string RootPath()
+    {
+        var parts = new[]
+        {
+            Group.DisplayText,
+            Action.DisplayText,
+            Modifier.DisplayText
+        }
+        .TakeWhile(str => !string.IsNullOrWhiteSpace(str));
+        var joined = string.Join("/", parts.Select(part => part.Replace(" ", "")));
+        return $"~/{joined}";
     }
 
     public string Value() => Format().ToLower();

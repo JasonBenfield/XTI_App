@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using XTI_App.Abstractions;
 using XTI_App.Fakes;
 using XTI_Core.Extensions;
 using XTI_TempLog;
@@ -19,11 +18,19 @@ public static class FakeExtensions
         services.AddScoped<IAnonClient, FakeAnonClient>();
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();
+        services.AddScoped<WebViewResultFactory>();
         services.AddScoped<IAppEnvironmentContext, WebAppEnvironmentContext>();
         services.AddScoped<CurrentSession>();
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
         services.AddScoped<ILoginReturnKey, FakeLoginReturnKey>();
         services.AddScoped<LoginUrl>();
+        services.AddScoped<GetMenuLinksAction>();
+        services.AddScoped<IIncludedLinkFactory, DefaultIncludedLinkFactory>();
+        services.AddScoped<FakeTransformedLinkFactory>();
+        services.AddScoped<ITransformedLinkFactory>(sp => sp.GetRequiredService<FakeTransformedLinkFactory>());
+        services.AddSingleton<UserMenuDefinition>();
+        services.AddSingleton<IMenuDefinitionBuilder, DefaultMenuDefinitionBuilder>();
+        services.AddSingleton(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
     }
 }

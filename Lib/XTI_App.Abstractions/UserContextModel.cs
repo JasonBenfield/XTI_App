@@ -9,11 +9,11 @@ public sealed record UserContextModel(AppUserModel User, UserContextRoleModel[] 
 
     public AppRoleModel[] GetRoles(int modCategoryID, ModifierKey modKey)
     {
-        var role = ModifiedRoles.FirstOrDefault(r => r.ModifierCategoryID == modCategoryID && r.ModifierKey.Equals(modKey));
-        if (role == null)
+        var modifiedRoles = ModifiedRoles.FirstOrDefault(r => r.IsExactMatch(modCategoryID, modKey));
+        if (modifiedRoles == null)
         {
-            role = ModifiedRoles.FirstOrDefault(r => r.ModifierKey.Equals(ModifierKey.Default));
+            modifiedRoles = ModifiedRoles.FirstOrDefault(r => r.IsDefaultModifier());
         }
-        return role?.Roles ?? new AppRoleModel[0];
+        return modifiedRoles?.Roles ?? new AppRoleModel[0];
     }
 }
