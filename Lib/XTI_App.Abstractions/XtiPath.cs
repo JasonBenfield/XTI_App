@@ -59,9 +59,7 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     )
         : this
         (
-             appKey.Type.Equals(AppType.Values.WebService)
-                  ? $"{appKey.Name.DisplayText}Service"
-                  : appKey.Name.DisplayText,
+             appKey.Name.DisplayText,
              version,
              group,
              action,

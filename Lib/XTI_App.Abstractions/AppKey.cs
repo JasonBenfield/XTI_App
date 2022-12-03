@@ -11,8 +11,6 @@ public sealed class AppKey : IEquatable<AppKey>
 
     public static AppKey WebApp(string name) => WebApp(new AppName(name));
     public static AppKey WebApp(AppName name) => new AppKey(name, AppType.Values.WebApp);
-    public static AppKey WebService(string name) => WebService(new AppName(name));
-    public static AppKey WebService(AppName name) => new AppKey(name, AppType.Values.WebService);
     public static AppKey WebPackage(string name) => WebPackage(new AppName(name));
     public static AppKey WebPackage(AppName name) => new AppKey(name, AppType.Values.WebPackage);
     public static AppKey ServiceApp(string name) => ServiceApp(new AppName(name));
