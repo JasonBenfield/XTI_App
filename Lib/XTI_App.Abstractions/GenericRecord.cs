@@ -76,10 +76,8 @@ public sealed class GenericRecord
         record.ToDictionary(kv => kv.Key, kv => kv.Value);
 }
 
-public sealed class GenericRecordJsonConverter : JsonConverter<GenericRecord>
+public sealed partial class GenericRecordJsonConverter : JsonConverter<GenericRecord>
 {
-    private static readonly Regex dateTimeRegex = new Regex("\\d{4}-\\d{2}-\\d{2}(T| )?(\\d{2}:\\d{2}(:\\d{2})?(\\.\\d{3}Z)?)?");
-
     public override GenericRecord? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var record = new Dictionary<string, object>();
@@ -95,7 +93,7 @@ public sealed class GenericRecordJsonConverter : JsonConverter<GenericRecord>
                     if (reader.TokenType == JsonTokenType.String)
                     {
                         var str = reader.GetString() ?? "";
-                        if (dateTimeRegex.IsMatch(str))
+                        if (DateTimeRegex().IsMatch(str))
                         {
                             value = DateTimeOffset.Parse(str);
                         }
@@ -178,4 +176,7 @@ public sealed class GenericRecordJsonConverter : JsonConverter<GenericRecord>
         }
         writer.WriteEndObject();
     }
+
+    [GeneratedRegex("\\d{4}-\\d{2}-\\d{2}(T| )?(\\d{2}:\\d{2}(:\\d{2})?(\\.\\d{3}Z)?)?")]
+    private static partial Regex DateTimeRegex();
 }

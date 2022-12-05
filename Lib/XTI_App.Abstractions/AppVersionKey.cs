@@ -7,10 +7,8 @@ namespace XTI_App.Abstractions;
 
 [TypeConverter(typeof(AppVersionKeyTypeConverter))]
 [JsonConverter(typeof(AppVersionKeyJsonConverter))]
-public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
+public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
 {
-    private static readonly Regex keyRegex = new Regex("V?(\\d+)");
-
     public static readonly AppVersionKey None = new AppVersionKey();
     public static readonly AppVersionKey Current = new AppVersionKey("Current");
 
@@ -27,7 +25,7 @@ public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
         }
         else
         {
-            if (!keyRegex.IsMatch(str))
+            if (!KeyRegex().IsMatch(str))
             {
                 throw new ArgumentException($"'{str}' is not a valid version key");
             }
@@ -53,4 +51,7 @@ public sealed class AppVersionKey : TextValue, IEquatable<AppVersionKey>
     public bool IsCurrent() => Equals(Current);
 
     public bool Equals(AppVersionKey? other) => _Equals(other);
+
+    [GeneratedRegex("V?(\\d+)")]
+    private static partial Regex KeyRegex();
 }

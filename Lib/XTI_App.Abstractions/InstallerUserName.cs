@@ -2,18 +2,16 @@
 
 namespace XTI_App.Abstractions;
 
-public sealed class InstallerUserName
+public sealed partial class InstallerUserName
 {
-    private static readonly Regex regex = new Regex("^xti_inst\\[(?<MachineName>[^\\]]+)\\]$");
-
-    public static bool CanParse(AppUserName userName) => regex.IsMatch(userName.Value);
+    public static bool CanParse(AppUserName userName) => UserNameRegex().IsMatch(userName.Value);
 
     public static InstallerUserName Parse(AppUserName userName)
     {
         InstallerUserName installerUserName;
-        if (regex.IsMatch(userName.Value))
+        if (UserNameRegex().IsMatch(userName.Value))
         {
-            var match = regex.Match(userName.Value);
+            var match = UserNameRegex().Match(userName.Value);
             installerUserName = new InstallerUserName(match.Groups["MachineName"].Value);
         }
         else
@@ -31,4 +29,7 @@ public sealed class InstallerUserName
 
     public string MachineName { get; }
     public AppUserName Value { get; }
+
+    [GeneratedRegex("^xti_inst\\[(?<MachineName>[^\\]]+)\\]$")]
+    private static partial Regex UserNameRegex();
 }

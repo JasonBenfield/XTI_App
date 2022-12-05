@@ -2,12 +2,10 @@
 
 namespace XTI_WebAppClient;
 
-public class ClientNumericValues<T> 
+public partial class ClientNumericValues<T>
     where T : ClientNumericValue
 {
-    private static readonly Regex whitespaceRegex = new Regex("\\s+");
-
-    private readonly List<T> values = new List<T>();
+    private readonly List<T> values = new();
 
     protected ClientNumericValues()
     {
@@ -27,10 +25,10 @@ public class ClientNumericValues<T>
         return values
             .FirstOrDefault
             (
-                v => whitespaceRegex.Replace(v.DisplayText, "")
+                v => WhitespaceRegex().Replace(v.DisplayText, "")
                     .Equals
                     (
-                        whitespaceRegex.Replace(displayText, ""),
+                        WhitespaceRegex().Replace(displayText, ""),
                         StringComparison.OrdinalIgnoreCase
                     )
             )
@@ -40,4 +38,7 @@ public class ClientNumericValues<T>
     public T GetDefault() => values.First();
 
     public T[] GetAll() => values.ToArray();
+
+    [GeneratedRegex("\\s+")]
+    private static partial Regex WhitespaceRegex();
 }
