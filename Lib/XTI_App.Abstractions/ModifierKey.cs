@@ -3,11 +3,8 @@ using XTI_Core;
 
 namespace XTI_App.Abstractions;
 
-public sealed class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
+public sealed partial class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
 {
-    private static readonly Regex replaceRegex = new("\\s+");
-
-
     public static readonly ModifierKey Default = new ModifierKey();
 
     public static ModifierKey FromValue(string value) =>
@@ -19,9 +16,12 @@ public sealed class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
     }
 
     public ModifierKey(string value)
-        : base(replaceRegex.Replace(value, "").ToLower(), replaceRegex.Replace(value, ""))
+        : base(ReplaceRegex().Replace(value, "").ToLower(), ReplaceRegex().Replace(value, ""))
     {
     }
 
     public bool Equals(ModifierKey? other) => _Equals(other);
+
+    [GeneratedRegex("\\s+")]
+    private static partial Regex ReplaceRegex();
 }

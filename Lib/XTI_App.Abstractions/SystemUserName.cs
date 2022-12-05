@@ -2,18 +2,16 @@
 
 namespace XTI_App.Abstractions;
 
-public sealed class SystemUserName
+public sealed partial class SystemUserName
 {
-    private static readonly Regex regex = new Regex("^xti_sys\\[(?<AppKey>[^\\]]+)\\]\\[(?<MachineName>[^\\]]+)\\]$");
-
-    public static bool CanParse(AppUserName userName) => regex.IsMatch(userName.Value);
+    public static bool CanParse(AppUserName userName) => UserNameRegex().IsMatch(userName.Value);
 
     public static SystemUserName Parse(AppUserName userName)
     {
         SystemUserName systemUserName;
-        if (regex.IsMatch(userName.Value))
+        if (UserNameRegex().IsMatch(userName.Value))
         {
-            var match = regex.Match(userName.Value);
+            var match = UserNameRegex().Match(userName.Value);
             systemUserName = new SystemUserName
             (
                 AppKey.Parse(match.Groups["AppKey"].Value),
@@ -37,4 +35,7 @@ public sealed class SystemUserName
     public AppKey AppKey { get; }
     public string MachineName { get; }
     public AppUserName Value { get; }
+
+    [GeneratedRegex("^xti_sys\\[(?<AppKey>[^\\]]+)\\]\\[(?<MachineName>[^\\]]+)\\]$")]
+    private static partial Regex UserNameRegex();
 }

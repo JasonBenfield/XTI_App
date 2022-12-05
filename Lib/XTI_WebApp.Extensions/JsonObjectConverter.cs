@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace XTI_WebApp.Extensions;
 
-public sealed class JsonObjectConverter : JsonConverter<object>
+public sealed partial class JsonObjectConverter : JsonConverter<object>
 {
     public override object? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
     {
@@ -17,8 +17,6 @@ public sealed class JsonObjectConverter : JsonConverter<object>
         var jsonEl = converter.Read(ref reader, type, options);
         return deserializeValue(jsonEl, options);
     }
-
-    private static readonly Regex dateTimeRegex = new Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$");
 
     private static object? deserializeValue(JsonElement jsonEl, JsonSerializerOptions options)
     {
@@ -45,7 +43,7 @@ public sealed class JsonObjectConverter : JsonConverter<object>
         else if (jsonEl.ValueKind == JsonValueKind.String)
         {
             var dateTimeText = jsonEl.GetString() ?? "";
-            if (dateTimeRegex.IsMatch(dateTimeText))
+            if (DateTimeRegex().IsMatch(dateTimeText))
             {
                 deserializedValue = DateTimeOffset.Parse(dateTimeText);
             }
@@ -92,4 +90,7 @@ public sealed class JsonObjectConverter : JsonConverter<object>
     {
         throw new InvalidOperationException("Directly writing object not supported");
     }
+
+    [GeneratedRegex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$")]
+    private static partial Regex DateTimeRegex();
 }

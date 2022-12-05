@@ -12,8 +12,8 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.3.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
-    <PackageReference Include="XTI_Core.Fakes" Version="1.10.17" />
-    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.29" />
+    <PackageReference Include="XTI_Core.Fakes" Version="1.10.18" />
+    <PackageReference Include="XTI_TempLog.Fakes" Version="1.2.30" />
   </ItemGroup>
 
   <ItemGroup>
