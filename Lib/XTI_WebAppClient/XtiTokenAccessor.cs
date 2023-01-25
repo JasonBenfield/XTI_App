@@ -55,7 +55,7 @@ public sealed class XtiTokenAccessor
         {
             cache.Set(cacheKey, userName);
         }
-        return Task.FromResult(userName);
+        return Task.FromResult(userName ?? "");
     }
 
     public async Task<string> Value()

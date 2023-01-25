@@ -38,6 +38,6 @@ public sealed class AppClients
             domain = await appClientDomains.Value(appVersion.App, appVersion.Version);
             cache.Set(cacheKey, domain);
         }
-        return domain;
+        return domain ?? "";
     }
 }

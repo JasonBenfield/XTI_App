@@ -9,10 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="7.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="7.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.18" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.19-dev230125090331333" />
 		<PackageReference Include="XTI_Secrets.Fakes" Version="1.8.8" />
 	</ItemGroup>
 

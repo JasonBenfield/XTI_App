@@ -40,8 +40,8 @@ internal sealed class AppAgendaTest
         var services = setup
         (
             (sp, agenda) => { },
-            KeyValuePair.Create("AppAgenda:ImmediateItems:0:GroupName", "Agenda"),
-            KeyValuePair.Create("AppAgenda:ImmediateItems:0:ActionName", "FirstAgendaItem")
+            KeyValuePair.Create("AppAgenda:ImmediateItems:0:GroupName", (string?)"Agenda"),
+            KeyValuePair.Create("AppAgenda:ImmediateItems:0:ActionName", (string?)"FirstAgendaItem")
         );
         await services.Setup();
         var agenda = services.GetRequiredService<AppAgenda>();
@@ -61,9 +61,9 @@ internal sealed class AppAgendaTest
         var services = setup
         (
             (sp, agenda) => { },
-            KeyValuePair.Create("AppAgenda:ImmediateItems:0:GroupName", "Agenda"),
-            KeyValuePair.Create("AppAgenda:ImmediateItems:0:ActionName", "FirstAgendaItem"),
-            KeyValuePair.Create("AppAgenda:ImmediateItems:0:IsDisabled", "true")
+            KeyValuePair.Create("AppAgenda:ImmediateItems:0:GroupName", (string?)"Agenda"),
+            KeyValuePair.Create("AppAgenda:ImmediateItems:0:ActionName", (string?)"FirstAgendaItem"),
+            KeyValuePair.Create("AppAgenda:ImmediateItems:0:IsDisabled", (string?)"true")
         );
         await services.Setup();
         var agenda = services.GetRequiredService<AppAgenda>();
@@ -139,10 +139,10 @@ internal sealed class AppAgendaTest
         Assert.That(counter.Value, Is.EqualTo(0));
     }
 
-    private static IServiceProvider setup(Action<IServiceProvider, AppAgendaBuilder> build, params KeyValuePair<string, string>[] options)
+    private static IServiceProvider setup(Action<IServiceProvider, AppAgendaBuilder> build, params KeyValuePair<string, string?>[] options)
     {
         var hostBuilder = new XtiHostBuilder();
-        hostBuilder.Configuration.AddInMemoryCollection(options ?? new KeyValuePair<string, string>[] { });
+        hostBuilder.Configuration.AddInMemoryCollection(options ?? new KeyValuePair<string, string?>[0]);
         hostBuilder.Services.AddServicesForTests();
         hostBuilder.Services.AddAppAgenda(build);
         var sp = hostBuilder.Build().Scope();

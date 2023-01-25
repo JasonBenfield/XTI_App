@@ -1,6 +1,5 @@
 ﻿using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_Core;
 using XTI_Schedule;
 
 namespace XTI_App.Hosting;
@@ -10,9 +9,9 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
     private ResourceGroupName groupName = ResourceGroupName.Unknown;
     private ResourceName actionName = ResourceName.Unknown;
     private bool isEnabled = true;
-    private readonly List<Schedule> schedules = new List<Schedule>();
+    private readonly List<Schedule> schedules = new();
     private ScheduledActionTypes type = ScheduledActionTypes.Continuous;
-    private TimeSpan delayAfterStart = new TimeSpan();
+    private TimeSpan delayAfterStart = new();
     private TimeSpan interval = TimeSpan.FromDays(1);
 
     internal ScheduledAppAgendaItemBuilder() { }
@@ -48,7 +47,7 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
                             {
                                 new TimeRangeOptions
                                 {
-                                    Start = new Time(),
+                                    Start = new TimeOnly(),
                                     Duration = TimeSpan.FromHours(24)
                                 }
                             }

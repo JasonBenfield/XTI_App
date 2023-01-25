@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
 using System.Text.Json;
-using XTI_App.Api;
-using XTI_Core;
+using XTI_App.Abstractions;
 
 namespace XTI_WebApp.Extensions;
 
@@ -41,7 +40,7 @@ internal sealed class ErrorHandlingMiddleware
             if (IsApiRequest(context.Request))
             {
                 context.Response.ContentType = "application/json";
-                var errors = new ResultContainer<ErrorModel[]>(xtiRequestContext.GetErrors());
+                var errors = ResultContainer.Create(xtiRequestContext.GetErrorResult());
                 var serializedErrors = JsonSerializer.Serialize(errors);
                 await context.Response.WriteAsync(serializedErrors);
             }

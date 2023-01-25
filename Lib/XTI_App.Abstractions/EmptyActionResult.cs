@@ -1,4 +1,4 @@
-﻿namespace XTI_WebAppClient;
+﻿namespace XTI_App.Abstractions;
 
 public sealed class EmptyActionResult
 {

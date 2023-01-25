@@ -84,7 +84,7 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<Authenti
                             }
                         );
                     }
-                    var claims = new XtiClaimsCreator(sessionKey, userName).Values();
+                    var claims = new XtiClaimsCreator(sessionKey!, userName).Values();
                     var identity = new ClaimsIdentity(claims, Scheme.Name, ClaimTypes.NameIdentifier, ClaimTypes.Role);
                     var principal = new ClaimsPrincipal(identity);
                     var ticket = new AuthenticationTicket(principal, Scheme.Name);

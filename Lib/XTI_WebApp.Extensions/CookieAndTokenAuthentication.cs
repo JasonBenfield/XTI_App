@@ -17,8 +17,8 @@ public static class CookieAndTokenAuthentication
 {
     public static bool IsBearerAuthentication(this HttpContext context)
     {
-        string authorization = context.Request.Headers[HeaderNames.Authorization];
-        return !string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer ");
+        string? authorization = context.Request.Headers[HeaderNames.Authorization];
+        return !string.IsNullOrWhiteSpace(authorization) && authorization.StartsWith("Bearer ");
     }
 
     public static void ConfigureXtiCookieAndTokenAuthentication(this IServiceCollection services, XtiEnvironment xtiEnv, IConfiguration config)
@@ -106,7 +106,7 @@ public static class CookieAndTokenAuthentication
     private static TokenValidationParameters createTokenValidationParameters(IConfiguration config)
     {
         var xtiAuthOptions = config.GetSection(XtiAuthenticationOptions.XtiAuthentication).Get<XtiAuthenticationOptions>();
-        var key = Encoding.ASCII.GetBytes(xtiAuthOptions.JwtSecret);
+        var key = Encoding.ASCII.GetBytes(xtiAuthOptions?.JwtSecret ?? "");
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,

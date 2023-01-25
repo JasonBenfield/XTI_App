@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
+using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
+using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
@@ -10,6 +12,7 @@ public sealed class XtiRequestContext
     private Exception? error;
     private string message = "";
     private string caption = "";
+    private string logEntryKey = "";
 
     public XtiRequestContext(XtiEnvironment xtiEnv)
     {
@@ -40,46 +43,39 @@ public sealed class XtiRequestContext
         return statusCode;
     }
 
-    public ErrorModel[] GetErrors()
+    public WebErrorResult GetErrorResult()
     {
         ErrorModel[] errors;
-        if(error == null)
+        AppEventSeverity severity;
+        if (error == null)
         {
             errors = new[] { new ErrorModel(message, caption, "") };
+            severity = AppEventSeverity.Values.CriticalError;
         }
         else
         {
-            if (xtiEnv.IsDevelopmentOrTest())
+            severity = new SeverityFromException(error).Value;
+            if (error is ValidationFailedException validationFailedException)
             {
-                if (error is ValidationFailedException validationFailedException)
-                {
-                    errors = validationFailedException.Errors.ToArray();
-                }
-                else
-                {
-                    errors = new[] { new ErrorModel(error.StackTrace ?? "", error.Message, "") };
-                }
+                errors = validationFailedException.Errors.ToArray();
+            }
+            else if (xtiEnv.IsDevelopmentOrTest())
+            {
+                errors = new[] { new ErrorModel(error.StackTrace ?? "", error.Message, "") };
             }
             else if (error is AppException appException)
             {
-                if (error is ValidationFailedException validationFailedException)
-                {
-                    errors = validationFailedException.Errors.ToArray();
-                }
-                else
-                {
-                    errors = new[] { new ErrorModel(appException.DisplayMessage) };
-                }
+                errors = new[] { new ErrorModel(appException.DisplayMessage) };
             }
             else
             {
                 errors = new[] { new ErrorModel("An unexpected error occurred") };
             }
         }
-        return errors;
+        return new WebErrorResult(logEntryKey, severity, errors);
     }
 
-    public void Failed(Exception error)
+    public void Failed(Exception error, string logEntryKey)
     {
         string message;
         string caption;
@@ -104,13 +100,14 @@ public sealed class XtiRequestContext
             caption = "An error occurred";
         }
         this.error = error;
-        Failed(message, caption);
+        Failed(message, caption, logEntryKey);
     }
 
-    public void Failed(string message, string caption)
+    public void Failed(string message, string caption, string logEntryKey)
     {
         this.message = message;
         this.caption = caption;
+        this.logEntryKey = logEntryKey;
     }
 
     public bool HasError() =>

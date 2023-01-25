@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using XTI_Core;
 
 namespace XTI_WebAppClient;
 
@@ -128,8 +129,10 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         var ex = new AppClientException
         (
             postResult.Url,
-            postResult.StatusCode,
+            (int)postResult.StatusCode,
             "",
+            "",
+            AppEventSeverity.Values.CriticalError,
             new ErrorModel[0]
         );
         return ex;
@@ -139,9 +142,11 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         new AppClientException
         (
             postResult.Url,
-            postResult.StatusCode,
+            (int)postResult.StatusCode,
             "",
-            new[] { new ErrorModel { Message = ex.Message } }
+            "",
+            AppEventSeverity.Values.CriticalError,
+            new[] { new ErrorModel(ex.Message) }
         );
 
     private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, byte[] Content, string ContentType, string FileName, string Url);

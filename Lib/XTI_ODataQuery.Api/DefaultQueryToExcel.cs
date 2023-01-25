@@ -133,7 +133,7 @@ public sealed class DefaultQueryToExcel : IQueryToExcel
 
     public Task<Stream> ToExcel(QueryResult queryResult, CancellationToken ct)
     {
-        using var workbook = new XLWorkbook(XLEventTracking.Disabled);
+        using var workbook = new XLWorkbook();
         var dataWS = workbook.AddWorksheet("Data");
         var rowIndex = 1;
         var columnIndex = 1;
@@ -158,9 +158,37 @@ public sealed class DefaultQueryToExcel : IQueryToExcel
                 {
                     cell.SetValue(str);
                 }
-                else
+                else if (value is bool boolVal)
                 {
-                    cell.Value = value;
+                    cell.SetValue(boolVal);
+                }
+                else if (value is short shortVal)
+                {
+                    cell.SetValue(shortVal);
+                }
+                else if (value is int intVal)
+                {
+                    cell.SetValue(intVal);
+                }
+                else if (value is long longVal)
+                {
+                    cell.SetValue(longVal);
+                }
+                else if (value is decimal decVal)
+                {
+                    cell.SetValue(decVal);
+                }
+                else if (value is double dblVal)
+                {
+                    cell.SetValue(dblVal);
+                }
+                else if (value is float fltVal)
+                {
+                    cell.SetValue(fltVal);
+                }
+                else if(value != null)
+                {
+                    cell.SetValue(value.ToString());
                 }
                 formatDataCell(field, cell);
                 columnIndex++;

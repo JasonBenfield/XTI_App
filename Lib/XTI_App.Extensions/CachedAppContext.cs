@@ -30,6 +30,6 @@ public sealed class CachedAppContext : IAppContext
                 TimeSpan.FromHours(4)
             );
         }
-        return cachedApp;
+        return cachedApp ?? new AppContextModel();
     }
 }

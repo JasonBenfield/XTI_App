@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using System.Net;
-using XTI_App.Api;
+using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 
@@ -79,20 +80,21 @@ public sealed class SessionLogMiddleware
                     message = $"Unsupported Media Type for '{context.Request.GetDisplayUrl()}'";
                     caption = "Unsupported Media Type";
                 }
-                xtiRequestContext.Failed(message, caption);
-                await tempLogSession.LogError
+                var loggedError = await tempLogSession.LogError
                 (
                     AppEventSeverity.Values.CriticalError,
                     message,
                     "",
-                    caption
+                    caption,
+                    ""
                 );
+                xtiRequestContext.Failed(message, caption, loggedError.EventKey);
             }
         }
         catch (Exception ex)
         {
-            xtiRequestContext.Failed(ex);
-            await logException(tempLogSession, ex);
+            var loggedException = await logException(tempLogSession, ex);
+            xtiRequestContext.Failed(ex, loggedException.EventKey);
         }
         finally
         {
@@ -110,31 +112,28 @@ public sealed class SessionLogMiddleware
         anonClient.Persist("", DateTimeOffset.MinValue, anonClient.RequesterKey);
     }
 
-    private static async Task logException(TempLogSession sessionLog, Exception ex)
+    private static Task<LogEntryModel> logException(TempLogSession sessionLog, Exception ex)
     {
-        AppEventSeverity severity;
+        var severity = new SeverityFromException(ex).Value;
         string caption;
         if (ex is ValidationFailedException)
         {
-            severity = AppEventSeverity.Values.ValidationFailed;
             caption = "Validation Failed";
-        }
-        else if (ex is AccessDeniedException accessDeniedException)
-        {
-            severity = AppEventSeverity.Values.AccessDenied;
-            caption = accessDeniedException.DisplayMessage;
         }
         else if (ex is AppException appException)
         {
-            severity = AppEventSeverity.Values.AppError;
             caption = appException.DisplayMessage;
         }
         else
         {
-            severity = AppEventSeverity.Values.CriticalError;
             caption = "An unexpected error occurred";
         }
-        await sessionLog.LogException(severity, ex, caption);
+        var parentEventKey = "";
+        if(ex is AppClientException clientEx)
+        {
+            parentEventKey = clientEx.LogEntryKey;
+        }
+        return sessionLog.LogException(severity, ex, caption, parentEventKey);
     }
 
 }

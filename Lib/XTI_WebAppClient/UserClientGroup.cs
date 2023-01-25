@@ -1,3 +1,5 @@
+using XTI_App.Abstractions;
+
 namespace XTI_WebAppClient;
 
 public sealed partial class UserClientGroup : AppClientGroup

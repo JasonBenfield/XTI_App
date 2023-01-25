@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using XTI_Core;
 
 namespace XTI_WebAppClient;
 
@@ -19,7 +20,7 @@ public class AppClient
         jsonSerializerOptions.PropertyNameCaseInsensitive = true;
         jsonSerializerOptions.PropertyNamingPolicy = null;
         jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-        jsonSerializerOptions.Converters.Add(new ClientNumericValueConverterJsonFactory());
+        jsonSerializerOptions.AddCoreConverters();
         options.JsonSerializerOptions = jsonSerializerOptions;
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
         UserCache = CreateGroup

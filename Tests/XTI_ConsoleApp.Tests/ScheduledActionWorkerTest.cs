@@ -223,7 +223,7 @@ public sealed class ScheduledActionWorkerTest
                                     .Interval(TimeSpan.FromMilliseconds(100))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new Time(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
                                     );
                             }
                         );
@@ -237,7 +237,7 @@ public sealed class ScheduledActionWorkerTest
                                     .Interval(TimeSpan.FromMilliseconds(100))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new Time(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
                                     );
                             }
                         );
@@ -251,7 +251,7 @@ public sealed class ScheduledActionWorkerTest
                                     .Interval(TimeSpan.FromMilliseconds(100))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new Time(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
                                     );
                             }
                         );

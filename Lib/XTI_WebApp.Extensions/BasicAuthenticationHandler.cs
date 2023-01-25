@@ -45,8 +45,8 @@ public sealed class BasicAuthenticationHandler : AuthenticationHandler<Authentic
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var authResult = AuthenticateResult.NoResult();
-        string auth = httpContextAccessor.HttpContext?.Request.Headers["Authorization"] ?? "";
-        if (!string.IsNullOrEmpty(auth))
+        string? auth = httpContextAccessor.HttpContext?.Request.Headers["Authorization"];
+        if (!string.IsNullOrWhiteSpace(auth))
         {
             var cacheKey = $"xti_basicAuth_{auth}";
             if (!cache.TryGetValue<CachedClaims>(cacheKey, out var cachedClaims))
@@ -73,7 +73,7 @@ public sealed class BasicAuthenticationHandler : AuthenticationHandler<Authentic
                     }
                 }
             }
-            if (string.IsNullOrWhiteSpace(cachedClaims.UserName))
+            if (string.IsNullOrWhiteSpace(cachedClaims?.UserName))
             {
                 authResult = AuthenticateResult.Fail("Basic Auth credentials were not valid");
             }

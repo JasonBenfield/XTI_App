@@ -1,4 +1,6 @@
-﻿namespace XTI_WebAppClient;
+﻿using XTI_App.Abstractions;
+
+namespace XTI_WebAppClient;
 
 public sealed class GenericAppClientGroup : AppClientGroup
 {

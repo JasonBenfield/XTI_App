@@ -19,6 +19,18 @@ public class AppApiWrapper : IAppApi
     public AppApiTemplate Template()
     {
         var template = source.Template();
+        template.ExcludeValueTemplates
+        (
+            (templ, codeGen) =>
+            {
+                if(codeGen == ApiCodeGenerators.Dotnet)
+                {
+                    var ns = templ.DataType.Namespace ?? "";
+                    return ns.StartsWith("XTI_App.Abstractions");
+                }
+                return false;
+            }
+        );
         ConfigureTemplate(template);
         return template;
     }

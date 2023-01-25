@@ -41,6 +41,6 @@ public sealed class WebActionRunnerFactory : IActionRunnerFactory
         }
         var clock = services.GetRequiredService<IClock>();
         var throttleLogs = services.GetRequiredService<ThrottledLogs>();
-        return new TempLogSession(tempLog, appEnvContext, currentSession, clock, throttleLogs);
+        return new TempLogSession(tempLog, appEnvContext, currentSession ?? new CurrentSession(), clock, throttleLogs);
     }
 }

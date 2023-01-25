@@ -1,5 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.Intrinsics.Arm;
+using XTI_Core;
+using XTI_Forms;
 
 namespace XTI_WebAppClient;
 
@@ -57,7 +60,7 @@ public sealed class AppClientGetAction<TModel>
         var url = await clientUrl.Value(actionName, modifier);
         if (model == null) { throw new ArgumentNullException(nameof(model)); }
         object transformedModel = model;
-        if (model is Forms.Form form)
+        if (model is Form form)
         {
             transformedModel = form.Export();
         }
@@ -88,8 +91,10 @@ public sealed class AppClientGetAction<TModel>
             throw new AppClientException
             (
                 response.RequestMessage?.RequestUri?.ToString() ?? "",
-                response.StatusCode,
+                (int)response.StatusCode,
                 "",
+                "",
+                AppEventSeverity.Values.CriticalError,
                 new ErrorModel[0]
             );
         }
