@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace XTI_WebApp.Extensions;
@@ -27,8 +26,8 @@ public static class BasicAuthenticationExtensions
 
     public static bool IsBasicAuthentication(this HttpContext context) 
     {
-        string authorization = context.Request.Headers[HeaderNames.Authorization];
-        var creds = BasicAuthenticationCredentials.Parse(authorization);
+        string? authorization = context.Request.Headers[HeaderNames.Authorization];
+        var creds = BasicAuthenticationCredentials.Parse(authorization ?? "");
         return !string.IsNullOrEmpty(creds.UserName);
     }
 }

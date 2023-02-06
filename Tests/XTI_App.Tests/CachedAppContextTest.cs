@@ -19,7 +19,7 @@ internal sealed class CachedAppContextTest
         var appFromContext = await appContext.App();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         Assert.That(appFromContext.App.ID, Is.EqualTo(appSetup.App.App.ID), "Should retrieve app from source");
-        Assert.That(appFromContext.App.Title, Is.EqualTo(appSetup.App.App.Title), "Should retrieve app from source");
+        Assert.That(appFromContext.App.AppKey.Name.DisplayText, Is.EqualTo(appSetup.App.App.AppKey.Name.DisplayText), "Should retrieve app from source");
     }
 
     [Test]
@@ -29,8 +29,9 @@ internal sealed class CachedAppContextTest
         var sourceAppContext = getSourceAppContext(services);
         var cachedAppContext = getAppContext(services);
         var cachedApp1 = await cachedAppContext.App();
-        var originalTitle = cachedApp1.App.Title;
+        var originalTitle = cachedApp1.App.AppKey.Name.DisplayText;
         var originalApp = await sourceAppContext.App();
+        var originalVersionName = originalApp.App.VersionName;
         sourceAppContext.Update
         (
             originalApp,
@@ -40,14 +41,13 @@ internal sealed class CachedAppContextTest
                 (
                     originalApp.App.ID,
                     originalApp.App.AppKey,
-                    originalApp.App.VersionName,
-                    "New Title",
+                    new AppVersionName("New Version Name"),
                     new ModifierKey(originalApp.App.AppKey.Format())
                 )
             }
         );
         var cachedApp2 = await cachedAppContext.App();
-        Assert.That(cachedApp2.App.Title, Is.EqualTo(originalTitle), "Should retrieve app from cache");
+        Assert.That(cachedApp2.App.VersionName, Is.EqualTo(originalVersionName), "Should retrieve app from cache");
     }
 
     [Test]

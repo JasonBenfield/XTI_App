@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
+using XTI_Core;
 
 namespace XTI_WebAppClient;
 
@@ -48,25 +50,8 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
 
     private async Task<AppClientFileResult> _GetFile(string modKey, string odataOptions, TArgs model, bool retryUnauthorized, CancellationToken ct)
     {
-        var query = "";
-        if (!string.IsNullOrWhiteSpace(odataOptions))
-        {
-            query += $"?{odataOptions}";
-        }
-        var modelAsQuery = new ObjectToQueryString(model).Value;
-        if (!string.IsNullOrWhiteSpace(modelAsQuery))
-        {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                query += "?";
-            }
-            else
-            {
-                query += "&";
-            }
-            query += modelAsQuery;
-        }
-        var postResult = await GetPostResponse(modKey, query, ct);
+        var query = new ObjectToQueryString(model).Value;
+        var postResult = await GetPostResponse(modKey, query, odataOptions, ct);
         AppClientFileResult fileResult;
         try
         {
@@ -74,7 +59,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
             {
                 fileResult = new AppClientFileResult
                 (
-                    postResult.Content, 
+                    postResult.Content,
                     postResult.ContentType,
                     postResult.FileName
                 );
@@ -96,7 +81,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         return fileResult;
     }
 
-    private async Task<PostResult> GetPostResponse(string modKey, string query, CancellationToken ct)
+    private async Task<PostResult> GetPostResponse(string modKey, string query, string odataOptions, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
         client.Timeout = options.Timeout;
@@ -108,14 +93,19 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         var url = await clientUrl.Value(actionName, modKey);
         if (!string.IsNullOrWhiteSpace(query))
         {
-            url += query;
+            url += $"?{query}";
+        }
+        if (!string.IsNullOrWhiteSpace(odataOptions))
+        {
+            url += string.IsNullOrWhiteSpace(query) ? "?" : "&";
+            url += odataOptions;
         }
         using var response = await client.GetAsync(url, ct);
         var responseContent = await response.Content.ReadAsByteArrayAsync();
         return new PostResult
         (
-            response.IsSuccessStatusCode, 
-            response.StatusCode, 
+            response.IsSuccessStatusCode,
+            response.StatusCode,
             responseContent,
             response.Content.Headers.ContentType?.MediaType ?? "",
             response.Content.Headers.ContentDisposition?.FileName ?? "",
@@ -128,8 +118,10 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         var ex = new AppClientException
         (
             postResult.Url,
-            postResult.StatusCode,
+            (int)postResult.StatusCode,
             "",
+            "",
+            AppEventSeverity.Values.CriticalError,
             new ErrorModel[0]
         );
         return ex;
@@ -139,9 +131,11 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
         new AppClientException
         (
             postResult.Url,
-            postResult.StatusCode,
+            (int)postResult.StatusCode,
             "",
-            new[] { new ErrorModel { Message = ex.Message } }
+            "",
+            AppEventSeverity.Values.CriticalError,
+            new[] { new ErrorModel(ex.Message) }
         );
 
     private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, byte[] Content, string ContentType, string FileName, string Url);

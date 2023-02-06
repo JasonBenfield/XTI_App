@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using XTI_Core;
+using XTI_Forms;
 
 namespace XTI_WebAppClient;
 
@@ -87,7 +89,7 @@ public sealed class AppClientContentAction<TModel>
         var url = await clientUrl.Value(actionName, modifier);
         if (model == null) { throw new ArgumentNullException(nameof(model)); }
         object transformedModel = model;
-        if (model is Forms.Form form)
+        if (model is Form form)
         {
             transformedModel = form.Export();
         }
@@ -99,15 +101,15 @@ public sealed class AppClientContentAction<TModel>
 
     private static AppClientException CreatePostException(HttpResponseMessage response, string content)
     {
-        var resultContainer = string.IsNullOrWhiteSpace(content)
-            ? new ResultContainer<ErrorModel[]> { Data = new ErrorModel[0] }
-            : JsonSerializer.Deserialize<ResultContainer<ErrorModel[]>>(content);
+        var errorResult = new DeserializedWebErrorResult(content).Value;
         var ex = new AppClientException
         (
             response.RequestMessage?.RequestUri?.ToString() ?? "",
-            response.StatusCode,
+            (int)response.StatusCode,
             content,
-            resultContainer?.Data ?? new ErrorModel[0]
+            errorResult.LogEntryKey,
+            errorResult.Severity,
+            errorResult.Errors
         );
         return ex;
     }
@@ -116,8 +118,10 @@ public sealed class AppClientContentAction<TModel>
         new AppClientException
         (
             response.RequestMessage?.RequestUri?.ToString() ?? "",
-            response.StatusCode,
+            (int)response.StatusCode,
             content,
-            new[] { new ErrorModel { Message = ex.Message } }
+            "",
+            AppEventSeverity.Values.CriticalError,
+            new[] { new ErrorModel(ex.Message) }
         );
 }

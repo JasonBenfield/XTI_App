@@ -16,7 +16,7 @@ public sealed class CachedSystemUserCredentials : ISystemUserCredentials
 
     public async Task<CredentialValue> Value()
     {
-        if (!cache.TryGetValue("system_user", out CredentialValue creds))
+        if (!cache.TryGetValue<CredentialValue>("system_user", out var creds))
         {
             creds = await source.Value();
             cache.Set
@@ -29,6 +29,6 @@ public sealed class CachedSystemUserCredentials : ISystemUserCredentials
                 }
             );
         }
-        return creds;
+        return creds ?? new CredentialValue("", "");
     }
 }

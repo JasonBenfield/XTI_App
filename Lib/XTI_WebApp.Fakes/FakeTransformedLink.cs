@@ -1,4 +1,4 @@
-﻿using XTI_WebApp.Abstractions;
+﻿using XTI_App.Abstractions;
 using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Fakes;

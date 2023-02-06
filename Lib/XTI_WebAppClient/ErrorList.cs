@@ -1,11 +1,13 @@
-﻿namespace XTI_WebAppClient;
+﻿using XTI_Core;
+
+namespace XTI_WebAppClient;
 
 public sealed class ErrorList
 {
-    private readonly List<ErrorModel> errors = new List<ErrorModel>();
+    private readonly List<ErrorModel> errors = new();
 
     public void Add(string message, string source = "")
-        => Add(new ErrorModel { Message = message, Source = source });
+        => Add(new ErrorModel(message, "", source));
 
     public void Add(ErrorModel error) => errors.Add(error);
 

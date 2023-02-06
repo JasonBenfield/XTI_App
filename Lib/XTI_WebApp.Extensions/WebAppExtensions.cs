@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net;
 using System.Text.Json.Serialization;
 using XTI_App.Abstractions;
 using XTI_App.Extensions;
@@ -26,14 +27,11 @@ public static class WebAppExtensions
         app.UseAuthorization();
         app.UseResponseCaching();
         app.UseXti();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllerRoute
-            (
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}"
-            );
-        });
+        app.MapControllerRoute
+        (
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}"
+        );
     }
 
     public static void AddWebAppServices(this IServiceCollection services)
@@ -81,6 +79,7 @@ public static class WebAppExtensions
         services.AddScoped<UserMenuDefinition>();
         services.AddScoped<IMenuDefinitionBuilder, DefaultMenuDefinitionBuilder>();
         services.AddScoped(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
+        services.AddSingleton<AppPageModel>();
     }
 
     public static void SetDefaultJsonOptions(this JsonOptions options)

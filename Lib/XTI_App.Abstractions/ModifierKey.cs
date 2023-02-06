@@ -5,13 +5,13 @@ namespace XTI_App.Abstractions;
 
 public sealed partial class ModifierKey : TextKeyValue, IEquatable<ModifierKey>
 {
-    public static readonly ModifierKey Default = new ModifierKey();
+    public static readonly ModifierKey Default = new();
 
     public static ModifierKey FromValue(string value) =>
-        string.IsNullOrWhiteSpace(value) ? Default : new ModifierKey(value);
+        string.IsNullOrWhiteSpace(value) ? Default : new(value);
 
     public ModifierKey()
-        :this("")
+        : this("")
     {
     }
 

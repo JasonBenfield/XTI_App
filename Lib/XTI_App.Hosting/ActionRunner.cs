@@ -69,7 +69,12 @@ public sealed class ActionRunner
                 Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
             }
             await session.StartRequest(path);
-            await session.LogException(AppEventSeverity.Values.CriticalError, ex, $"Unexpected error in {path}");
+            var parentEventKey = "";
+            if(ex is AppClientException clientEx)
+            {
+                parentEventKey = clientEx.LogEntryKey;
+            }
+            await session.LogException(AppEventSeverity.Values.CriticalError, ex, $"Unexpected error in {path}", parentEventKey);
             await session.EndRequest();
             result = Results.Error;
         }
@@ -95,11 +100,17 @@ public sealed class ActionRunner
                 Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
             }
             result = Results.Error;
+            var parentEventKey = "";
+            if (ex is AppClientException clientEx)
+            {
+                parentEventKey = clientEx.LogEntryKey;
+            }
             await session.LogException
             (
                 AppEventSeverity.Values.CriticalError,
                 ex,
-                $"Unexpected error in {path}"
+                $"Unexpected error in {path}",
+                parentEventKey
             );
         }
         finally

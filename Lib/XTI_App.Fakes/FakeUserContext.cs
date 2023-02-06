@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 
 namespace XTI_App.Fakes;
 
@@ -30,7 +28,7 @@ public sealed class FakeUserContext : ISourceUserContext
 
     public UserContextModel GetUser() => GetUser(GetCurrentUserName());
 
-    public UserContextModel GetUser(AppUserName userName)=>
+    public UserContextModel GetUser(AppUserName userName) =>
         userContexts.First(u => u.User.UserName.Equals(userName));
 
     public void SetCurrentUser(AppUserName userName) => currentUserName.SetUserName(userName);
@@ -55,15 +53,31 @@ public sealed class FakeUserContext : ISourceUserContext
         var user = userContexts.FirstOrDefault(u => u.User.UserName.Equals(userName));
         if (user == null)
         {
-            var id = getUniqueID();
+            var id = GetUniqueID();
             user = new UserContextModel
             (
-                new AppUserModel(id, userName, new PersonName(userName.DisplayText), ""),
+                new AppUserModel(id, userName, new PersonName(userName.DisplayText), "", DateTimeOffset.MaxValue),
                 new UserContextRoleModel[0]
             );
             userContexts.Add(user);
         }
         return user;
+    }
+
+    public void DeactivateUser()
+    {
+        var user = GetUser(GetCurrentUserName());
+        Update
+        (
+            user,
+            u => u with
+            {
+                User = u.User with
+                {
+                    TimeDeactivated = DateTimeOffset.Now
+                }
+            }
+        );
     }
 
     public void AddRolesToUser(params AppRoleName[] roles) =>
@@ -72,15 +86,15 @@ public sealed class FakeUserContext : ISourceUserContext
     public void AddRolesToUser(ModifierKey modifierKey, params AppRoleName[] roles)
     {
         var user = GetUser(GetCurrentUserName());
-        var modCategory = appContext.GetModifierCategory
-        (
-            appContext.GetCurrentApp(),
-            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
-        );
+        var categoryName = modifierKey.Equals(ModifierKey.Default)
+                ? ModifierCategoryName.Default
+                : new ModifierCategoryName("Department");
+        var modCategory = appContext.GetCurrentApp().ModifierCategory(categoryName);
+        var modifier = modCategory.Modifier(modifierKey);
         var modifiedRole = user.ModifiedRoles
-            .Where(mr => mr.ModifierKey.Equals(modifierKey))
+            .Where(mr => mr.Modifier.ModKey.Equals(modifierKey))
             .FirstOrDefault()
-            ?? new UserContextRoleModel(modCategory.ModifierCategory.ID, modifierKey, new AppRoleModel[0]);
+            ?? new UserContextRoleModel(modCategory.ModifierCategory, modifier, new AppRoleModel[0]);
         modifiedRole = modifiedRole with
         {
             Roles = modifiedRole.Roles
@@ -97,7 +111,7 @@ public sealed class FakeUserContext : ISourceUserContext
             u => u with
             {
                 ModifiedRoles = u.ModifiedRoles
-                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
+                    .Where(mr => !mr.Modifier.ModKey.Equals(modifierKey))
                     .Union(new[] { modifiedRole })
                     .ToArray()
             }
@@ -115,10 +129,11 @@ public sealed class FakeUserContext : ISourceUserContext
             appContext.GetCurrentApp(),
             modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
         );
+        var modifier = modCategory.Modifier(modifierKey);
         var modifiedRole = user.ModifiedRoles
-            .Where(mr => mr.ModifierKey.Equals(modifierKey))
+            .Where(mr => mr.Modifier.ModKey.Equals(modifierKey))
             .FirstOrDefault()
-            ?? new UserContextRoleModel(modCategory.ModifierCategory.ID, modifierKey, new AppRoleModel[0]);
+            ?? new UserContextRoleModel(modCategory.ModifierCategory, modifier, new AppRoleModel[0]);
         modifiedRole = modifiedRole with
         {
             Roles = roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
@@ -129,14 +144,14 @@ public sealed class FakeUserContext : ISourceUserContext
             u => u with
             {
                 ModifiedRoles = u.ModifiedRoles
-                    .Where(mr => !mr.ModifierKey.Equals(modifierKey))
+                    .Where(mr => !mr.Modifier.ModKey.Equals(modifierKey))
                     .Union(new[] { modifiedRole })
                     .ToArray()
             }
         );
     }
 
-    private int getUniqueID()
+    private int GetUniqueID()
     {
         while (userContexts.Any(u => u.User.ID.Equals(userID)))
         {

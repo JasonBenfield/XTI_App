@@ -23,6 +23,7 @@ using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 using XTI_WebApp.Extensions;
 using XTI_WebApp.Fakes;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace XTI_WebApp.AspTests;
 
@@ -341,11 +342,17 @@ internal sealed class SessionLogMiddlewareTest
         var response = await input.GetAsync(uri);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
         var result = await response.Content.ReadAsStringAsync();
+        var evt = await getLogEntry(input);
         var expectedResult = JsonSerializer.Serialize
         (
-            new ResultContainer<ErrorModel[]>
+            new ResultContainer<WebErrorResult>
             (
-                new[] { new ErrorModel("An unexpected error occurred") }
+                new WebErrorResult
+                (
+                    evt.EventKey,
+                    AppEventSeverity.Values.Value(evt.Severity),
+                    new[] { new ErrorModel("An unexpected error occurred") }
+                )
             )
         );
         Assert.That(result, Is.EqualTo(expectedResult), "Should return errors");
@@ -367,7 +374,14 @@ internal sealed class SessionLogMiddlewareTest
         var response = await input.GetAsync(uri);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var result = await response.Content.ReadAsStringAsync();
-        var expectedResult = JsonSerializer.Serialize(new ResultContainer<ErrorModel[]>(errors));
+        var evt = await getLogEntry(input);
+        var expectedResult = JsonSerializer.Serialize
+        (
+            new ResultContainer<WebErrorResult>
+            (
+                new WebErrorResult(evt.EventKey, AppEventSeverity.Values.Value(evt.Severity), errors)
+            )
+        );
         Assert.That(result, Is.EqualTo(expectedResult), "Should return errors");
     }
 
@@ -400,7 +414,19 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
         var result = await response.Content.ReadAsStringAsync();
         var errors = new[] { new ErrorModel(exception?.DisplayMessage ?? "") };
-        var expectedResult = JsonSerializer.Serialize(new ResultContainer<ErrorModel[]>(errors));
+        var evt = await getLogEntry(input);
+        var expectedResult = JsonSerializer.Serialize
+        (
+            new ResultContainer<WebErrorResult>
+            (
+                new WebErrorResult
+                (
+                    evt.EventKey, 
+                    AppEventSeverity.Values.Value(evt.Severity), 
+                    errors
+                )
+            )
+        );
         Assert.That(result, Is.EqualTo(expectedResult), "Should return errors");
     }
 
@@ -431,7 +457,19 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var result = await response.Content.ReadAsStringAsync();
         var errors = new[] { new ErrorModel(exception?.DisplayMessage ?? "") };
-        var expectedResult = JsonSerializer.Serialize(new ResultContainer<ErrorModel[]>(errors));
+        var evt = await getLogEntry(input);
+        var expectedResult = JsonSerializer.Serialize
+        (
+            new ResultContainer<WebErrorResult>
+            (
+                new WebErrorResult
+                (
+                    evt.EventKey,
+                    AppEventSeverity.Values.Value(evt.Severity),
+                    errors
+                )
+            )
+        );
         Assert.That(result, Is.EqualTo(expectedResult), "Should return errors");
     }
 

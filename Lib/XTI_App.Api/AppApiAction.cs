@@ -49,7 +49,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     public async Task<TResult> Invoke(TModel model, CancellationToken stoppingToken = default)
     {
         var result = await Execute(model, stoppingToken);
-        return result.Data;
+        return result.Data!;
     }
 
     public async Task<ResultContainer<TResult>> Execute(TModel model, CancellationToken stoppingToken = default)

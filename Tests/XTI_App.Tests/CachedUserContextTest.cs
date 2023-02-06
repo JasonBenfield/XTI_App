@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_App.Fakes;
@@ -14,7 +12,7 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRetrieveUserFromSource()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var userContext = getUserContext(sp);
         var userFromContext = await userContext.User();
         Assert.That
@@ -28,14 +26,14 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRefreshUser()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var appContext = sp.GetRequiredService<FakeAppContext>();
         var sourceUserContext = sp.GetRequiredService<FakeUserContext>();
         var user = await sourceUserContext.User();
         var appSetup = sp.GetRequiredService<FakeAppSetup>();
         var cachedUserContext = sp.GetRequiredService<ICachedUserContext>();
         var cachedUser1 = await cachedUserContext.User();
-        var modCategoryID = GetDefaultModCategoryID(sp);
+        var modCategory = GetDefaultModCategory(sp);
         sourceUserContext.Update
         (
             user,
@@ -45,8 +43,8 @@ internal sealed class CachedUserContextTest
                 {
                     new UserContextRoleModel
                     (
-                        modCategoryID,
-                        ModifierKey.Default,
+                        modCategory.ModifierCategory,
+                        modCategory.Modifier(ModifierKey.Default),
                         new []
                         {
                             appSetup.App.Role(AppRoleName.Admin)
@@ -59,22 +57,22 @@ internal sealed class CachedUserContextTest
         var cachedUser2 = await cachedUserContext.User();
         Assert.That
         (
-            cachedUser2.GetRoles(modCategoryID, ModifierKey.Default).Select(r => r.Name),
+            cachedUser2.GetRoles(appContext.GetCurrentApp().DefaultModifier()).Select(r => r.Name),
             Has.One.EqualTo(AppRoleName.Admin),
             "Should clear cache"
         );
     }
 
-    private static int GetDefaultModCategoryID(IServiceProvider sp)
+    private static AppContextModifierCategoryModel GetDefaultModCategory(IServiceProvider sp)
     {
         var appContext = sp.GetRequiredService<FakeAppContext>();
-        return appContext.GetModifierCategory(appContext.GetCurrentApp(), ModifierCategoryName.Default).ModifierCategory.ID;
+        return appContext.GetModifierCategory(appContext.GetCurrentApp(), ModifierCategoryName.Default);
     }
 
     [Test]
     public async Task ShouldRetrieveDifferentUser()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var userContext = getUserContext(sp);
         await userContext.User();
         var sourceUserContext = (FakeUserContext)sp.GetRequiredService<ISourceUserContext>();
@@ -88,13 +86,14 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRetrieveUserRolesFromSource()
     {
-        var sp = await setup();
+        var sp = await Setup();
+        var appContext = sp.GetRequiredService<FakeAppContext>();
         var userContext = getUserContext(sp);
         var user = await userContext.User();
-        var modCategoryID = GetDefaultModCategoryID(sp);
+        var modCategory = GetDefaultModCategory(sp);
         Assert.That
         (
-            user.GetRoles(modCategoryID, ModifierKey.Default).Select(ur => ur.Name),
+            user.GetRoles(modCategory.Modifier(ModifierKey.Default)).Select(ur => ur.Name),
             Is.EquivalentTo(new[] { FakeAppRoles.Instance.Viewer }),
             "Should retrieve user roles from source"
         );
@@ -103,13 +102,13 @@ internal sealed class CachedUserContextTest
     [Test]
     public async Task ShouldRetrieveUserRolesFromCache()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var cachedUserContext = sp.GetRequiredService<ICachedUserContext>();
         var cachedUser1 = await cachedUserContext.User();
         var userContext = sp.GetRequiredService<FakeUserContext>();
         var appContext = sp.GetRequiredService<FakeAppContext>();
         var user = await userContext.User();
-        var modCategoryID = GetDefaultModCategoryID(sp);
+        var modCategory = GetDefaultModCategory(sp);
         userContext.Update
         (
             user,
@@ -119,8 +118,8 @@ internal sealed class CachedUserContextTest
                 {
                     new UserContextRoleModel
                     (
-                        modCategoryID,
-                        ModifierKey.Default,
+                        modCategory.ModifierCategory,
+                        modCategory.Modifier( ModifierKey.Default),
                         new []
                         {
                             appContext.GetCurrentApp().Role(AppRoleName.Admin)
@@ -132,13 +131,13 @@ internal sealed class CachedUserContextTest
         var cachedUser2 = await cachedUserContext.User();
         Assert.That
         (
-            cachedUser2.GetRoles(modCategoryID, ModifierKey.Default).Select(r => r.Name),
+            cachedUser2.GetRoles(modCategory.Modifier(ModifierKey.Default)).Select(r => r.Name),
             Is.EquivalentTo(new[] { FakeAppRoles.Instance.Viewer }),
             "Should retrieve user roles from source"
         );
     }
 
-    private async Task<IServiceProvider> setup()
+    private async Task<IServiceProvider> Setup()
     {
         var hostBuilder = new XtiHostBuilder(XtiEnvironment.Test);
         hostBuilder.Services.AddServicesForTests();
@@ -152,7 +151,7 @@ internal sealed class CachedUserContextTest
         var userContext = sp.GetRequiredService<FakeUserContext>();
         var userName = new AppUserName("test.user");
         var user = userContext.AddUser(userName);
-        var modCategoryID = GetDefaultModCategoryID(sp);
+        var modCategoryID = GetDefaultModCategory(sp);
         userContext.Update
         (
             user,
@@ -162,8 +161,8 @@ internal sealed class CachedUserContextTest
                 {
                     new UserContextRoleModel
                     (
-                        modCategoryID,
-                        ModifierKey.Default,
+                        modCategoryID.ModifierCategory,
+                        modCategoryID.Modifier(ModifierKey.Default),
                         new []
                         {
                             fakeSetup.App.Role(FakeAppRoles.Instance.Viewer)

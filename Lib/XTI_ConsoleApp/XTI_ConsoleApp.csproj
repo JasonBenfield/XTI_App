@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>API infrastructure for XTI console apps.</Description>
-		<PackageTags>XTI;XTI_ConsoleApp;ConsoleApp</PackageTags>
+		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);Console App</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

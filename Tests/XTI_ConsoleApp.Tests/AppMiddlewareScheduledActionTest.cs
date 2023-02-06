@@ -59,7 +59,7 @@ public sealed class AppMiddlewareScheduledActionTest
 
     private IHostBuilder BuildHost()
     {
-        return Host.CreateDefaultBuilder(new string[] { })
+        return Host.CreateDefaultBuilder(new string[0])
             .UseWindowsService()
             .ConfigureServices((hostContext, services) =>
             {
@@ -77,7 +77,7 @@ public sealed class AppMiddlewareScheduledActionTest
                                     .Interval(TimeSpan.FromMilliseconds(500))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new Time(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
                                     );
                             }
                         );

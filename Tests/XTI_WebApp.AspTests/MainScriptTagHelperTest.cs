@@ -88,7 +88,7 @@ internal sealed class MainScriptTagHelperTest
         var hostBuilder = new XtiHostBuilder();
         hostBuilder.Configuration.AddInMemoryCollection(new[]
         {
-            KeyValuePair.Create("WebApp:CacheBust", cacheBust)
+            KeyValuePair.Create("WebApp:CacheBust", (string?)cacheBust)
         });
         hostBuilder.Services.AddFakesForXtiWebApp();
         hostBuilder.Services.AddSingleton(sp => FakeInfo.AppKey);

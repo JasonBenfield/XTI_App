@@ -43,6 +43,6 @@ public sealed class CachedUserContext : ICachedUserContext
                 TimeSpan.FromHours(1)
             );
         }
-        return cachedUser;
+        return cachedUser ?? new UserContextModel();
     }
 }

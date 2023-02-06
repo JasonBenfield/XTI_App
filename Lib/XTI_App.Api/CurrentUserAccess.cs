@@ -18,47 +18,54 @@ public sealed class CurrentUserAccess
     public Task<UserAccessResult> HasAccess(XtiPath xtiPath) =>
         HasAccess(xtiPath.Group, xtiPath.Action, xtiPath.Modifier);
 
-    public async Task<UserAccessResult> HasAccess(ResourceGroupName group, ResourceName action, ModifierKey modifier)
+    public async Task<UserAccessResult> HasAccess(ResourceGroupName group, ResourceName action, ModifierKey modKey)
     {
         var error = "";
         var userName = await currentUserName.Value();
         var userContextModel = await userContext.User(userName);
-        var appContextModel = await appContext.App();
-        bool isAnonymousAllowed;
-        AppRoleName[] allowedRoles;
-        if (action.IsBlank())
+        if (!userContextModel.User.IsActive())
         {
-            var resourceGroup = appContextModel.ResourceGroup(group);
-            isAnonymousAllowed = resourceGroup.ResourceGroup.IsAnonymousAllowed;
-            allowedRoles = resourceGroup.AllowedRoles.Select(ar => ar.Name).ToArray();
+            error = "User has been deactivated";
         }
         else
         {
-            var resource = appContextModel.Resource(group, action);
-            isAnonymousAllowed = resource.Resource.IsAnonymousAllowed;
-            allowedRoles = resource.AllowedRoles.Select(ar => ar.Name).ToArray();
-        }
-        if (userName.IsAnon())
-        {
-            if (!isAnonymousAllowed)
+            var appContextModel = await appContext.App();
+            bool isAnonymousAllowed;
+            AppRoleName[] allowedRoles;
+            if (action.IsBlank())
             {
-                error = $"Anon is not allowed to '{formatPath(group, action, modifier)}'";
+                var resourceGroup = appContextModel.ResourceGroup(group);
+                isAnonymousAllowed = resourceGroup.ResourceGroup.IsAnonymousAllowed;
+                allowedRoles = resourceGroup.AllowedRoles.Select(ar => ar.Name).ToArray();
             }
-        }
-        else if (allowedRoles.Any())
-        {
-            var modCategory = appContextModel.ModCategory(group);
-            var userRoles = userContextModel.GetRoles(modCategory.ModifierCategory.ID, modifier);
-            var userRoleNames = userRoles.Select(ur => ur.Name);
-            if (userRoles.Any(ur => ur.IsDenyAccess()))
+            else
             {
-                error = $"'{userName.DisplayText}' is denied access to '{formatPath(group, action, modifier)}'";
+                var resource = appContextModel.Resource(group, action);
+                isAnonymousAllowed = resource.Resource.IsAnonymousAllowed;
+                allowedRoles = resource.AllowedRoles.Select(ar => ar.Name).ToArray();
             }
-            else if (!userRoleNames.Intersect(allowedRoles).Any())
+            if (userName.IsAnon())
             {
-                var joinedAllowedRoles = string.Join(",", allowedRoles.Select(ar => ar.DisplayText));
-                var joinedUserRoles = string.Join(",", userRoleNames.Select(ar => ar.DisplayText));
-                error = $"'{userName.DisplayText}' is not allowed to '{formatPath(group, action, modifier)}'. Allowed roles: {joinedAllowedRoles}. User roles: {joinedUserRoles}";
+                if (!isAnonymousAllowed)
+                {
+                    error = $"Anon is not allowed to '{FormatPath(group, action, modKey)}'";
+                }
+            }
+            else if (allowedRoles.Any())
+            {
+                var modifier = appContextModel.Modifier(group, modKey);
+                var userRoles = userContextModel.GetRoles(modifier);
+                var userRoleNames = userRoles.Select(ur => ur.Name);
+                if (userRoles.Any(ur => ur.IsDenyAccess()))
+                {
+                    error = $"'{userName.DisplayText}' is denied access to '{FormatPath(group, action, modKey)}'";
+                }
+                else if (!userRoleNames.Intersect(allowedRoles).Any())
+                {
+                    var joinedAllowedRoles = string.Join(",", allowedRoles.Select(ar => ar.DisplayText));
+                    var joinedUserRoles = string.Join(",", userRoleNames.Select(ar => ar.DisplayText));
+                    error = $"'{userName.DisplayText}' is not allowed to '{FormatPath(group, action, modKey)}'. Allowed roles: {joinedAllowedRoles}. User roles: {joinedUserRoles}";
+                }
             }
         }
         UserAccessResult result;
@@ -73,7 +80,7 @@ public sealed class CurrentUserAccess
         return result;
     }
 
-    private string formatPath(ResourceGroupName group, ResourceName action, ModifierKey modifier)
+    private string FormatPath(ResourceGroupName group, ResourceName action, ModifierKey modifier)
     {
         var path = group.DisplayText;
         if (!action.IsBlank())

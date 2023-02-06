@@ -1,6 +1,4 @@
-﻿using XTI_App.Abstractions;
-
-namespace XTI_App.Fakes;
+﻿namespace XTI_App.Fakes;
 
 public sealed class FakeAppSetup : IAppSetup
 {
@@ -36,7 +34,7 @@ public sealed class FakeAppSetup : IAppSetup
         await setup.Run(versionKey);
         App = setup.App;
         var departmentModCategoryName = new ModifierCategoryName("Department");
-        App = appContext.AddModifier(App, departmentModCategoryName,new ModifierKey("IT"), "IT");
+        App = appContext.AddModifier(App, departmentModCategoryName, new ModifierKey("IT"), "IT");
         App = appContext.AddModifier(App, departmentModCategoryName, new ModifierKey("HR"), "HR");
         var userName = new AppUserName("xartogg");
         User = userContext.AddUser(userName);

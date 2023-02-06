@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using XTI_Core;
 
 namespace XTI_WebAppClient;
 
@@ -91,7 +92,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
         var url = await clientUrl.ODataGet(modKey);
         if (!string.IsNullOrWhiteSpace(query))
         {
-            url += query;
+            url += $"?{query}";
         }
         using var content = new StringContent(odataOptions, Encoding.UTF8, "text/plain");
         using var response = await client.PostAsync(url, content, ct);
@@ -101,15 +102,15 @@ public sealed class AppClientODataAction<TArgs, TEntity>
 
     private static AppClientException CreatePostException(PostResult postResult)
     {
-        var resultContainer = string.IsNullOrWhiteSpace(postResult.Content)
-            ? new ResultContainer<ErrorModel[]> { Data = new ErrorModel[0] }
-            : JsonSerializer.Deserialize<ResultContainer<ErrorModel[]>>(postResult.Content);
+        var errorResult = new DeserializedWebErrorResult(postResult.Content).Value;
         var ex = new AppClientException
         (
             postResult.Url,
-            postResult.StatusCode,
+            (int)postResult.StatusCode,
             postResult.Content,
-            resultContainer?.Data ?? new ErrorModel[0]
+            errorResult.LogEntryKey,
+            errorResult.Severity,
+            errorResult.Errors
         );
         return ex;
     }
@@ -118,9 +119,11 @@ public sealed class AppClientODataAction<TArgs, TEntity>
         new AppClientException
         (
             postResult.Url,
-            postResult.StatusCode,
+            (int)postResult.StatusCode,
             postResult.Content,
-            new[] { new ErrorModel { Message = ex.Message } }
+            "",
+            AppEventSeverity.Values.CriticalError,
+            new[] { new ErrorModel(ex.Message) }
         );
 
     private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, string Content, string Url);
