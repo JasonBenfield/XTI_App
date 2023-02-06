@@ -21,7 +21,7 @@ internal sealed class PageContextTest
         var pageContext = await Execute(services);
         var appContext = services.GetRequiredService<IAppContext>();
         var app = await appContext.App();
-        Assert.That(pageContext.AppTitle, Is.EqualTo(app.App.Title), "Should set app title");
+        Assert.That(pageContext.AppTitle, Is.EqualTo(app.App.AppKey.Name.DisplayText), "Should set app title");
     }
 
     [Test]

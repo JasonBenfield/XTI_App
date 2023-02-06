@@ -1,4 +1,5 @@
-﻿using XTI_Core;
+﻿using System.Text.Json.Serialization;
+using XTI_Core;
 
 namespace XTI_App.Abstractions;
 
@@ -16,7 +17,7 @@ public sealed class WebErrorResult
         Errors = errors;
     }
 
-    public string LogEntryKey { get; }
-    public AppEventSeverity Severity { get; }
-    public ErrorModel[] Errors { get; }
+    public string LogEntryKey { get; set; }
+    public AppEventSeverity Severity { get; set; }
+    public ErrorModel[] Errors { get; set; }
 }

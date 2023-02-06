@@ -4,12 +4,13 @@
 		<TargetFramework>net7.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.19-dev230125090331333" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.31-dev230123130606887" />
-		<PackageReference Include="XTI_Schedule" Version="1.10.19-dev230125090331333" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.19" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.31" />
+		<PackageReference Include="XTI_Schedule" Version="1.10.19" />
 	</ItemGroup>
 
 	<ItemGroup>

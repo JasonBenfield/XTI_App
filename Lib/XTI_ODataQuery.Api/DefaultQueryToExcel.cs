@@ -2,95 +2,6 @@
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class DefaultQueryToExcelBuilder
-{
-    private string downloadName = "QueryResults";
-    private Action<IXLRow> formatHeaderRow = (row) => { row.Style.Font.Bold = true; };
-    private Action<string, IXLCell> formatHeaderCell = (name, cell) => { };
-    private Action<string, IXLColumn> formatColumn = (name, column) => { };
-    private Func<string, object, object> transformData = (name, value) => value;
-    private Action<string, IXLCell> formatDataCell = (name, cell) => { };
-    private Action<IDictionary<string, object>, IXLRow> formatRecordRow = (dict, row) => { };
-    private Action<IXLTable> formatTable = (_) => { };
-    private Action<QueryResult, IXLWorkbook> formatWorkbook = (result, wkbk) => { };
-    private bool includeParameters = true;
-
-    public DefaultQueryToExcelBuilder SetDownloadName(string downloadName)
-    {
-        this.downloadName = downloadName;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatHeaderRow(Action<IXLRow> formatHeaderRow)
-    {
-        this.formatHeaderRow = formatHeaderRow;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatHeaderCell(Action<string, IXLCell> formatHeaderCell)
-    {
-        this.formatHeaderCell = formatHeaderCell;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatColumns(Action<string, IXLColumn> formatColumn)
-    {
-        this.formatColumn = formatColumn;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder TransformData(Func<string, object, object> transformData)
-    {
-        this.transformData = transformData;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatCell(Action<string, IXLCell> formatDataCell)
-    {
-        this.formatDataCell = formatDataCell;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatRecordRow(Action<IDictionary<string, object>, IXLRow> formatRecordRow)
-    {
-        this.formatRecordRow = formatRecordRow;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatTable(Action<IXLTable> formatTable)
-    {
-        this.formatTable = formatTable;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder FormatWorkbook(Action<QueryResult, IXLWorkbook> formatWorkbook)
-    {
-        this.formatWorkbook = formatWorkbook;
-        return this;
-    }
-
-    public DefaultQueryToExcelBuilder HideParameters()
-    {
-        includeParameters = false;
-        return this;
-    }
-
-    public DefaultQueryToExcel Build() =>
-        new DefaultQueryToExcel
-        (
-            formatHeaderRow,
-            formatHeaderCell,
-            formatColumn,
-            transformData,
-            formatDataCell,
-            formatRecordRow,
-            formatTable,
-            formatWorkbook,
-            includeParameters,
-            downloadName
-        );
-}
-
 public sealed class DefaultQueryToExcel : IQueryToExcel
 {
     private readonly Action<IXLRow> formatHeaderRow;
@@ -137,64 +48,83 @@ public sealed class DefaultQueryToExcel : IQueryToExcel
         var dataWS = workbook.AddWorksheet("Data");
         var rowIndex = 1;
         var columnIndex = 1;
-        foreach (var field in queryResult.SelectFields)
+        if (queryResult.Records.Any())
         {
-            var cell = dataWS.Cell(rowIndex, columnIndex);
-            cell.SetValue(field);
-            formatHeaderCell(field, cell);
-            formatColumn(field, dataWS.Column(columnIndex));
-            columnIndex++;
-        }
-        formatHeaderRow(dataWS.Row(rowIndex));
-        rowIndex++;
-        foreach (var record in queryResult.Records)
-        {
-            columnIndex = 1;
             foreach (var field in queryResult.SelectFields)
             {
-                var value = transformData(field, record[field]);
                 var cell = dataWS.Cell(rowIndex, columnIndex);
-                if (value is string str)
-                {
-                    cell.SetValue(str);
-                }
-                else if (value is bool boolVal)
-                {
-                    cell.SetValue(boolVal);
-                }
-                else if (value is short shortVal)
-                {
-                    cell.SetValue(shortVal);
-                }
-                else if (value is int intVal)
-                {
-                    cell.SetValue(intVal);
-                }
-                else if (value is long longVal)
-                {
-                    cell.SetValue(longVal);
-                }
-                else if (value is decimal decVal)
-                {
-                    cell.SetValue(decVal);
-                }
-                else if (value is double dblVal)
-                {
-                    cell.SetValue(dblVal);
-                }
-                else if (value is float fltVal)
-                {
-                    cell.SetValue(fltVal);
-                }
-                else if(value != null)
-                {
-                    cell.SetValue(value.ToString());
-                }
-                formatDataCell(field, cell);
+                cell.SetValue(field);
+                formatHeaderCell(field, cell);
+                formatColumn(field, dataWS.Column(columnIndex));
                 columnIndex++;
             }
-            formatRecordRow(record, dataWS.Row(rowIndex));
+            formatHeaderRow(dataWS.Row(rowIndex));
             rowIndex++;
+            foreach (var record in queryResult.Records)
+            {
+                columnIndex = 1;
+                foreach (var field in queryResult.SelectFields)
+                {
+                    var value = transformData(field, record[field]);
+                    var cell = dataWS.Cell(rowIndex, columnIndex);
+                    if (value is string str)
+                    {
+                        cell.SetValue(str);
+                    }
+                    else if (value is bool boolVal)
+                    {
+                        cell.SetValue(boolVal);
+                    }
+                    else if (value is short shortVal)
+                    {
+                        cell.SetValue(shortVal);
+                    }
+                    else if (value is int intVal)
+                    {
+                        cell.SetValue(intVal);
+                    }
+                    else if (value is long longVal)
+                    {
+                        cell.SetValue(longVal);
+                    }
+                    else if (value is decimal decVal)
+                    {
+                        cell.SetValue(decVal);
+                    }
+                    else if (value is double dblVal)
+                    {
+                        cell.SetValue(dblVal);
+                    }
+                    else if (value is float fltVal)
+                    {
+                        cell.SetValue(fltVal);
+                    }
+                    else if (value is DateOnly dVal)
+                    {
+                        cell.SetValue(dVal.ToDateTime(new TimeOnly()));
+                    }
+                    else if (value is DateTime dtVal)
+                    {
+                        cell.SetValue(dtVal);
+                    }
+                    else if (value is DateTimeOffset dtoVal)
+                    {
+                        cell.SetValue(dtoVal.LocalDateTime);
+                    }
+                    else if (value != null)
+                    {
+                        cell.SetValue(value.ToString());
+                    }
+                    formatDataCell(field, cell);
+                    columnIndex++;
+                }
+                formatRecordRow(record, dataWS.Row(rowIndex));
+                rowIndex++;
+            }
+        }
+        else
+        {
+            dataWS.Row(rowIndex).Cell(1).SetValue("No records were found.");
         }
         var table = dataWS.Range
         (

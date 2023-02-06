@@ -4,7 +4,7 @@ namespace XTI_App.Abstractions;
 
 public sealed class ModifierCategoryName : TextKeyValue, IEquatable<ModifierCategoryName>
 {
-    public static readonly ModifierCategoryName Default = new ModifierCategoryName("Default");
+    public static readonly ModifierCategoryName Default = new("Default");
 
     public ModifierCategoryName(string value) : base(value)
     {

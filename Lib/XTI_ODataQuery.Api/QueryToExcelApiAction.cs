@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Query.Wrapper;
 using Microsoft.OData.UriParser;
+using System.Reflection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_WebApp.Api;
@@ -40,22 +41,38 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
     {
         await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
-        var queryable = await queryAction.Execute(options, model);
-        var finalQuery = options.ApplyTo(queryable);
+        var result = await queryAction.Execute(options, model);
+        var queryRecords = result.ToArray();
         var selectFields = options.SelectExpand.SelectExpandClause.SelectedItems
             .OfType<PathSelectItem>()
             .Select(item => item.SelectedPath)
             .OfType<ODataSelectPath>()
             .Select(item => item.FirstSegment.Identifier)
             .ToArray();
+        var properties = queryRecords
+            .FirstOrDefault()?.GetType().GetProperties()
+            ?? new PropertyInfo[0];
+        if (!selectFields.Any())
+        {
+            selectFields = properties.Select(p => p.Name).ToArray();
+        }
+        var queryDictionaryRecords = queryRecords
+            .Select
+            (
+                obj => 
+                    properties
+                        .ToDictionary
+                        (
+                            p => p.Name, 
+                            p => p.GetValue(obj) ?? new EmptyObject()
+                        )
+            )
+            .ToArray();
         var queryResult = new QueryResult
         (
             new RawQueryValues(options.RawValues),
             selectFields,
-            finalQuery
-                .OfType<ISelectExpandWrapper>()
-                .Select(q => q.ToDictionary())
-                .ToArray()
+            queryDictionaryRecords
         );
         var queryToExcel = createQueryToExcel();
         var excelStream = await queryToExcel.ToExcel(queryResult, stoppingToken);

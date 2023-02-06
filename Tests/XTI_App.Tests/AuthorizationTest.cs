@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Data;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Fakes;
@@ -12,7 +13,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, AppRoleName.Admin);
         var api = getApi(sp);
         var action = api.Product.AddProduct;
@@ -27,7 +28,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotHaveAccess_WhenUserDoesNoBelongToAnAllowedRole()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, FakeAppRoles.Instance.Viewer);
         var api = getApi(sp);
         var action = api.Employee.AddEmployee;
@@ -42,7 +43,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotHaveAccess_WhenUserBelongsToADeniedRole()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var appSetup = sp.GetRequiredService<FakeAppSetup>();
         addRolesToUser(sp, FakeAppRoles.Instance.Viewer);
         var api = getApi(sp);
@@ -58,7 +59,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldHaveAccessToModifiedAction_WhenUserBelongsToAnAllowedRoleForTheDefaultModifier()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var api = getApi(sp);
         addRolesToUser(sp, AppRoleName.Admin);
         var action = api.Employee.AddEmployee;
@@ -73,7 +74,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotHaveAccessToModifiedAction_WhenUserDoesNotBelongsToAnAllowedRoleForTheModifier_IfTheyBelongToAnAllowedRoleForTheDefaultModifier()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, AppRoleName.Admin);
         addRolesToUser(sp, new ModifierKey("IT"), FakeAppRoles.Instance.Viewer);
         var api = getApi(sp);
@@ -89,7 +90,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndUserHasAccessToTheModifiedAction()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, new ModifierKey("IT"), AppRoleName.Admin);
         var api = getApi(sp);
         var action = api.Employee.AddEmployee;
@@ -104,7 +105,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotHaveAccess_WhenUserDoesNotBelongToAnAllowedRole_AndUserHasAccessToTheModifiedAction()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var appSetup = sp.GetRequiredService<FakeAppSetup>();
         addRolesToUser(sp, new ModifierKey("IT"), FakeAppRoles.Instance.Viewer);
         var api = getApi(sp);
@@ -120,7 +121,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndTheActionHasTheDefaultModifier()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, AppRoleName.Admin);
         var api = getApi(sp);
         var action = api.Employee.AddEmployee;
@@ -135,7 +136,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotHaveAccess_WhenUserBelongsToAnAllowedRole_ButDoesNotHaveAccessToTheModifiedAction()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, new ModifierKey("IT"), AppRoleName.Admin);
         var api = getApi(sp);
         var action = api.Employee.AddEmployee;
@@ -150,8 +151,8 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task AnonShouldNotHaveAccess_WhenAnonIsNotAllowed()
     {
-        var sp = await setup();
-        var userContext = getUserContext(sp);
+        var sp = await Setup();
+        var userContext = GetUserContext(sp);
         userContext.SetCurrentUser(AppUserName.Anon);
         var api = getApi(sp);
         var action = api.Home.DoSomething;
@@ -166,8 +167,8 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task AnonShouldHaveAccess_WhenAnonIsAllowed()
     {
-        var sp = await setup();
-        var userContext = getUserContext(sp);
+        var sp = await Setup();
+        var userContext = GetUserContext(sp);
         userContext.SetCurrentUser(AppUserName.Anon);
         var api = getApi(sp);
         var action = api.Login.Authenticate;
@@ -182,7 +183,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldAllowAccess_WhenTheUserIsAuthenticatedAndTheResourceAllowsAuthenticatedUsers()
     {
-        var sp = await setup();
+        var sp = await Setup();
         var api = getApi(sp);
         var group = api.Home;
         setPath(sp, group);
@@ -193,8 +194,8 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotAllowAccess_WhenTheUserIsNotAuthenticatedAndTheResourceAllowsAuthenticatedUsers()
     {
-        var sp = await setup();
-        var userContext = getUserContext(sp);
+        var sp = await Setup();
+        var userContext = GetUserContext(sp);
         userContext.SetCurrentUser(AppUserName.Anon);
         var api = getApi(sp);
         var group = api.Home;
@@ -206,7 +207,7 @@ internal sealed class AuthorizationTest
     [Test]
     public async Task ShouldNotAllowAccess_WhenTheUserHasTheDenyAccessRole()
     {
-        var sp = await setup();
+        var sp = await Setup();
         addRolesToUser(sp, AppRoleName.Admin);
         addRolesToUser(sp, new ModifierKey("IT"), AppRoleName.DenyAccess);
         var api = getApi(sp);
@@ -219,6 +220,23 @@ internal sealed class AuthorizationTest
         );
     }
 
+    [Test]
+    public async Task ShouldNotAllowAccess_WhenUserHasBeenDeactivated()
+    {
+        var sp = await Setup();
+        addRolesToUser(sp, AppRoleName.Admin);
+        var userContext = sp.GetRequiredService<FakeUserContext>();
+        userContext.DeactivateUser();
+        var api = getApi(sp);
+        var action = api.Employee.AddEmployee;
+        setPath(sp, action, "IT");
+        Assert.ThrowsAsync<AccessDeniedException>
+        (
+            () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
+            "User should not have access when user has been deactivated"
+        );
+    }
+
     private void addRolesToUser(IServiceProvider services, params AppRoleName[] roles) =>
         addRolesToUser(services, ModifierKey.Default, roles);
 
@@ -228,7 +246,7 @@ internal sealed class AuthorizationTest
         userContext.AddRolesToUser(modifierKey, roles);
     }
 
-    private async Task<IServiceProvider> setup()
+    private async Task<IServiceProvider> Setup()
     {
         var hostBuilder = new XtiHostBuilder();
         hostBuilder.Services.AddServicesForTests();
@@ -256,7 +274,7 @@ internal sealed class AuthorizationTest
         pathAccessor.SetPath(action.Path.WithModifier(new ModifierKey(department)));
     }
 
-    private FakeUserContext getUserContext(IServiceProvider sp)
+    private FakeUserContext GetUserContext(IServiceProvider sp)
         => (FakeUserContext)sp.GetRequiredService<IUserContext>();
 
     private FakeAppApi getApi(IServiceProvider sp) => (FakeAppApi)sp.GetRequiredService<IAppApi>();

@@ -14,6 +14,7 @@ public sealed class BodyFromRequest
     public async Task<string> Serialize()
     {
         request.EnableBuffering();
+        request.Body.Position = 0;
         var streamReader = new StreamReader(request.Body);
         var body = await streamReader.ReadToEndAsync();
         request.Body.Position = 0;

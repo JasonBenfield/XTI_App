@@ -1,5 +1,4 @@
-﻿using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 
 namespace XTI_App.Fakes;
 
@@ -40,9 +39,13 @@ public sealed class FakeAppContext : ISourceAppContext
 
     public AppContextModel Update(AppContextModel original, Func<AppContextModel, AppContextModel> update)
     {
-        apps.Remove(original);
+        apps.RemoveAll(a => a.App.AppKey.Equals(original.App.AppKey));
         var updated = update(original);
         apps.Add(updated);
+        if (currentApp != null && currentApp.App.AppKey.Equals(updated.App.AppKey))
+        {
+            SetCurrentApp(updated);
+        }
         return updated;
     }
 
@@ -50,6 +53,10 @@ public sealed class FakeAppContext : ISourceAppContext
     {
         apps.RemoveAll(a => a.App.AppKey.Equals(appTemplate.AppKey));
         var app = AddNewApp(appTemplate);
+        if(currentApp != null && currentApp.App.AppKey.Equals(appTemplate.AppKey))
+        {
+            SetCurrentApp(app);
+        }
         return app;
     }
 
@@ -89,16 +96,20 @@ public sealed class FakeAppContext : ISourceAppContext
         return updated;
     }
 
-    public AppContextModifierCategoryModel GetModifierCategory(AppContextModel appContext, ModifierCategoryName categoryName)
-    {
-        return appContext.ModifierCategories.First(mc => mc.ModifierCategory.Name.Equals(categoryName));
-    }
+    public AppContextModifierCategoryModel GetModifierCategory(AppContextModel appContext, ModifierCategoryName categoryName) =>
+        appContext.ModifierCategory(categoryName);
 
     private AppContextModel AddNewApp(AppApiTemplateModel appTemplate)
     {
         var id = appID;
-        var modCategories = appTemplate.GroupTemplates
-            .Select(g => g.ModCategory)
+        var modCategoryNames = appTemplate.GroupTemplates.Select(g => g.ModCategory).ToArray();
+        if (!modCategoryNames.Any(mc => ModifierCategoryName.Default.Equals(mc)))
+        {
+            modCategoryNames = modCategoryNames
+                .Union(new[] { ModifierCategoryName.Default.DisplayText })
+                .ToArray();
+        }
+        var modCategories = modCategoryNames
             .Distinct()
             .Select
             (
@@ -109,9 +120,13 @@ public sealed class FakeAppContext : ISourceAppContext
                         new ModifierCategoryModel
                         (
                             modCategoryID,
-                            new ModifierCategoryName(mc)
+                            string.IsNullOrWhiteSpace(mc)
+                                ? ModifierCategoryName.Default
+                                : new ModifierCategoryName(mc)
                         ),
-                        new ModifierModel[0]
+                        ModifierCategoryName.Default.Equals(mc)
+                            ? new[] { new ModifierModel(modifierID, modCategoryID, ModifierKey.Default, "", "") }
+                            : new ModifierModel[0]
                     );
                     modCategoryID++;
                     return modCategory;
@@ -138,7 +153,6 @@ public sealed class FakeAppContext : ISourceAppContext
                 id,
                 appTemplate.AppKey,
                 new AppVersionName("Fake"),
-                appTemplate.AppKey.Name.DisplayText,
                 new ModifierKey(appTemplate.AppKey.Format())
             ),
             new XtiVersionModel
@@ -197,6 +211,7 @@ public sealed class FakeAppContext : ISourceAppContext
             )
             .ToArray()
         );
+        AddModifier(app, ModifierCategoryName.Default, ModifierKey.Default, "");
         appID++;
         return app;
     }

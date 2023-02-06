@@ -1,4 +1,5 @@
 ﻿@inject XTI_WebApp.Abstractions.IPageContext pageContext
+@inject XTI_WebApp.Abstractions.AppPageModel pageModel
 @{
     var serializedPageContext = await pageContext.Serialize();
 }
@@ -12,9 +13,18 @@
         var cacheBust = string.IsNullOrWhiteSpace(pageContext.CacheBust)
             ? ""
             : $"?cacheBust={pageContext.CacheBust}";
+        var rootPath = @Url.Content("~");
+    }
+    @foreach(var styleSheet in pageModel.PreStyleSheets)
+    {
+        <link href="@styleSheet.Replace("~", rootPath)@(cacheBust)" rel="stylesheet" />
     }
     <link href="~/styles/css/default.css@(cacheBust)" rel="stylesheet" />
     <link href="~/styles/css/fontawesome/all.css@(cacheBust)" rel="stylesheet" />
+    @foreach(var styleSheet in pageModel.PostStyleSheets)
+    {
+        <link href="@styleSheet.Replace("~", rootPath)@(cacheBust)" rel="stylesheet" />
+    }
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -22,6 +32,20 @@
     <script>
         pageContext = @Html.Raw(serializedPageContext);
     </script>
+    @{
+        var scriptCacheBust = string.IsNullOrWhiteSpace(pageContext.CacheBust)
+            ? ""
+            : $"?cacheBust={pageContext.CacheBust}";
+        var scriptRootPath = @Url.Content("~");
+    }
+    @foreach(var script in pageModel.PreScripts)
+    {
+        <script src="@script.Replace("~", scriptRootPath)@(scriptCacheBust)"></script>
+    }
     @RenderSection("Scripts", required: false)
+    @foreach(var script in pageModel.PostScripts)
+    {
+        <script src="@script.Replace("~", scriptRootPath)@(scriptCacheBust)"></script>
+    }
 </body>
 </html>

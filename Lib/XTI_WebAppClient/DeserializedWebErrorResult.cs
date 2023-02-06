@@ -2,25 +2,24 @@
 
 namespace XTI_WebAppClient;
 
-internal sealed class DeserializedWebErrorResult
+public sealed class DeserializedWebErrorResult
 {
-	public DeserializedWebErrorResult(string serialized)
-	{
-		if (string.IsNullOrWhiteSpace(serialized))
-		{
-            Value = new WebErrorResult();
-		}
-		else
+    public DeserializedWebErrorResult(string serialized)
+    {
+        if (string.IsNullOrWhiteSpace(serialized))
         {
-            var deserialized = XtiSerializer.Deserialize<ResultContainer<WebErrorResult>>(serialized).Data;
-            if (string.IsNullOrWhiteSpace(deserialized?.LogEntryKey))
-            {
-                var errors = XtiSerializer.Deserialize<ResultContainer<ErrorModel[]>>(serialized).Data;
-                deserialized = new WebErrorResult("", AppEventSeverity.Values.CriticalError, errors ?? new ErrorModel[0]);
-            }
-            Value = deserialized;
+            Value = new WebErrorResult();
         }
-	}
+        else if (serialized.Contains("\"LogEntryKey\":") && serialized.Contains("\"Severity\":"))
+        {
+            Value = XtiSerializer.Deserialize<ResultContainer<WebErrorResult>>(serialized).Data ?? new WebErrorResult();
+        }
+        else
+        {
+            var errors = XtiSerializer.Deserialize<ResultContainer<ErrorModel[]>>(serialized).Data;
+            Value = new WebErrorResult("", AppEventSeverity.Values.CriticalError, errors ?? new ErrorModel[0]);
+        }
+    }
 
     public WebErrorResult Value { get; }
 }

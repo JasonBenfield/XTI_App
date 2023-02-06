@@ -1,22 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);</PackageTags>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
 	<ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.100.3" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.12" />
-  </ItemGroup>
+		<PackageReference Include="ClosedXML" Version="0.100.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.12" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\XTI_WebApp.Api\XTI_WebApp.Api.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\XTI_WebApp.Api\XTI_WebApp.Api.csproj" />
+	</ItemGroup>
 
 </Project>

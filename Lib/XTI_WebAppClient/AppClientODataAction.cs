@@ -92,7 +92,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
         var url = await clientUrl.ODataGet(modKey);
         if (!string.IsNullOrWhiteSpace(query))
         {
-            url += query;
+            url += $"?{query}";
         }
         using var content = new StringContent(odataOptions, Encoding.UTF8, "text/plain");
         using var response = await client.PostAsync(url, content, ct);

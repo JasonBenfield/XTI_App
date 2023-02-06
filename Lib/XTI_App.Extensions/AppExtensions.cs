@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
@@ -10,6 +11,50 @@ namespace XTI_App.Extensions;
 
 public static class AppExtensions
 {
+    public static IConfigurationBuilder UseXtiConfiguration
+    (
+        this IConfigurationBuilder config,
+        IHostEnvironment hostEnv,
+        AppKey appKey
+    ) => config.UseXtiConfiguration(hostEnv, appKey, new string[0]);
+
+    public static IConfigurationBuilder UseXtiConfiguration
+    (
+        this IConfigurationBuilder config,
+        IHostEnvironment hostEnv,
+        AppKey appKey,
+        string[] args
+    ) =>
+        config.UseXtiConfiguration
+        (
+            XtiEnvironment.Parse(hostEnv.EnvironmentName),
+            appKey,
+            args
+        );
+
+    public static IConfigurationBuilder UseXtiConfiguration
+    (
+        this IConfigurationBuilder config, 
+        XtiEnvironment environment, 
+        AppKey appKey
+    ) => config.UseXtiConfiguration(environment, appKey, new string[0]);
+
+    public static IConfigurationBuilder UseXtiConfiguration
+    (
+        this IConfigurationBuilder config, 
+        XtiEnvironment xtiEnv, 
+        AppKey appKey, 
+        string[] args
+    ) => 
+        XTI_Core.Extensions.ConfigurationExtensions.UseXtiConfiguration
+        (
+            config, 
+            xtiEnv,
+            appKey.Name.DisplayText, 
+            appKey.Type.DisplayText, 
+            args
+        );
+
     public static void AddAppServices(this IServiceCollection services)
     {
         services.AddMemoryCache();

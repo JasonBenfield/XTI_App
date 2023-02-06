@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>Background task infrastructure for XTI web apps.</Description>
-		<PackageTags>XTI;XTI_WebApp;WebApp</PackageTags>
+		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);Web App;</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

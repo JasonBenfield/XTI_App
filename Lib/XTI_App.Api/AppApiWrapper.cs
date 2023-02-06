@@ -26,7 +26,7 @@ public class AppApiWrapper : IAppApi
                 if(codeGen == ApiCodeGenerators.Dotnet)
                 {
                     var ns = templ.DataType.Namespace ?? "";
-                    return ns.StartsWith("XTI_App.Abstractions");
+                    return ns.StartsWith("XTI_App.Abstractions") || ns.StartsWith("XTI_Core");
                 }
                 return false;
             }

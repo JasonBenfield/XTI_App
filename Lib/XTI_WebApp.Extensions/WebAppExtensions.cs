@@ -79,6 +79,7 @@ public static class WebAppExtensions
         services.AddScoped<UserMenuDefinition>();
         services.AddScoped<IMenuDefinitionBuilder, DefaultMenuDefinitionBuilder>();
         services.AddScoped(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
+        services.AddSingleton<AppPageModel>();
     }
 
     public static void SetDefaultJsonOptions(this JsonOptions options)
