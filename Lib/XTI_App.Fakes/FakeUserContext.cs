@@ -81,14 +81,11 @@ public sealed class FakeUserContext : ISourceUserContext
     }
 
     public void AddRolesToUser(params AppRoleName[] roles) =>
-        AddRolesToUser(ModifierKey.Default, roles);
+        AddRolesToUser(ModifierCategoryName.Default, ModifierKey.Default, roles);
 
-    public void AddRolesToUser(ModifierKey modifierKey, params AppRoleName[] roles)
+    public void AddRolesToUser(ModifierCategoryName categoryName, ModifierKey modifierKey, params AppRoleName[] roles)
     {
         var user = GetUser(GetCurrentUserName());
-        var categoryName = modifierKey.Equals(ModifierKey.Default)
-                ? ModifierCategoryName.Default
-                : new ModifierCategoryName("Department");
         var modCategory = appContext.GetCurrentApp().ModifierCategory(categoryName);
         var modifier = modCategory.Modifier(modifierKey);
         var modifiedRole = user.ModifiedRoles
@@ -119,15 +116,15 @@ public sealed class FakeUserContext : ISourceUserContext
     }
 
     public void SetUserRoles(params AppRoleName[] roles) =>
-        SetUserRoles(ModifierKey.Default, roles);
+        SetUserRoles(ModifierCategoryName.Default, ModifierKey.Default, roles);
 
-    public void SetUserRoles(ModifierKey modifierKey, params AppRoleName[] roles)
+    public void SetUserRoles(ModifierCategoryName categoryName, ModifierKey modifierKey, params AppRoleName[] roles)
     {
         var user = GetUser(GetCurrentUserName());
         var modCategory = appContext.GetModifierCategory
         (
             appContext.GetCurrentApp(),
-            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : new ModifierCategoryName("Department")
+            categoryName
         );
         var modifier = modCategory.Modifier(modifierKey);
         var modifiedRole = user.ModifiedRoles

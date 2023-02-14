@@ -29,13 +29,13 @@ public sealed partial class SystemUserName
     {
         AppKey = appKey;
         MachineName = machineName;
-        Value = AppUserName.SystemUser(appKey, machineName);
+        UserName = AppUserName.SystemUser(appKey, machineName);
     }
 
     public AppKey AppKey { get; }
     public string MachineName { get; }
-    public AppUserName Value { get; }
+    public AppUserName UserName { get; }
 
-    [GeneratedRegex("^xti_sys\\[(?<AppKey>[^\\]]+)\\]\\[(?<MachineName>[^\\]]+)\\]$")]
+    [GeneratedRegex("^xti_sys(2)?\\[(?<AppKey>[^\\]]+)\\]\\[(?<MachineName>[^\\]]+)\\]$")]
     private static partial Regex UserNameRegex();
 }

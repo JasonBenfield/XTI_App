@@ -243,7 +243,12 @@ internal sealed class AuthorizationTest
     private void addRolesToUser(IServiceProvider services, ModifierKey modifierKey, params AppRoleName[] roles)
     {
         var userContext = services.GetRequiredService<FakeUserContext>();
-        userContext.AddRolesToUser(modifierKey, roles);
+        userContext.AddRolesToUser
+        (
+            modifierKey.Equals(ModifierKey.Default) ? ModifierCategoryName.Default : FakeInfo.ModCategories.Department,
+            modifierKey,
+            roles
+        );
     }
 
     private async Task<IServiceProvider> Setup()
