@@ -24,12 +24,12 @@ public sealed partial class InstallerUserName
     public InstallerUserName(string machineName)
     {
         MachineName = machineName;
-        Value = AppUserName.InstallerUser(machineName);
+        UserName = AppUserName.InstallerUser(machineName);
     }
 
     public string MachineName { get; }
-    public AppUserName Value { get; }
+    public AppUserName UserName { get; }
 
-    [GeneratedRegex("^xti_inst\\[(?<MachineName>[^\\]]+)\\]$")]
+    [GeneratedRegex("^xti_inst(2)?\\[(?<MachineName>[^\\]]+)\\]$")]
     private static partial Regex UserNameRegex();
 }

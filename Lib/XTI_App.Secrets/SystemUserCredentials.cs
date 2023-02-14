@@ -28,7 +28,7 @@ public sealed class SystemUserCredentials : ISystemUserCredentials
     }
 
     private string getCredentialKey() =>
-        $"System_User_{appKey.Type.DisplayText}_{appKey.Name.DisplayText}"
+        $"System_User2_{appKey.Type.DisplayText}_{appKey.Name.DisplayText}"
             .Replace(" ", "");
 
 }

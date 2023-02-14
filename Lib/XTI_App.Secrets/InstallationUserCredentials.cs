@@ -5,7 +5,7 @@ namespace XTI_App.Secrets;
 
 public sealed class InstallationUserCredentials : IInstallationUserCredentials
 {
-    private static readonly string credentialKey = "Installation";
+    private static readonly string credentialKey = "Installation2";
 
     private readonly ISecretCredentialsFactory secretCredentialsFactory;
 

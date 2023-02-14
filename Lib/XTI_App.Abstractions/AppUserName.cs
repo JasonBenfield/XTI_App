@@ -4,20 +4,20 @@ namespace XTI_App.Abstractions;
 
 public sealed class AppUserName : TextValue, IEquatable<AppUserName>
 {
-    public static readonly AppUserName Anon = new AppUserName("xti_anon");
+    public static readonly AppUserName Anon = new("xti_anon");
 
     internal static AppUserName InstallerUser(string machineName) =>
-        new AppUserName($"xti_inst[{machineName}]", $"xti_inst[{machineName}]");
+        new($"xti_inst2[{machineName}]", $"xti_inst2[{machineName}]");
 
     internal static AppUserName SystemUser(AppKey appKey, string machineName) =>
-        new AppUserName
+        new
         (
-            $"xti_sys[{appKey.Serialize()}][{machineName}]",
-            $"xti_sys[{appKey.Serialize()}][{machineName}]"
+            $"xti_sys2[{appKey.Serialize()}][{machineName}]",
+            $"xti_sys2[{appKey.Serialize()}][{machineName}]"
         );
 
     public AppUserName()
-        :this("")
+        : this("")
     {
     }
 
