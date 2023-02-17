@@ -51,7 +51,7 @@ public sealed class SessionLogMiddleware
         try
         {
             await _next(context);
-            if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 300)
+            if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 400)
             {
                 var message = $"Request failed with error {context.Response.StatusCode}. Url: {context.Request.GetDisplayUrl()}";
                 var caption = "An unexpected http error occurred";
