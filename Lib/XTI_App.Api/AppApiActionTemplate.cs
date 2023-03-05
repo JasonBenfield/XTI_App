@@ -156,7 +156,7 @@ public sealed class AppApiActionTemplate
             : new QueryableValueTemplate[0];
 
     public IEnumerable<ObjectValueTemplate> ObjectTemplates() =>
-        IsView() || IsPartialView() || IsRedirect()
+        IsView() || IsPartialView() || IsRedirect() || IsFile()
             ? ModelTemplate.ObjectTemplates()
             : ModelTemplate.ObjectTemplates()
                 .Union

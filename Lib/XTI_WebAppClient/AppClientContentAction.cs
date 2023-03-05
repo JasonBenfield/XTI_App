@@ -43,19 +43,19 @@ public sealed class AppClientContentAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<AppClientContentResult> Post(string modifier, TModel model, CancellationToken ct) =>
+    public Task<WebContentResult> Post(string modifier, TModel model, CancellationToken ct) =>
         _Post(modifier, model, true, ct);
 
-    private async Task<AppClientContentResult> _Post(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
+    private async Task<WebContentResult> _Post(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
     {
         using var response = await GetPostResponseMessage(modifier, model, ct);
         var responseContent = await response.Content.ReadAsStringAsync();
-        AppClientContentResult result;
+        WebContentResult result;
         try
         {
             if (response.IsSuccessStatusCode)
             {
-                result = new AppClientContentResult(responseContent, response.Content.Headers.ContentType?.MediaType ?? "");
+                result = new WebContentResult(responseContent, response.Content.Headers.ContentType?.MediaType ?? "");
             }
             else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
