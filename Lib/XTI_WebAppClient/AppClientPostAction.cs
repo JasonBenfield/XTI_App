@@ -2,7 +2,6 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_Forms;
 
@@ -15,6 +14,7 @@ public sealed class AppClientPostAction<TModel, TResult>
     private readonly AppClientUrl clientUrl;
     private readonly AppClientOptions options;
     private readonly string actionName;
+    private static bool? cachedHasFiles;
 
     public AppClientPostAction(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, AppClientOptions options, string actionName)
     {
@@ -120,10 +120,160 @@ public sealed class AppClientPostAction<TModel, TResult>
         {
             transformedModel = form.Export();
         }
-        var serialized = JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
-        using var content = new StringContent(serialized, Encoding.UTF8, "application/json");
+        HttpContent content;
+        if (!cachedHasFiles.HasValue)
+        {
+            cachedHasFiles = HasFiles(typeof(TModel));
+        }
+        if (cachedHasFiles == true)
+        {
+            var multiContent = new MultipartFormDataContent();
+            var files = new Dictionary<string, FileUpload>();
+            GetFiles(files, "", model);
+            foreach (var key in files.Keys)
+            {
+                var file = files[key];
+                var streamContent = new StreamContent(file.Stream);
+                if (!string.IsNullOrWhiteSpace(file.ContentType))
+                {
+                    streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(file.ContentType);
+                }
+                multiContent.Add(streamContent, key, file.FileName);
+            }
+            var formData = new Dictionary<string, string>();
+            GetFormData(formData, "", model);
+            foreach (var key in formData.Keys)
+            {
+                var value = formData[key];
+                multiContent.Add(new StringContent(value), key);
+            }
+            content = multiContent;
+        }
+        else
+        {
+            var serialized = JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
+            content = new StringContent(serialized, Encoding.UTF8, "application/json");
+        }
         var response = await client.PostAsync(url, content, ct);
+        content.Dispose();
         return response;
+    }
+
+    private static bool HasFiles(Type type)
+    {
+        if (type == typeof(FileUpload))
+        {
+            return true;
+        }
+        else if (type.IsArray)
+        {
+            return HasFiles(type.GetElementType()!);
+        }
+        else if (!type.IsValueType && type != typeof(string))
+        {
+            var properties = type
+                .GetProperties()
+                .Where(p => !p.GetIndexParameters().Any())
+                .ToArray();
+            foreach (var property in properties)
+            {
+                var hasFiles = HasFiles(property.PropertyType);
+                if (hasFiles)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void GetFiles(Dictionary<string, FileUpload> files, string pre, object sourceObj)
+    {
+        if (sourceObj is FileUpload file)
+        {
+            files.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, file);
+        }
+        else if (sourceObj.GetType().IsArray)
+        {
+            var arr = (Array)sourceObj;
+            var arrPre = string.IsNullOrWhiteSpace(pre) ? "model" : pre;
+            foreach (var i in Enumerable.Range(0, arr.Length))
+            {
+                var value = arr.GetValue(i);
+                if (value != null)
+                {
+                    GetFiles(files, $"{arrPre}[{i}]", value);
+                }
+            }
+        }
+        else if (!sourceObj.GetType().IsValueType && !(sourceObj is string))
+        {
+            var properties = sourceObj.GetType()
+                .GetProperties()
+                .Where(p => !p.GetIndexParameters().Any())
+                .ToArray();
+            foreach (var property in properties)
+            {
+                var value = property.GetValue(sourceObj);
+                if (value != null)
+                {
+                    GetFiles
+                    (
+                        files,
+                        string.IsNullOrWhiteSpace(pre) ? property.Name : $"{pre}.{property.Name}",
+                        value
+                    );
+                }
+            }
+        }
+    }
+
+    private static void GetFormData(Dictionary<string, string> formData, string pre, object sourceObj)
+    {
+        if (!(sourceObj is FileUpload))
+        {
+            if (sourceObj is string str)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, str);
+            }
+            else if (sourceObj.GetType().IsValueType)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, sourceObj.ToString() ?? "");
+            }
+            else if (sourceObj.GetType().IsArray)
+            {
+                var arr = (Array)sourceObj;
+                var arrPre = string.IsNullOrWhiteSpace(pre) ? "model" : pre;
+                foreach (var i in Enumerable.Range(0, arr.Length))
+                {
+                    var value = arr.GetValue(i);
+                    if (value != null)
+                    {
+                        GetFormData(formData, $"{arrPre}[{i}]", value);
+                    }
+                }
+            }
+            else
+            {
+                var properties = sourceObj.GetType()
+                    .GetProperties()
+                    .Where(p => !p.GetIndexParameters().Any())
+                    .ToArray();
+                foreach (var property in properties)
+                {
+                    var value = property.GetValue(sourceObj);
+                    if (value != null)
+                    {
+                        GetFormData
+                        (
+                            formData,
+                            string.IsNullOrWhiteSpace(pre) ? property.Name : $"{pre}.{property.Name}",
+                            value
+                        );
+                    }
+                }
+            }
+        }
     }
 
     private static AppClientException CreatePostException(PostResult postResult)
