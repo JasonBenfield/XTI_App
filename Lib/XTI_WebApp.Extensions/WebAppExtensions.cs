@@ -99,5 +99,6 @@ public static class WebAppExtensions
             NoStore = false
         });
         options.ModelBinderProviders.Insert(0, new FormModelBinderProvider());
+        options.ModelBinderProviders.Insert(0, new FileUploadModelBinderProvider());
     }
 }

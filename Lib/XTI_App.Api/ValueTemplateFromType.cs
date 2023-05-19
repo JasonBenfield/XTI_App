@@ -39,7 +39,7 @@ public class ValueTemplateFromType
                 valueTemplate = new SimpleValueTemplate(source, false);
             }
         }
-        else if(source.Name == "IFormFile")
+        else if(source.Name == "IFormFile" || source.Name == "FileUpload")
         {
             valueTemplate = new FileUploadValueTemplate(source);
         }
