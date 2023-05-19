@@ -14,7 +14,7 @@ namespace XTI_WebApp.AspTests;
 
 internal sealed class FakeBasicAuthValidator : IBasicAuthValidator
 {
-    private readonly Dictionary<string, string> creds = new Dictionary<string, string>
+    private readonly Dictionary<string, string> creds = new()
     {
         { "user1", "Password1" }
     };
@@ -59,7 +59,7 @@ internal sealed class BasicAuthenticationTest
         var absoluteUrl = new Uri(testServer.BaseAddress, "Test");
         var requestBuilder = testServer.CreateRequest(absoluteUrl.ToString());
         var base64Creds = Convert.ToBase64String(Encoding.ASCII.GetBytes($"user1:Password1"));
-        var authHeaderValue = $"Bearer {base64Creds}";
+        var authHeaderValue = $"Basic {base64Creds}";
         requestBuilder.AddHeader(HeaderNames.Authorization, authHeaderValue);
         var response = await requestBuilder.GetAsync();
         Assert.That(userInfo.IsAuthenticated, Is.True, "Should authenticate");
@@ -87,7 +87,7 @@ internal sealed class BasicAuthenticationTest
         var absoluteUrl = new Uri(testServer.BaseAddress, "Test");
         var requestBuilder = testServer.CreateRequest(absoluteUrl.ToString());
         var base64Creds = Convert.ToBase64String(Encoding.ASCII.GetBytes($"user1:Password2"));
-        var authHeaderValue = $"Bearer {base64Creds}";
+        var authHeaderValue = $"Basic {base64Creds}";
         requestBuilder.AddHeader(HeaderNames.Authorization, authHeaderValue);
         var response = await requestBuilder.GetAsync();
         Assert.That(userInfo.IsAuthenticated, Is.False, "Should not authenticate when password is incorrect");
@@ -114,7 +114,7 @@ internal sealed class BasicAuthenticationTest
         var absoluteUrl = new Uri(testServer.BaseAddress, "Test");
         var requestBuilder1 = testServer.CreateRequest(absoluteUrl.ToString());
         var base64Creds = Convert.ToBase64String(Encoding.ASCII.GetBytes($"user1:Password1"));
-        var authHeaderValue = $"Bearer {base64Creds}";
+        var authHeaderValue = $"Basic {base64Creds}";
         requestBuilder1.AddHeader(HeaderNames.Authorization, authHeaderValue);
         await requestBuilder1.GetAsync();
         var validator = host.Services.GetRequiredService<FakeBasicAuthValidator>();
