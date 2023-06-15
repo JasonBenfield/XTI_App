@@ -133,12 +133,15 @@ public sealed class AppClientPostAction<TModel, TResult>
             foreach (var key in files.Keys)
             {
                 var file = files[key];
-                var streamContent = new StreamContent(file.Stream);
-                if (!string.IsNullOrWhiteSpace(file.ContentType))
+                if(file.Stream.Length > 0)
                 {
-                    streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(file.ContentType);
+                    var streamContent = new StreamContent(file.Stream);
+                    if (!string.IsNullOrWhiteSpace(file.ContentType))
+                    {
+                        streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(file.ContentType);
+                    }
+                    multiContent.Add(streamContent, key, file.FileName);
                 }
-                multiContent.Add(streamContent, key, file.FileName);
             }
             var formData = new Dictionary<string, string>();
             GetFormData(formData, "", model);
