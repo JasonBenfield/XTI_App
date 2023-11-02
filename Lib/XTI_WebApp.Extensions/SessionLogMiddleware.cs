@@ -86,7 +86,8 @@ public sealed class SessionLogMiddleware
                     message,
                     "",
                     caption,
-                    ""
+                    "",
+                    ((HttpStatusCode)context.Response.StatusCode).ToString()
                 );
                 xtiRequestContext.Failed(message, caption, loggedError.EventKey);
             }

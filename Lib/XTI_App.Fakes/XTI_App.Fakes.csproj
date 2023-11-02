@@ -8,8 +8,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XTI_Core.Fakes" Version="1.10.19" />
-		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.31" />
+		<PackageReference Include="XTI_Core.Fakes" Version="1.10.21-dev231101201230098" />
+		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.32-dev231101203830572" />
 	</ItemGroup>
 
 	<ItemGroup>

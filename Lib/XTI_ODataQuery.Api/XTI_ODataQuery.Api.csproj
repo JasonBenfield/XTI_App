@@ -12,8 +12,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ClosedXML" Version="0.100.3" />
-		<PackageReference Include="Microsoft.AspNetCore.OData" Version="8.0.12" />
+		<PackageReference Include="ClosedXML" Version="0.102.1" />
+		<PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.3" />
 	</ItemGroup>
 
 	<ItemGroup>

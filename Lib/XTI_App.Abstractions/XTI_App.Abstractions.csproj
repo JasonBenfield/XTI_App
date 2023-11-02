@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XTI_Core" Version="1.10.19" />
+		<PackageReference Include="XTI_Core" Version="1.10.21-dev231101201230098" />
 	</ItemGroup>
 
 </Project>

@@ -27,13 +27,13 @@ public sealed class AppClientException : Exception
         var formatted = new StringBuilder();
         if (!string.IsNullOrWhiteSpace(error.Source))
         {
-            formatted.Append(error.Source);
+            formatted.Append($"[ {error.Source} ]");
         }
         if (!string.IsNullOrWhiteSpace(error.Caption))
         {
             if (formatted.Length > 0)
             {
-                formatted.Append(": ");
+                formatted.Append(" ");
             }
             formatted.Append(error.Caption);
         }
