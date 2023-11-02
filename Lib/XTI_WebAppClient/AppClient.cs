@@ -11,7 +11,7 @@ public class AppClient
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientOptions options = new();
 
-    protected AppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string appName, string version)
+    protected AppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, IAppClientRequestKey requestKey, string appName, string version)
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
@@ -23,6 +23,7 @@ public class AppClient
         jsonSerializerOptions.AddCoreConverters();
         options.JsonSerializerOptions = jsonSerializerOptions;
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
+        options.RequestKey = requestKey;
         UserCache = CreateGroup
         (
             (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
@@ -76,11 +77,6 @@ public class AppClient
     public void SetTimeOut(TimeSpan timeOut)
     {
         options.Timeout = timeOut;
-    }
-
-    public void SetSourceSessionKey(string sourceSessionKey)
-    {
-        options.SourceSessionKey = sourceSessionKey;
     }
 
     public override string ToString() => $"{GetType().Name}";
