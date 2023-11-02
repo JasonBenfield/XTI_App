@@ -12,7 +12,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="System.Text.Json" Version="7.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.32-dev231101203830572" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.32-dev231101215137172" />
 		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21-dev231101201230098" />
 	</ItemGroup>
 

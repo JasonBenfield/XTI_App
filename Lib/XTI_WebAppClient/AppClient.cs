@@ -78,5 +78,10 @@ public class AppClient
         options.Timeout = timeOut;
     }
 
+    public void SetSourceSessionKey(string sourceSessionKey)
+    {
+        options.SourceSessionKey = sourceSessionKey;
+    }
+
     public override string ToString() => $"{GetType().Name}";
 }

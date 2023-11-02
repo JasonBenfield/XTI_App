@@ -34,8 +34,8 @@ public static class CookieAndTokenAuthentication
             .AddJwtBearer("Bearer", options => options.SetXtiJwtBearerOptions(config))
             .AddPolicyScheme
             (
-                defaultScheme, 
-                defaultScheme, 
+                defaultScheme,
+                defaultScheme,
                 options =>
                 {
                     options.ForwardDefaultSelector = context =>
@@ -165,8 +165,8 @@ public static class CookieAndTokenAuthentication
         x.Response.Redirect(loginUrl);
     }
 
-    private static bool IsApiRequest(this HttpRequest request)
-        => request != null
-            && request.Method == "POST"
-            && request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true;
+    private static bool IsApiRequest(this HttpRequest request) =>
+        request != null &&
+        request.Method == "POST" &&
+        request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true;
 }

@@ -84,7 +84,7 @@ public sealed class AppClientODataToExcelAction<TArgs, TEntity>
     private async Task<PostResult> GetPostResponse(string modKey, string query, string odataOptions, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
-        client.Timeout = options.Timeout;
+        client.InitFromOptions(options);
         var token = await xtiTokenAccessor.Value();
         if (!string.IsNullOrWhiteSpace(token))
         {

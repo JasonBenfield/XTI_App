@@ -6,4 +6,5 @@ public sealed class AppClientOptions
 {
     public JsonSerializerOptions JsonSerializerOptions { get; set; } = new JsonSerializerOptions();
     public TimeSpan Timeout { get; set; } = TimeSpan.FromHours(1);
+    public string SourceSessionKey { get; set; } = "";
 }

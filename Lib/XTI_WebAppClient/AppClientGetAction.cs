@@ -48,7 +48,7 @@ public sealed class AppClientGetAction<TModel>
     private async Task<string> _GetContent(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
-        client.Timeout = options.Timeout;
+        client.InitFromOptions(options);
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();

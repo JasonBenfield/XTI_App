@@ -77,7 +77,7 @@ public sealed class AppClientContentAction<TModel>
     private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
-        client.Timeout = options.Timeout;
+        client.InitFromOptions(options);
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();
