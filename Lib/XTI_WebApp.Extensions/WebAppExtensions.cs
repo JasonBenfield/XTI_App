@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text.Json.Serialization;
@@ -21,6 +22,20 @@ public static class WebAppExtensions
 {
     public static void UseXtiDefaults(this WebApplication app)
     {
+        var xtiCorsOptions = app.Configuration.GetSection(XtiCorsOptions.XtiCors).Get<XtiCorsOptions>() ?? new();
+        var origins = xtiCorsOptions.Origins.Where(o => !string.IsNullOrWhiteSpace(o)).ToArray();
+        if (origins.Any())
+        {
+            app.UseCors
+            (
+                builder =>
+                    builder
+                        .WithOrigins(origins)
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+            );
+        }
         app.UseStaticFiles();
         app.UseRouting();
         app.UseAuthentication();
@@ -44,6 +59,7 @@ public static class WebAppExtensions
         services.AddHttpContextAccessor();
         services.AddConfigurationOptions<WebAppOptions>(WebAppOptions.WebApp);
         services.AddConfigurationOptions<XtiAuthenticationOptions>(XtiAuthenticationOptions.XtiAuthentication);
+        services.AddConfigurationOptions<XtiCorsOptions>(XtiCorsOptions.XtiCors);
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
         services.AddScoped<GetUserAccessAction>();
@@ -92,12 +108,16 @@ public static class WebAppExtensions
 
     public static void SetDefaultMvcOptions(this MvcOptions options)
     {
-        options.CacheProfiles.Add("Default", new CacheProfile
-        {
-            Duration = 2592000,
-            Location = ResponseCacheLocation.Any,
-            NoStore = false
-        });
+        options.CacheProfiles.Add
+        (
+            "Default",
+            new CacheProfile
+            {
+                Duration = 2592000,
+                Location = ResponseCacheLocation.Any,
+                NoStore = false
+            }
+        );
         options.ModelBinderProviders.Insert(0, new FormModelBinderProvider());
         options.ModelBinderProviders.Insert(0, new FileUploadModelBinderProvider());
     }
