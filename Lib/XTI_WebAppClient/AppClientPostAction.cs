@@ -91,6 +91,7 @@ public sealed class AppClientPostAction<TModel, TResult>
                 response.IsSuccessStatusCode,
                 response.StatusCode,
                 responseContent,
+                response.Content.Headers.ContentType?.MediaType ?? "",
                 response.RequestMessage?.RequestUri?.ToString() ?? ""
             );
         }
@@ -133,7 +134,7 @@ public sealed class AppClientPostAction<TModel, TResult>
             foreach (var key in files.Keys)
             {
                 var file = files[key];
-                if(file.Stream.Length > 0)
+                if (file.Stream.Length > 0)
                 {
                     var streamContent = new StreamContent(file.Stream);
                     if (!string.IsNullOrWhiteSpace(file.ContentType))
@@ -281,7 +282,24 @@ public sealed class AppClientPostAction<TModel, TResult>
 
     private static AppClientException CreatePostException(PostResult postResult)
     {
-        var errorResult = new DeserializedWebErrorResult(postResult.Content).Value;
+        WebErrorResult errorResult;
+        if
+        (
+            postResult.ContentType.Equals("application/json", StringComparison.OrdinalIgnoreCase) ||
+            postResult.ContentType.Equals("text/json", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            errorResult = new DeserializedWebErrorResult(postResult.Content).Value;
+        }
+        else
+        {
+            errorResult = new WebErrorResult
+            (
+                "", 
+                AppEventSeverity.Values.CriticalError, 
+                new ErrorModel[0]
+            );
+        }
         var ex = new AppClientException
         (
             postResult.Url,
@@ -305,5 +323,5 @@ public sealed class AppClientPostAction<TModel, TResult>
             new[] { new ErrorModel(ex.Message) }
         );
 
-    private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, string Content, string Url);
+    private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, string Content, string ContentType, string Url);
 }

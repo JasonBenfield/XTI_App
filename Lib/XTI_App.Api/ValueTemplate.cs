@@ -9,6 +9,13 @@ public interface ValueTemplate
     IEnumerable<ObjectValueTemplate> ObjectTemplates();
 }
 
+public sealed class EmptyValueTemplate : ValueTemplate
+{
+    public Type DataType => typeof(object);
+
+    public IEnumerable<ObjectValueTemplate> ObjectTemplates() => new ObjectValueTemplate[0];
+}
+
 public sealed class DictionaryValueTemplate : ValueTemplate, IEquatable<DictionaryValueTemplate>
 {
     internal DictionaryValueTemplate(Type dataType)

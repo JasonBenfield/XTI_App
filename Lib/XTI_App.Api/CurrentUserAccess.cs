@@ -15,6 +15,12 @@ public sealed class CurrentUserAccess
         this.currentUserName = currentUserName;
     }
 
+    public async Task<bool> IsAnon()
+    {
+        var userName = await currentUserName.Value();
+        return userName.IsAnon();
+    }
+
     public Task<UserAccessResult> HasAccess(XtiPath xtiPath) =>
         HasAccess(xtiPath.Group, xtiPath.Action, xtiPath.Modifier);
 

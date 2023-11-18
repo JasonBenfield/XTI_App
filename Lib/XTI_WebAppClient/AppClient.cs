@@ -11,7 +11,15 @@ public class AppClient
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientOptions options = new();
 
-    protected AppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, IAppClientRequestKey requestKey, string appName, string version)
+    protected AppClient
+    (
+        IHttpClientFactory httpClientFactory, 
+        XtiTokenAccessor xtiTokenAccessor, 
+        AppClientUrl clientUrl, 
+        IAppClientRequestKey requestKey, 
+        string appName, 
+        string version
+    )
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;

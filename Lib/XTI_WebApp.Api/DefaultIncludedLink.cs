@@ -1,6 +1,5 @@
-﻿using XTI_App.Abstractions;
+﻿using Microsoft.AspNetCore.Http;
 using XTI_App.Api;
-using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -24,12 +23,21 @@ internal sealed class DefaultIncludedLink : IIncludedLink
         if (link.IsXtiPath())
         {
             var xtiPath = link.GetXtiPath(basePath);
-            var accessResult = await currentUserAccess.HasAccess(xtiPath);
-            isIncluded = accessResult.HasAccess;
+            if (xtiPath.Group.Equals(new ResourceGroupName("User")))
+            {
+                var isAnon = await currentUserAccess.IsAnon();
+                isIncluded = !isAnon;
+            }
+            else
+            {
+                var accessResult = await currentUserAccess.HasAccess(xtiPath);
+                isIncluded = accessResult.HasAccess;
+            }
         }
         else
         {
-            isIncluded = true;
+            var isAnon = await currentUserAccess.IsAnon();
+            isIncluded = !link.IsAuthenticationRequired || !isAnon;
         }
         return isIncluded;
     }
