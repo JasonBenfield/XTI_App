@@ -1,15 +1,13 @@
-﻿using XTI_WebApp.Abstractions;
-
-namespace XTI_WebApp.Api;
+﻿namespace XTI_WebApp.Api;
 
 public sealed class UserMenuDefinition
 {
     public UserMenuDefinition()
     {
-        HomeLink = new LinkModel("home", "Home", "~/");
-        UserLink = new LinkModel("user", "{User.FullName}", "~/User/UserProfile");
-        LogoutLink = new LinkModel("logout", "Logout", "~/User/Logout");
-        Value = new MenuDefinition
+        HomeLink = new("home", "Home", "~/", true);
+        UserLink = new("user", "{User.FullName}", "~/User/UserProfile");
+        LogoutLink = new("logout", "Logout", "~/User/Logout");
+        Value = new
         (
             "user",
             HomeLink,
@@ -24,5 +22,5 @@ public sealed class UserMenuDefinition
     public LinkModel LogoutLink { get; }
 
     public MenuDefinition Modify(params LinkModel[] links) =>
-        new MenuDefinition(Value.MenuName, links);
+        new(Value.MenuName, links);
 }

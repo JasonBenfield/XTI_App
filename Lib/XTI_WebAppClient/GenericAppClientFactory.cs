@@ -7,12 +7,20 @@ public sealed class GenericAppClientFactory
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientUrl clientUrl;
+    private readonly IAppClientRequestKey requestKey;
 
-    public GenericAppClientFactory(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl)
+    public GenericAppClientFactory
+    (
+        IHttpClientFactory httpClientFactory, 
+        XtiTokenAccessor xtiTokenAccessor, 
+        AppClientUrl clientUrl,
+        IAppClientRequestKey requestKey
+    )
     {
         this.httpClientFactory = httpClientFactory;
         this.xtiTokenAccessor = xtiTokenAccessor;
         this.clientUrl = clientUrl;
+        this.requestKey = requestKey;
     }
 
     public GenericAppClient Create(string appName) => Create(appName, "Current");
@@ -23,6 +31,7 @@ public sealed class GenericAppClientFactory
             httpClientFactory,
             xtiTokenAccessor,
             clientUrl,
+            requestKey,
             appName,
             AppClientVersion.Version(versionKey)
         );
@@ -33,6 +42,7 @@ public sealed class GenericAppClientFactory
             httpClientFactory,
             xtiTokenAccessor,
             new AppClientUrl(new FixedAppClientDomain(domain)),
+            requestKey,
             appName,
             AppClientVersion.Version(versionKey)
         );

@@ -9,8 +9,8 @@ namespace XTI_App.Abstractions;
 [JsonConverter(typeof(AppVersionKeyJsonConverter))]
 public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
 {
-    public static readonly AppVersionKey None = new AppVersionKey();
-    public static readonly AppVersionKey Current = new AppVersionKey("Current");
+    public static readonly AppVersionKey None = new();
+    public static readonly AppVersionKey Current = new("Current");
 
     public static AppVersionKey Parse(string str)
     {
@@ -38,7 +38,7 @@ public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
     {
     }
 
-    public AppVersionKey(int versionID) : this($"V{versionID}")
+    public AppVersionKey(int versionID) : this($"V{versionID:00000}")
     {
     }
 
@@ -50,7 +50,34 @@ public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
 
     public bool IsCurrent() => Equals(Current);
 
-    public bool Equals(AppVersionKey? other) => _Equals(other);
+    public bool Equals(AppVersionKey? other)
+    {
+        bool isEqual;
+        if(other == null)
+        {
+            isEqual = false;
+        }
+        else if(other.Equals(Current.Value) && Equals(Current.Value))
+        {
+            isEqual = true;
+        }
+        else if(other.Equals(None.Value) && Equals(None.Value))
+        {
+            isEqual = true;
+        }
+        else if(other.Equals(None.Value) || Equals(None.Value) || other.Equals(Current.Value) || Equals(Current.Value))
+        {
+            isEqual = false;
+        }
+        else
+        {
+            isEqual = 
+                int.TryParse(other.Value.Substring(1), out var otherVersionID) &&
+                int.TryParse(Value.Substring(1), out var versionID) &&
+                otherVersionID == versionID;
+        }
+        return isEqual;
+    }
 
     [GeneratedRegex("V?(\\d+)")]
     private static partial Regex KeyRegex();

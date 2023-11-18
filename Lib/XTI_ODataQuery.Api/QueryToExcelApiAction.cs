@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.OData.Query.Wrapper;
 using Microsoft.OData.UriParser;
 using System.Reflection;
 using XTI_App.Abstractions;
@@ -93,7 +92,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
     public AppApiActionTemplate Template()
     {
         var modelTemplate = new ValueTemplateFromType(typeof(TArgs)).Template();
-        var resultTemplate = new ValueTemplateFromType(typeof(WebFileResult)).Template();
+        var resultTemplate = new EmptyValueTemplate();
         return new AppApiActionTemplate
         (
             Path.Action.DisplayText,
