@@ -24,11 +24,18 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
         try
         {
             returnUrl = HttpUtility.UrlDecode(model.ReturnUrl);
-            var requestHost = httpContextAccessor.HttpContext.Request.Host.Host;
-            var returnUrlHost = new Uri(returnUrl).Host;
-            if(!requestHost.Equals(returnUrlHost, StringComparison.OrdinalIgnoreCase))
+            var requestHost = httpContextAccessor.HttpContext?.Request.Host.Host;
+            if(requestHost == null)
             {
                 returnUrl = GetDefaultReturnUrl();
+            }
+            else
+            {
+                var returnUrlHost = new Uri(returnUrl).Host;
+                if (!requestHost.Equals(returnUrlHost, StringComparison.OrdinalIgnoreCase))
+                {
+                    returnUrl = GetDefaultReturnUrl();
+                }
             }
         }
         catch
@@ -41,7 +48,7 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
 
     private string GetDefaultReturnUrl()
     {
-        var request = httpContextAccessor.HttpContext.Request;
-        return $"{request.Scheme}://{request.Host}{request.PathBase}";
+        var request = httpContextAccessor.HttpContext?.Request;
+        return request == null ? "" :  $"{request.Scheme}://{request.Host}{request.PathBase}";
     }
 }

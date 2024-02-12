@@ -14,7 +14,7 @@ public class AppClient
     protected AppClient
     (
         IHttpClientFactory httpClientFactory, 
-        XtiTokenAccessor xtiTokenAccessor, 
+        XtiTokenAccessorFactory xtiTokenAccessorFactory, 
         AppClientUrl clientUrl, 
         IAppClientRequestKey requestKey, 
         string appName, 
@@ -22,7 +22,7 @@ public class AppClient
     )
     {
         this.httpClientFactory = httpClientFactory;
-        this.xtiTokenAccessor = xtiTokenAccessor;
+        xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         this.clientUrl = clientUrl.WithApp(appName, version);
         var jsonSerializerOptions = new JsonSerializerOptions();
         jsonSerializerOptions.PropertyNameCaseInsensitive = true;

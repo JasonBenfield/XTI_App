@@ -12,7 +12,7 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 		<PackageReference Include="System.Text.Json" Version="8.0.0" />
 		<PackageReference Include="XTI_TempLog" Version="1.2.32-dev231118171446792" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21-dev231118105150033" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21-dev231124105119373" />
 	</ItemGroup>
 
 	<ItemGroup>

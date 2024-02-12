@@ -53,7 +53,7 @@ public sealed class FakeAppContext : ISourceAppContext
     {
         apps.RemoveAll(a => a.App.AppKey.Equals(appTemplate.AppKey));
         var app = AddNewApp(appTemplate);
-        if(currentApp != null && currentApp.App.AppKey.Equals(appTemplate.AppKey))
+        if (currentApp != null && currentApp.App.AppKey.Equals(appTemplate.AppKey))
         {
             SetCurrentApp(app);
         }
@@ -106,7 +106,7 @@ public sealed class FakeAppContext : ISourceAppContext
         if (!modCategoryNames.Any(mc => ModifierCategoryName.Default.Equals(mc)))
         {
             modCategoryNames = modCategoryNames
-                .Union(new[] { ModifierCategoryName.Default.DisplayText })
+                .Union(new[] { ModifierCategoryName.Default })
                 .ToArray();
         }
         var modCategories = modCategoryNames
@@ -122,10 +122,10 @@ public sealed class FakeAppContext : ISourceAppContext
                             modCategoryID,
                             string.IsNullOrWhiteSpace(mc)
                                 ? ModifierCategoryName.Default
-                                : new ModifierCategoryName(mc)
+                                : mc
                         ),
                         ModifierCategoryName.Default.Equals(mc)
-                            ? new[] { new ModifierModel(modifierID, modCategoryID, ModifierKey.Default, "", "") }
+                            ? [new ModifierModel(modifierID, modCategoryID, ModifierKey.Default, "", "")]
                             : new ModifierModel[0]
                     );
                     modCategoryID++;
@@ -134,8 +134,8 @@ public sealed class FakeAppContext : ISourceAppContext
             )
             .ToArray();
         var roles = appTemplate.RecursiveRoles()
-            .Union(AppRoleName.DefaultRoles().Select(r => r.DisplayText))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Union(AppRoleName.DefaultRoles())
+            .Distinct()
             .Select
             (
                 r =>
@@ -177,7 +177,7 @@ public sealed class FakeAppContext : ISourceAppContext
                         (
                             resourceGroupID,
                             modCategories.First(mc => mc.ModifierCategory.Name.Equals(g.ModCategory)).ModifierCategory.ID,
-                            new ResourceGroupName(g.Name),
+                            g.Name,
                             g.IsAnonymousAllowed
                         ),
                         g.ActionTemplates.Select
@@ -189,7 +189,7 @@ public sealed class FakeAppContext : ISourceAppContext
                                     new ResourceModel
                                     (
                                         resourceID,
-                                        new ResourceName(a.Name),
+                                        a.Name,
                                         a.IsAnonymousAllowed,
                                         a.ResultType
                                     ),

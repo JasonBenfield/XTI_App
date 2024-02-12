@@ -11,8 +11,8 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
     private readonly TestAuthOptions testOptions;
 
     public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
-        ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TestAuthOptions testOptions)
-        : base(options, logger, encoder, clock)
+        ILoggerFactory logger, UrlEncoder encoder, TestAuthOptions testOptions)
+        : base(options, logger, encoder)
     {
         this.testOptions = testOptions;
     }

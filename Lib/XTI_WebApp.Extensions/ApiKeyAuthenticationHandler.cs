@@ -35,13 +35,12 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<Authenti
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock,
         IHttpContextAccessor httpContextAccessor,
         ApiKeyAuthenticationOptions apiKeyAuth,
         TempLogSession tempLog,
         IMemoryCache cache
     )
-        : base(options, logger, encoder, clock)
+        : base(options, logger, encoder)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.apiKeyAuth = apiKeyAuth;

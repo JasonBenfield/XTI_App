@@ -42,16 +42,16 @@ public sealed class AppApi
         return group;
     }
 
-    public IEnumerable<AppApiGroup> Groups() => groups.Values.ToArray();
+    public AppApiGroup[] Groups() => groups.Values.ToArray();
 
     public AppApiGroup Group(string groupName) => groups[groupKey(groupName)];
 
     private static string groupKey(string groupName) =>
         groupName.ToLower().Replace(" ", "").Replace("_", "");
 
-    public AppApiTemplate Template() => new (this);
+    public AppApiTemplate Template() => new(this);
 
-    internal IEnumerable<AppRoleName> RoleNames()
+    internal AppRoleName[] RoleNames()
     {
         var roleNames = new List<AppRoleName>();
         roleNames.AddRange(Access.Allowed);
@@ -60,7 +60,7 @@ public sealed class AppApi
             .SelectMany(g => g.RoleNames())
             .Distinct();
         roleNames.AddRange(groupRoleNames);
-        return roleNames.Distinct();
+        return roleNames.Distinct().ToArray();
     }
 
     public override string ToString() => $"{GetType().Name} {Path.App}";

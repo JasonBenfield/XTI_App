@@ -1,11 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XTI_Core.Extensions;
 using XTI_WebAppClient;
 
@@ -17,8 +11,9 @@ internal sealed class XtiTokenAccessorTest
     public async Task ShouldGetToken()
     {
         var sp = setup();
-        var xtiTokenAccessor = sp.GetRequiredService<XtiTokenAccessor>();
-        xtiTokenAccessor.AddToken(() => new FakeXtiToken1("TokenValue"));
+        var xtiTokenAccessorFactory = sp.GetRequiredService<XtiTokenAccessorFactory>();
+        xtiTokenAccessorFactory.AddToken(() => new FakeXtiToken1("TokenValue"));
+        var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
         var token = await xtiTokenAccessor.Value();
         Assert.That(token, Is.EqualTo("TokenValue"), "Should get token");
@@ -28,9 +23,10 @@ internal sealed class XtiTokenAccessorTest
     public async Task ShouldCacheToken()
     {
         var sp = setup();
-        var xtiTokenAccessor = sp.GetRequiredService<XtiTokenAccessor>();
+        var xtiTokenAccessorFactory = sp.GetRequiredService<XtiTokenAccessorFactory>();
         var fakeToken = new FakeXtiToken1("TokenValue");
-        xtiTokenAccessor.AddToken(() => fakeToken);
+        xtiTokenAccessorFactory.AddToken(() => fakeToken);
+        var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
         await xtiTokenAccessor.Value();
         fakeToken.SetValue("ChangedTokenValue");
@@ -42,9 +38,10 @@ internal sealed class XtiTokenAccessorTest
     public async Task ShouldCacheTokenUntilReset()
     {
         var sp = setup();
-        var xtiTokenAccessor = sp.GetRequiredService<XtiTokenAccessor>();
+        var xtiTokenAccessorFactory = sp.GetRequiredService<XtiTokenAccessorFactory>();
         var fakeToken = new FakeXtiToken1("TokenValue");
-        xtiTokenAccessor.AddToken(() => fakeToken);
+        xtiTokenAccessorFactory.AddToken(() => fakeToken);
+        var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
         await xtiTokenAccessor.Value();
         fakeToken.SetValue("ChangedTokenValue");
@@ -57,9 +54,10 @@ internal sealed class XtiTokenAccessorTest
     public async Task ShouldUseCurrentToken()
     {
         var sp = setup();
-        var xtiTokenAccessor = sp.GetRequiredService<XtiTokenAccessor>();
-        xtiTokenAccessor.AddToken(() => new FakeXtiToken1("Token1"));
-        xtiTokenAccessor.AddToken(() => new FakeXtiToken2("Token2"));
+        var xtiTokenAccessorFactory = sp.GetRequiredService<XtiTokenAccessorFactory>();
+        xtiTokenAccessorFactory.AddToken(() => new FakeXtiToken1("Token1"));
+        xtiTokenAccessorFactory.AddToken(() => new FakeXtiToken2("Token2"));
+        var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
         var token = await xtiTokenAccessor.Value();
         Assert.That(token, Is.EqualTo("Token1"), "Should use current token");
@@ -112,7 +110,7 @@ internal sealed class XtiTokenAccessorTest
     {
         var hostBuilder = new XtiHostBuilder();
         hostBuilder.Services.AddMemoryCache();
-        hostBuilder.Services.AddScoped<XtiTokenAccessor>();
+        hostBuilder.Services.AddScoped<XtiTokenAccessorFactory>();
         return hostBuilder.Build().Scope();
     }
 

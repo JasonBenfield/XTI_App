@@ -24,13 +24,12 @@ public sealed class BasicAuthenticationHandler : AuthenticationHandler<Authentic
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock,
         IHttpContextAccessor httpContextAccessor,
         IMemoryCache cache,
         TempLogSession tempLog,
         IBasicAuthValidator basicAuth
     )
-    : base(options, logger, encoder, clock)
+    : base(options, logger, encoder)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.cache = cache;

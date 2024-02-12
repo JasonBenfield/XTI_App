@@ -41,7 +41,9 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
         var result = await queryAction.Execute(options, model);
-        var queryRecords = result.ToArray();
+        result = options.Filter.ApplyTo(result, new ODataQuerySettings()) as IQueryable<TEntity>;
+        result = options.OrderBy.ApplyTo(result, new ODataQuerySettings());
+        var queryRecords = result!.ToArray();
         var selectFields = options.SelectExpand.SelectExpandClause.SelectedItems
             .OfType<PathSelectItem>()
             .Select(item => item.SelectedPath)

@@ -14,8 +14,9 @@ public class AppApiGroupWrapper : IAppApiGroup
     public XtiPath Path { get => source.Path; }
     public ResourceAccess Access { get => source.Access; }
     public Task<bool> HasAccess() => source.HasAccess();
-    public IEnumerable<IAppApiAction> Actions() => source.Actions();
+    public IAppApiAction[] Actions() => source.Actions();
     public TAppApiAction Action<TAppApiAction>(string actionName) 
-        where TAppApiAction : IAppApiAction => source.Action<TAppApiAction>(actionName);
+        where TAppApiAction : IAppApiAction => 
+        source.Action<TAppApiAction>(actionName);
     public AppApiGroupTemplate Template() => source.Template();
 }

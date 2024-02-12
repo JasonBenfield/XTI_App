@@ -4,19 +4,19 @@ namespace XTI_App.Api;
 
 public sealed class AppApiTemplate
 {
-    private List<Func<ValueTemplate, ApiCodeGenerators, bool>> isExcludedFunctions = new List<Func<ValueTemplate, ApiCodeGenerators, bool>>();
+    private List<Func<ValueTemplate, ApiCodeGenerators, bool>> isExcludedFunctions = new();
 
     public AppApiTemplate(AppApi api)
     {
         AppKey = api.AppKey;
-        GroupTemplates = api.Groups().Select(g => g.Template());
+        GroupTemplates = api.Groups().Select(g => g.Template()).ToArray();
         RoleNames = api.RoleNames();
     }
 
     public AppKey AppKey { get; }
     public string Name { get => AppKey.Name.DisplayText.Replace(" ", ""); }
-    public IEnumerable<AppRoleName> RoleNames { get; }
-    public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
+    public AppRoleName[] RoleNames { get; }
+    public AppApiGroupTemplate[] GroupTemplates { get; }
 
     public void ExcludeValueTemplates(Func<ValueTemplate, ApiCodeGenerators, bool> isExcluded)
     {
@@ -77,7 +77,7 @@ public sealed class AppApiTemplate
 
     private bool isExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator)
     {
-        bool isExcluded = false;
+        var isExcluded = false;
         foreach (var isExcludedFunc in isExcludedFunctions)
         {
             if (isExcludedFunc(templ, codeGenerator))
@@ -89,12 +89,12 @@ public sealed class AppApiTemplate
         return isExcluded;
     }
 
-    public AppApiTemplateModel ToModel()
-        => new AppApiTemplateModel
-        {
-            AppKey = AppKey,
-            GroupTemplates = GroupTemplates.Select(g => g.ToModel()).ToArray()
-        };
+    public AppApiTemplateModel ToModel() =>
+        new
+        (
+            AppKey: AppKey,
+            GroupTemplates: GroupTemplates.Select(g => g.ToModel()).ToArray()
+        );
 
     public bool IsAuthenticator() => Name.Equals("Hub", StringComparison.OrdinalIgnoreCase);
 }

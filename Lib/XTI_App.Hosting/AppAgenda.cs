@@ -12,7 +12,7 @@ public sealed class AppAgenda
     private readonly AppAgendaItem[] items;
     private readonly ImmediateAppAgendaItem[] postStopItems;
     private readonly List<IWorker> workers = new();
-    private readonly bool isCurrentVersion;
+    private bool isCurrentVersion;
 
     internal AppAgenda
     (
@@ -26,11 +26,13 @@ public sealed class AppAgenda
         this.preStartItems = preStartItems;
         this.items = items;
         this.postStopItems = postStopItems;
-        isCurrentVersion = sp.GetRequiredService<AppVersionKey>().Equals(AppVersionKey.Current);
     }
 
     public async Task Start(CancellationToken stoppingToken)
     {
+        var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
+        var xtiPath = xtiPathAccessor.Value();
+        isCurrentVersion = xtiPath.Version.Equals(AppVersionKey.Current);
         if (isCurrentVersion)
         {
             var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();

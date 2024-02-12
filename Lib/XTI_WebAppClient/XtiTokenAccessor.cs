@@ -6,26 +6,21 @@ public sealed class XtiTokenAccessor
 {
     private readonly IMemoryCache cache;
     private readonly string identifier;
-    private readonly Dictionary<Type, Func<IXtiToken>> tokens = new();
+    private readonly Dictionary<Type, Func<IXtiToken>> tokens;
+    private readonly DefaultTokenTypeAccessor defaultTokenTypeAccessor;
     private Type? currentTokenType = null;
 
-    public XtiTokenAccessor(IMemoryCache cache, string identifier = "default")
+    internal XtiTokenAccessor(IMemoryCache cache, Dictionary<Type, Func<IXtiToken>> tokens, DefaultTokenTypeAccessor defaultTokenTypeAccessor, string identifier = "default")
     {
         this.cache = cache;
+        this.tokens = tokens;
+        this.defaultTokenTypeAccessor = defaultTokenTypeAccessor;
         this.identifier = identifier;
     }
 
-    public XtiTokenAccessor AddToken<T>(Func<T> createToken)
-        where T : IXtiToken
+    internal void UseToken(Type tokenType)
     {
-        tokens.Add(typeof(T), () => createIXtiToken(createToken));
-        return this;
-    }
-
-    private static IXtiToken createIXtiToken<T>(Func<T> createToken)
-        where T : IXtiToken
-    {
-        return createToken();
+        currentTokenType = tokenType;
     }
 
     public void UseToken<T>()
@@ -36,17 +31,19 @@ public sealed class XtiTokenAccessor
 
     public void Reset()
     {
-        if (currentTokenType != null)
+        var tokenType = GetCurrentTokenType();
+        if (tokenType != null)
         {
-            cache.Set($"{currentTokenType.FullName}_{identifier}_token", "");
-            cache.Set($"{currentTokenType.FullName}_{identifier}_userName", "");
+            cache.Set($"{tokenType.FullName}_{identifier}_token", "");
+            cache.Set($"{tokenType.FullName}_{identifier}_userName", "");
         }
     }
 
     public Task<string> UserName()
     {
-        if (currentTokenType == null) { throw new ArgumentNullException(nameof(currentTokenType)); }
-        var cacheKey = $"{currentTokenType.FullName}_{identifier}_userName";
+        var tokenType = GetCurrentTokenType();
+        if (tokenType == null) { throw new ArgumentNullException(nameof(tokenType)); }
+        var cacheKey = $"{tokenType.FullName}_{identifier}_userName";
         if (!cache.TryGetValue<string>(cacheKey, out var userName))
         {
             userName = "";
@@ -60,17 +57,18 @@ public sealed class XtiTokenAccessor
 
     public async Task<string> Value()
     {
-        if (currentTokenType == null) { throw new ArgumentNullException(nameof(currentTokenType)); }
-        var cacheKey = $"{currentTokenType.FullName}_{identifier}_token";
+        var tokenType = GetCurrentTokenType();
+        if (tokenType == null) { throw new ArgumentNullException(nameof(tokenType)); }
+        var cacheKey = $"{tokenType.FullName}_{identifier}_token";
         if (!cache.TryGetValue<string>(cacheKey, out var tokenValue))
         {
             tokenValue = "";
         }
         if (string.IsNullOrWhiteSpace(tokenValue))
         {
-            if (!tokens.TryGetValue(currentTokenType, out var createToken))
+            if (!tokens.TryGetValue(tokenType, out var createToken))
             {
-                throw new NotSupportedException($"Token not found for type '{currentTokenType}'");
+                throw new NotSupportedException($"Token not found for type '{tokenType}'");
             }
             var token = createToken();
             tokenValue = await token.Value();
@@ -78,4 +76,6 @@ public sealed class XtiTokenAccessor
         }
         return tokenValue;
     }
+
+    private Type? GetCurrentTokenType() => currentTokenType ?? defaultTokenTypeAccessor.Value;
 }

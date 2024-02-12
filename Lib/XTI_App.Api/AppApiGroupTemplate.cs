@@ -47,13 +47,13 @@ public sealed class AppApiGroupTemplate
 
     public bool IsUserCache() => Name.Equals("UserCache", StringComparison.OrdinalIgnoreCase);
 
-    public AppApiGroupTemplateModel ToModel()
-        => new AppApiGroupTemplateModel
-        {
-            Name = Name,
-            ModCategory = ModCategory.Value,
-            IsAnonymousAllowed = Access.IsAnonymousAllowed,
-            Roles = Access.Allowed.Select(r => r.Value).ToArray(),
-            ActionTemplates = ActionTemplates.Select(a => a.ToModel()).ToArray()
-        };
+    public AppApiGroupTemplateModel ToModel() =>
+        new
+        (
+            Name: new ResourceGroupName(Name),
+            ModCategory: ModCategory,
+            IsAnonymousAllowed: Access.IsAnonymousAllowed,
+            Roles: Access.Allowed,
+            ActionTemplates: ActionTemplates.Select(a => a.ToModel()).ToArray()
+        );
 }

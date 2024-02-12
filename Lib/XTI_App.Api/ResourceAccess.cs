@@ -4,31 +4,29 @@ namespace XTI_App.Api;
 
 public sealed class ResourceAccess
 {
-    public static ResourceAccess AllowAnonymous()
-        => new ResourceAccess(new AppRoleName[] { }, true);
+    public static ResourceAccess AllowAnonymous() => new([], true);
 
-    public static ResourceAccess AllowAuthenticated()
-        => new ResourceAccess(new AppRoleName[] { }, false);
+    public static ResourceAccess AllowAuthenticated() => new([], false);
 
-    public ResourceAccess(IEnumerable<AppRoleName> allowed)
+    public ResourceAccess(params AppRoleName[] allowed)
         : this(allowed, false)
     {
     }
 
-    private ResourceAccess(IEnumerable<AppRoleName> allowed, bool isAnonAllowed)
+    private ResourceAccess(AppRoleName[] allowed, bool isAnonAllowed)
     {
-        Allowed = (allowed ?? new AppRoleName[] { });
+        Allowed = allowed;
         IsAnonymousAllowed = isAnonAllowed;
     }
 
-    public IEnumerable<AppRoleName> Allowed { get; }
+    public AppRoleName[] Allowed { get; }
     public bool IsAnonymousAllowed { get; }
 
-    public ResourceAccess WithAllowed(params AppRoleName[] allowed)
-        => new ResourceAccess(Allowed.Union(allowed ?? new AppRoleName[] { }));
+    public ResourceAccess WithAllowed(params AppRoleName[] allowed) => 
+        new(Allowed.Union(allowed).Distinct().ToArray());
 
-    public ResourceAccess WithoutAllowed(params AppRoleName[] allowed)
-        => new ResourceAccess(Allowed.Except(allowed ?? new AppRoleName[] { }));
+    public ResourceAccess WithoutAllowed(params AppRoleName[] denied) => 
+        new(Allowed.Except(denied).Distinct().ToArray());
 
     public override string ToString()
     {
