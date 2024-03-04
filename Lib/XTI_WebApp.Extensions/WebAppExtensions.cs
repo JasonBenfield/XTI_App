@@ -59,6 +59,7 @@ public static class WebAppExtensions
         services.AddHttpContextAccessor();
         services.AddConfigurationOptions<WebAppOptions>(WebAppOptions.WebApp);
         services.AddConfigurationOptions<XtiAuthenticationOptions>(XtiAuthenticationOptions.XtiAuthentication);
+        services.AddConfigurationOptions<AnonClientOptions>(AnonClientOptions.AnonClient);
         services.AddConfigurationOptions<XtiCorsOptions>(XtiCorsOptions.XtiCors);
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
@@ -66,6 +67,7 @@ public static class WebAppExtensions
         services.AddScoped<GetMenuLinksAction>();
         services.AddScoped<UserProfileAction>();
         services.AddScoped<CacheBust>();
+
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
@@ -81,7 +83,8 @@ public static class WebAppExtensions
         {
             var dataProtector = sp.GetDataProtector(new[] { "XTI_Apps_Anon" });
             var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-            return new AnonClient(dataProtector, httpContextAccessor);
+            var options = sp.GetRequiredService<AnonClientOptions>();
+            return new AnonClient(dataProtector, httpContextAccessor, options);
         });
         services.AddScoped<IXtiPathAccessor, WebXtiPathAccessor>();
         services.AddSingleton<ISystemUserCredentials, SystemUserCredentials>();

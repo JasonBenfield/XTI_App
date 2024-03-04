@@ -87,7 +87,7 @@ internal sealed class PageContextTest
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
         var services = await Setup(new AppVersionKey(2));
         var pageContext = await Execute(services);
-        Assert.That(pageContext.CacheBust, Is.EqualTo(""), "Should not set cacheBust when version is null");
+        Assert.That(pageContext.CacheBust, Is.EqualTo(""), "Should not set cacheBust when version is not current");
     }
 
     private static async Task<PageContextRecord> Execute(IServiceProvider sp)

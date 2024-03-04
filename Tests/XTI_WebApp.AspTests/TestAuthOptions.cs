@@ -6,5 +6,5 @@ public sealed class TestAuthOptions
 {
     public bool IsEnabled { get; set; }
     public string SessionKey { get; set; } = "";
-    public UserContextModel? User { get; set; }
+    public AppUserModel? User { get; set; }
 }

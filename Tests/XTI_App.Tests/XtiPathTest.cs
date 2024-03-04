@@ -1,7 +1,4 @@
-﻿using NUnit.Framework;
-using XTI_App.Abstractions;
-
-namespace XTI_App.Tests;
+﻿namespace XTI_App.Tests;
 
 internal sealed class XtiPathTest
 {

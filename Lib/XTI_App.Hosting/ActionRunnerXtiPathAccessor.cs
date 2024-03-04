@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using System.Text.RegularExpressions;
 using XTI_App.Abstractions;
 using XTI_Core;
 
@@ -32,6 +33,10 @@ public sealed class ActionRunnerXtiPathAccessor : IXtiPathAccessor
         {
             var appDir = new DirectoryInfo(hostEnv.ContentRootPath);
             versionKey = AppVersionKey.Parse(appDir.Name);
+            if (versionKey.Equals(AppVersionKey.None))
+            {
+                versionKey = AppVersionKey.Current;
+            }
         }
         else
         {

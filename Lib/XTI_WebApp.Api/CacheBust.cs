@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using XTI_App.Abstractions;
+﻿using Microsoft.Extensions.Caching.Memory;
 using XTI_App.Api;
 using XTI_Core;
 
@@ -7,15 +6,15 @@ namespace XTI_WebApp.Api;
 
 public sealed class CacheBust
 {
+    private readonly IMemoryCache cache;
     private readonly WebAppOptions options;
     private readonly XtiEnvironment xtiEnv;
     private readonly IAppContext appContext;
     private readonly IXtiPathAccessor xtiPathAccessor;
 
-    private string? value;
-
-    public CacheBust(WebAppOptions options, XtiEnvironment xtiEnv, IAppContext appContext, IXtiPathAccessor xtiPathAccessor)
+    public CacheBust(IMemoryCache cache, WebAppOptions options, XtiEnvironment xtiEnv, IAppContext appContext, IXtiPathAccessor xtiPathAccessor)
     {
+        this.cache = cache;
         this.options = options;
         this.xtiEnv = xtiEnv;
         this.appContext = appContext;
@@ -24,27 +23,33 @@ public sealed class CacheBust
 
     public async Task<string> Value()
     {
-        if (value == null)
+        string? cacheBust;
+        if (xtiEnv.IsDevelopmentOrTest())
         {
-            if (string.IsNullOrWhiteSpace(options.CacheBust))
+            cacheBust = Guid.NewGuid().ToString("N");
+        }
+        else
+        {
+            const string cacheKey = "XTI_CacheBust";
+            if (!cache.TryGetValue(cacheKey, out cacheBust))
             {
-                var xtiPath = xtiPathAccessor.Value();
-                if (xtiEnv.IsDevelopmentOrTest())
+                if (string.IsNullOrWhiteSpace(options.CacheBust))
                 {
-                    value = Guid.NewGuid().ToString("N");
+                    var xtiPath = xtiPathAccessor.Value();
+                    if (xtiPath.IsCurrentVersion())
+                    {
+                        var app = await appContext.App();
+                        cacheBust = app.Version.VersionKey.DisplayText;
+                        cache.Set(cacheKey, cacheBust);
+                    }
                 }
-                else if (xtiPath.IsCurrentVersion())
+                else
                 {
-                    var appContext = await this.appContext.App();
-                    value = appContext.Version.VersionKey.DisplayText;
+                    cacheBust = options.CacheBust;
                 }
-            }
-            else
-            {
-                value = options.CacheBust;
             }
         }
-        return value ?? "";
+        return cacheBust ?? "";
     }
 
     public async Task<string> Query()
@@ -52,6 +57,4 @@ public sealed class CacheBust
         var value = await Value();
         return string.IsNullOrWhiteSpace(value) ? "" : $"cacheBust={value}";
     }
-
-    public override string ToString() => $"{nameof(CacheBust)} {value}";
 }

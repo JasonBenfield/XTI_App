@@ -17,13 +17,13 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
         this.loginUrl = loginUrl;
     }
 
-    public async Task<WebRedirectResult> Execute(LogoutRequest model, CancellationToken stoppingToken)
+    public async Task<WebRedirectResult> Execute(LogoutRequest logoutRequest, CancellationToken stoppingToken)
     {
         await logoutProcess.Run();
         string returnUrl;
         try
         {
-            returnUrl = HttpUtility.UrlDecode(model.ReturnUrl);
+            returnUrl = HttpUtility.UrlDecode(logoutRequest.ReturnUrl);
             var requestHost = httpContextAccessor.HttpContext?.Request.Host.Host;
             if(requestHost == null)
             {

@@ -31,9 +31,9 @@ public sealed class SessionLogMiddleware
     )
     {
         anonClient.Load();
-        if (isAnonSessionExpired(anonClient, clock))
+        if (IsAnonSessionExpired(anonClient, clock))
         {
-            expireAnonSession(anonClient);
+            ExpireAnonSession(anonClient);
         }
         if (context.User.Identity?.IsAuthenticated == true)
         {
@@ -103,7 +103,7 @@ public sealed class SessionLogMiddleware
         catch (Exception ex)
         {
             Debug.WriteLine($"Error in {path}\r\n{ex}");
-            var loggedException = await logException(tempLogSession, ex);
+            var loggedException = await LogException(tempLogSession, ex);
             xtiRequestContext.Failed(ex, loggedException.EventKey);
         }
         finally
@@ -112,14 +112,14 @@ public sealed class SessionLogMiddleware
         }
     }
 
-    private static bool isAnonSessionExpired(IAnonClient anonClient, IClock clock) =>
+    private static bool IsAnonSessionExpired(IAnonClient anonClient, IClock clock) =>
         !string.IsNullOrWhiteSpace(anonClient.SessionKey) &&
-        clock.Now().ToUniversalTime() > anonClient.SessionExpirationTime.ToUniversalTime();
+        clock.Now() > anonClient.SessionExpirationTime;
 
-    private static void expireAnonSession(IAnonClient anonClient) =>
+    private static void ExpireAnonSession(IAnonClient anonClient) =>
         anonClient.Persist("", DateTimeOffset.MinValue, anonClient.RequesterKey);
 
-    private static Task<LogEntryModel> logException(TempLogSession sessionLog, Exception ex)
+    private static Task<LogEntryModel> LogException(TempLogSession sessionLog, Exception ex)
     {
         var severity = new SeverityFromException(ex).Value;
         string caption;

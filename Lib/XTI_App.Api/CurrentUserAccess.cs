@@ -28,8 +28,8 @@ public sealed class CurrentUserAccess
     {
         var error = "";
         var userName = await currentUserName.Value();
-        var userContextModel = await userContext.User(userName);
-        if (!userContextModel.User.IsActive())
+        var user = await userContext.User(userName);
+        if (!user.IsActive())
         {
             error = "User has been deactivated";
         }
@@ -59,8 +59,9 @@ public sealed class CurrentUserAccess
             }
             else if (allowedRoles.Any())
             {
-                var modifier = appContextModel.Modifier(group, modKey);
-                var userRoles = userContextModel.GetRoles(modifier);
+                var modCategory = appContextModel.ModCategory(group);
+                var modifier = await appContext.Modifier(modCategory, modKey);
+                var userRoles = await userContext.UserRoles(user, modifier);
                 var userRoleNames = userRoles.Select(ur => ur.Name);
                 if (userRoles.Any(ur => ur.IsDenyAccess()))
                 {

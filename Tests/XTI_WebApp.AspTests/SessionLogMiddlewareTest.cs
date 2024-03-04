@@ -33,7 +33,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldCreateSession()
     {
-        var input = await setup();
+        var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         var session = await getFirstStartSession(input);
         Assert.That
@@ -47,7 +47,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldLogRequesterWithSession()
     {
-        var input = await setup();
+        var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         var session = await getFirstStartSession(input);
         Assert.That(string.IsNullOrWhiteSpace(session.RequesterKey), Is.False, "Should log requester with session");
@@ -76,7 +76,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldReuseRequesterKeyWithNewSession()
     {
-        var input = await setup();
+        var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         input.Clock.Set(input.Clock.Now().AddHours(4).AddMinutes(1));
         await input.GetAsync("/Fake/Current/Controller1/Action1");
@@ -88,7 +88,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldNotStartAnonSession_WhenAnonSessionWasAlreadyStarted()
     {
-        var input = await setup();
+        var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         var sessions = await getStartSessions(input);
@@ -98,7 +98,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldNotReuseAnonymousSession_WhenSessionHasExpired()
     {
-        var input = await setup();
+        var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         input.Clock.Set(input.Clock.Now().AddHours(4).AddMinutes(1));
         await input.GetAsync("/Fake/Current/Controller1/Action1");
@@ -110,7 +110,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldNotStartNewSession_WhenSessionHasAlreadyBeenStarted()
     {
-        var input = await setup();
+        var input = await Setup();
         var userName = new AppUserName("xartogg");
         input.UserContext.SetCurrentUser(userName);
         input.TestAuthOptions.IsEnabled = true;
@@ -124,7 +124,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldCreateSessionWithAnonymousUser()
     {
-        var input = await setup();
+        var input = await Setup();
         input.UserContext.SetCurrentUser(AppUserName.Anon);
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         var anonUser = await input.UserContext.User(AppUserName.Anon);
@@ -132,13 +132,13 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(sessionFiles.Length, Is.EqualTo(1), "Should use session for authenticated user");
         var serializedSession = await sessionFiles[0].Read();
         var session = XtiSerializer.Deserialize<StartSessionModel>(serializedSession);
-        Assert.That(session.UserName, Is.EqualTo(anonUser.User.UserName.Value), "Should create session with anonymous user");
+        Assert.That(session.UserName, Is.EqualTo(anonUser.UserName.Value), "Should create session with anonymous user");
     }
 
     [Test]
     public async Task ShouldLogRequest()
     {
-        var input = await setup();
+        var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
         var request = await getStartRequest(input);
@@ -148,7 +148,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldLogEndOfRequest()
     {
-        var input = await setup();
+        var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
         var requestFiles = input.CurrentAction.TempLog?.EndRequestFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
@@ -158,7 +158,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldLogCurrentVersionWithRequest()
     {
-        var input = await setup();
+        var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
         var request = await getStartRequest(input);
@@ -169,7 +169,7 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldLogExplicitVersionWithRequest()
     {
-        var input = await setup();
+        var input = await Setup();
         var explicitVersion = input.AppContext.GetCurrentApp().Version;
         var uri = $"/Fake/{explicitVersion.VersionKey.Value}/Controller1/Action1";
         await input.GetAsync(uri);
@@ -191,7 +191,7 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldLogUnexpectedError()
     {
         Exception? exception = null;
-        var input = await setup();
+        var input = await Setup();
         input.CurrentAction.Configure
         (
             c =>
@@ -230,7 +230,7 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldLogValidationError()
     {
         Exception? exception = null;
-        var input = await setup();
+        var input = await Setup();
         input.CurrentAction.Configure
         (
             c =>
@@ -260,7 +260,7 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldLogAppError()
     {
         Exception? exception = null;
-        var input = await setup();
+        var input = await Setup();
         input.CurrentAction.Configure
         (
             c =>
@@ -291,7 +291,7 @@ internal sealed class SessionLogMiddlewareTest
     {
         Exception? exception = null;
         var uri = "/Fake/Current/Controller1/Action1";
-        var input = await setup();
+        var input = await Setup();
         input.CurrentAction.Configure
         (
             c =>
@@ -321,7 +321,7 @@ internal sealed class SessionLogMiddlewareTest
     {
         Exception? exception = null;
         const string envName = "Production";
-        var input = await setup(envName);
+        var input = await Setup(envName);
         input.CurrentAction.Configure
         (
             c =>
@@ -338,7 +338,7 @@ internal sealed class SessionLogMiddlewareTest
                 return Task.CompletedTask;
             }
         );
-        var uri = "/Fake/Current/Controller1/Action1";
+        var uri = $"/Fake/Current/Controller1/Action1?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         var response = await input.GetAsync(uri);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
         var result = await response.Content.ReadAsStringAsync();
@@ -362,7 +362,7 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldReturnBadRequestError400_WhenAValidationErrorOccurs()
     {
         var errors = new[] { new ErrorModel("Field is required") };
-        var input = await setup();
+        var input = await Setup();
         input.CurrentAction.Configure
         (
             c =>
@@ -389,9 +389,9 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldReturnForbiddenError403_WhenAValidationErrorOccurs()
     {
         AccessDeniedException? exception = null;
-        var uri = "/Fake/Current/Controller1/Action1";
         const string envName = "Production";
-        var input = await setup(envName);
+        var input = await Setup(envName);
+        var uri = $"/Fake/Current/Controller1/Action1?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
             c =>
@@ -434,9 +434,9 @@ internal sealed class SessionLogMiddlewareTest
     public async Task ShouldReturnDisplayMessage_WhenAnAppErrorOccurs()
     {
         TestAppException? exception = null;
-        var uri = "/Fake/Current/Controller1/Action1";
         const string envName = "Production";
-        var input = await setup(envName);
+        var input = await Setup(envName);
+        var uri = $"/Fake/Current/Controller1/Action1t?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
             c =>
@@ -476,9 +476,9 @@ internal sealed class SessionLogMiddlewareTest
     [Test]
     public async Task ShouldLogout()
     {
-        var uri = "/Fake/Current/User/Logout";
         const string envName = "Production";
-        var input = await setup(envName);
+        var input = await Setup(envName);
+        var uri = $"/Fake/Current/User/Logout?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
              c =>
@@ -528,7 +528,7 @@ internal sealed class SessionLogMiddlewareTest
         }
     }
 
-    private async Task<TestInput> setup(string envName = "Test")
+    private async Task<TestInput> Setup(string envName = "Test")
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", envName);
         var hostBuilder = new HostBuilder();

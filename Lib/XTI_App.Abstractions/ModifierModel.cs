@@ -14,5 +14,7 @@ public sealed record ModifierModel
     {
     }
 
+    public bool IsFound() => ID > 0;
+
     public bool IsDefault() => ModKey.Equals(ModifierKey.Default);
 }
