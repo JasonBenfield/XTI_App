@@ -86,7 +86,7 @@ internal sealed class XtiAuthenticationTest
                     .ConfigureServices((context, services) =>
                     {
                         services.AddSingleton<TestAuthOptions>();
-                        services.AddSingleton<XtiAuthenticationOptions>();
+                        services.AddSingleton<DefaultWebAppOptions>();
                         services.AddDataProtection();
                         services.ConfigureXtiCookieAndTokenAuthentication(XtiEnvironment.Parse(context.HostingEnvironment.EnvironmentName), context.Configuration);
                         services.AddFakesForXtiWebApp();
@@ -108,9 +108,9 @@ internal sealed class XtiAuthenticationTest
                     });
             })
             .StartAsync();
-        var authOptions = host.Services.GetRequiredService<XtiAuthenticationOptions>();
-        authOptions.AuthenticatorUrl = authenticatorUrl;
-        authOptions.JwtSecret = "Secret for token";
+        var webAppOptions = host.Services.GetRequiredService<DefaultWebAppOptions>();
+        webAppOptions.XtiAuthentication.AuthenticatorUrl = authenticatorUrl;
+        webAppOptions.XtiAuthentication.JwtSecret = "Secret for token";
         return new TestInput(host);
     }
 

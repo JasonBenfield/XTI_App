@@ -77,7 +77,7 @@ public sealed class AppClientContentAction<TModel>
     private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
-        client.Timeout = options.Timeout;
+        client.InitFromOptions(options);
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();
@@ -94,7 +94,7 @@ public sealed class AppClientContentAction<TModel>
             transformedModel = form.Export();
         }
         var serialized = JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
-        using var content = new StringContent(serialized, Encoding.UTF8, "application/json");
+        using var content = new StringContent(serialized, Encoding.UTF8, WebContentTypes.Json);
         var response = await client.PostAsync(url, content, ct);
         return response;
     }

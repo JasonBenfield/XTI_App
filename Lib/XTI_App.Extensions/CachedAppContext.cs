@@ -32,4 +32,20 @@ public sealed class CachedAppContext : IAppContext
         }
         return cachedApp ?? new AppContextModel();
     }
+
+    public async Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey)
+    {
+        var cacheKey = $"xti_{appKey.Type.Value}_{appKey.Name.Value}_{category.Name.DisplayText}_{modKey.DisplayText}";
+        if (!cache.TryGetValue<ModifierModel>(cacheKey, out var cachedModifier))
+        {
+            cachedModifier = await sourceAppContext.Modifier(category, modKey);
+            cache.Set
+            (
+                cacheKey,
+                cachedModifier,
+                TimeSpan.FromHours(1)
+            );
+        }
+        return cachedModifier ?? new ModifierModel();
+    }
 }

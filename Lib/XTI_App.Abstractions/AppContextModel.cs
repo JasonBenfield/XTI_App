@@ -5,7 +5,7 @@ public sealed record AppContextModel
     AppModel App,
     XtiVersionModel Version,
     AppRoleModel[] Roles,
-    AppContextModifierCategoryModel[] ModifierCategories,
+    ModifierCategoryModel[] ModCategories,
     AppContextResourceGroupModel[] ResourceGroups
 )
 {
@@ -15,7 +15,7 @@ public sealed record AppContextModel
             new AppModel(),
             new XtiVersionModel(),
             new AppRoleModel[0],
-            new AppContextModifierCategoryModel[0],
+            new ModifierCategoryModel[0],
             new AppContextResourceGroupModel[0]
         )
     {
@@ -37,41 +37,22 @@ public sealed record AppContextModel
             throw new ArgumentException($"Resource Group '{groupName.DisplayText}' not found");
     }
 
-    public ModifierModel DefaultModifier() =>
-        Modifier(ModifierCategoryName.Default, ModifierKey.Default);
+    public ModifierCategoryModel DefaultModCategory() =>
+        ModCategory(ModifierCategoryName.Default);
 
-    public bool ModifierExists(ModifierCategoryName categoryName, ModifierKey modKey) =>
-        ModifierCategory(categoryName).ModifierExists(modKey);
-
-    public ModifierModel Modifier(ModifierCategoryName categoryName, ModifierKey modKey) =>
-        ModifierCategory
-        (
-            modKey.Equals(ModifierKey.Default) 
-                ? ModifierCategoryName.Default 
-                : categoryName
-        )
-        .Modifier(modKey);
-
-    public AppContextModifierCategoryModel ModifierCategory(ModifierCategoryName categoryName) =>
-        ModifierCategories.FirstOrDefault(c => c.ModifierCategory.Name.Equals(categoryName))
+    public ModifierCategoryModel ModCategory(ModifierCategoryName categoryName) =>
+        ModCategories.FirstOrDefault(c => c.Name.Equals(categoryName))
         ?? throw new ArgumentException($"Modifier Category '{categoryName.DisplayText}' not found.");
 
-    public ModifierModel Modifier(ResourceGroupName name, ModifierKey modKey)
-    {
-        var modCategory = ModCategory(name);
-        if (modCategory.ModifierCategory.Name.Equals(ModifierCategoryName.Default))
-        {
-            modKey = ModifierKey.Default;
-        }
-        return Modifier(modCategory.ModifierCategory.Name, modKey);
-    }
+    public ModifierCategoryModel ModCategory(ResourceGroupModel group) =>
+        ModCategory(group.Name);
 
-    public AppContextModifierCategoryModel ModCategory(ResourceGroupName name)
+    public ModifierCategoryModel ModCategory(ResourceGroupName name)
     {
         var resourceGroup = ResourceGroups
             .First(rg => rg.ResourceGroup.Name.Equals(name));
         var modCategoryID = resourceGroup.ResourceGroup.ModCategoryID;
-        return ModifierCategories.FirstOrDefault(mc => mc.ModifierCategory.ID == modCategoryID)
+        return ModCategories.FirstOrDefault(mc => mc.ID == modCategoryID)
             ?? throw new ArgumentException($"Modifier Category {modCategoryID} for Resource Group '{name.DisplayText}' not found.");
     }
 

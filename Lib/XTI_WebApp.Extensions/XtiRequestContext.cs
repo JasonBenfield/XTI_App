@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using XTI_App.Abstractions;
-using XTI_App.Api;
 using XTI_Core;
-using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
@@ -49,7 +47,7 @@ public sealed class XtiRequestContext
         AppEventSeverity severity;
         if (error == null)
         {
-            errors = new[] { new ErrorModel(message, caption, "") };
+            errors = [new ErrorModel(message, caption, "")];
             severity = AppEventSeverity.Values.CriticalError;
         }
         else
@@ -59,17 +57,13 @@ public sealed class XtiRequestContext
             {
                 errors = validationFailedException.Errors.ToArray();
             }
-            else if (xtiEnv.IsDevelopmentOrTest())
-            {
-                errors = new[] { new ErrorModel(error.StackTrace ?? "", error.Message, "") };
-            }
             else if (error is AppException appException)
             {
-                errors = new[] { new ErrorModel(appException.DisplayMessage) };
+                errors = [new ErrorModel(appException.DisplayMessage)];
             }
             else
             {
-                errors = new[] { new ErrorModel("An unexpected error occurred") };
+                errors = [new ErrorModel("An unexpected error occurred")];
             }
         }
         return new WebErrorResult(logEntryKey, severity, errors);
@@ -79,15 +73,14 @@ public sealed class XtiRequestContext
     {
         string message;
         string caption;
-        var xtiEnv = this.xtiEnv;
         if (error is AppException appError)
         {
-            message = xtiEnv.IsProduction()
-                ? appError.DisplayMessage
-                : appError.ToString();
-            caption = error is AccessDeniedException
-                ? "Access Denied"
-                : "Unexpected error";
+            message = xtiEnv.IsProduction() ?
+                appError.DisplayMessage :
+                error.Message;
+            caption = error is AccessDeniedException ?
+                "Access Denied" :
+                "Unexpected error";
         }
         else if (xtiEnv.IsProduction())
         {
@@ -96,7 +89,7 @@ public sealed class XtiRequestContext
         }
         else
         {
-            message = error.ToString();
+            message = error.Message;
             caption = "An error occurred";
         }
         this.error = error;

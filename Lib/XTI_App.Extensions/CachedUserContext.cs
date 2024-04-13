@@ -19,21 +19,23 @@ public sealed class CachedUserContext : ICachedUserContext
 
     public void ClearCache(AppUserName userName)
     {
-        var cacheKey = $"xti_{userName.Value}";
-        cache.Remove(cacheKey);
+        cache.Remove(GetUserCacheKey(userName));
+        cache.Remove(GetUserRolesCacheKey(userName));
     }
 
-    public async Task<UserContextModel> User()
+    private static string GetUserCacheKey(AppUserName userName) => $"xti_{userName.Value}";
+
+    public async Task<AppUserModel> User()
     {
         var userName = await currentUserName.Value();
         var cachedUser = await User(userName);
         return cachedUser;
     }
 
-    public async Task<UserContextModel> User(AppUserName userName)
+    public async Task<AppUserModel> User(AppUserName userName)
     {
-        var cacheKey = $"xti_{userName.Value}";
-        if (!cache.TryGetValue<UserContextModel>(cacheKey, out var cachedUser))
+        var cacheKey = GetUserCacheKey(userName);
+        if (!cache.TryGetValue<AppUserModel>(cacheKey, out var cachedUser))
         {
             cachedUser = await sourceUserContext.User(userName);
             cache.Set
@@ -43,6 +45,38 @@ public sealed class CachedUserContext : ICachedUserContext
                 TimeSpan.FromHours(1)
             );
         }
-        return cachedUser ?? new UserContextModel();
+        return cachedUser ?? new AppUserModel();
     }
+
+    public async Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier)
+    {
+        var cacheKey = GetUserRolesCacheKey(user.UserName);
+        if (!cache.TryGetValue<List<ModifiedUserRoles>>(cacheKey, out var modifiedUserRoles))
+        {
+            modifiedUserRoles = new List<ModifiedUserRoles>();
+            cache.Set
+            (
+                cacheKey,
+                modifiedUserRoles,
+                TimeSpan.FromHours(1)
+            );
+        }
+        if (modifiedUserRoles == null)
+        {
+            modifiedUserRoles = new();
+        }
+        var modifiedUserRole = modifiedUserRoles.FirstOrDefault(mur => mur.Modifier.ID == modifier.ID);
+        if (modifiedUserRole == null)
+        {
+            var userRoles = await sourceUserContext.UserRoles(user, modifier);
+            modifiedUserRole = new ModifiedUserRoles(modifier, userRoles);
+            modifiedUserRoles.Add(modifiedUserRole);
+        }
+        return modifiedUserRole.UserRoles;
+    }
+
+    private static string GetUserRolesCacheKey(AppUserName userName) =>
+        $"xti_{userName.Value}_roles";
+
+    private sealed record ModifiedUserRoles(ModifierModel Modifier, AppRoleModel[] UserRoles);
 }

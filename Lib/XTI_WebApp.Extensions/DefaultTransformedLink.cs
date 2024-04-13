@@ -28,8 +28,8 @@ internal sealed class DefaultTransformedLink : ITransformedLink
         }
         if(l.DisplayText == "{User.FullName}")
         {
-            var userContextModel = await userContext.User();
-            l = l with { DisplayText = userContextModel.User.Name.DisplayText };
+            var user = await userContext.User();
+            l = l with { DisplayText = user.Name.DisplayText };
         }
         return l;
     }

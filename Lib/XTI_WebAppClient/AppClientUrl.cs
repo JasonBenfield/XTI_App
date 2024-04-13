@@ -28,6 +28,9 @@ public sealed class AppClientUrl
     public AppClientUrl WithGroup(string groupName) =>
         new AppClientUrl(clientDomain, appName, version, groupName);
 
+    public AppClientUrl WithCurrentVersion() =>
+        new AppClientUrl(clientDomain, appName, AppVersionKey.Current.DisplayText, groupName);
+
     public async Task<string> Value(string actionName, string modifier)
     {
         var domain = await clientDomain.Value(appName, version);

@@ -77,6 +77,7 @@ public static class AppExtensions
             return factory.Create(user);
         });
         services.AddTempLogServices();
+        services.AddScoped<IAppClientRequestKey, DefaultAppClientRequestKey>();
         services.AddSingleton<InstallationIDAccessor, FileInstallationIDAccessor>();
     }
 

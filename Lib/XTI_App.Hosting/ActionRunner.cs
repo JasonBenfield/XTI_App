@@ -40,21 +40,21 @@ public sealed class ActionRunner
         var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
         xtiPathAccessor.FinishPath(groupName, actionName);
         var xtiPath = xtiPathAccessor.Value();
-        result = await verifyActionIsRequired(environment, factory, xtiPath);
+        result = await VerifyActionIsRequired(environment, factory, xtiPath);
         if (result == Results.None)
         {
-            result = await run(environment, factory, xtiPath, stoppingToken);
+            result = await Run(environment, factory, xtiPath, stoppingToken);
         }
         return result;
     }
 
-    private async Task<Results> verifyActionIsRequired(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath)
+    private async Task<Results> VerifyActionIsRequired(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath)
     {
         var result = Results.None;
         var session = factory.CreateTempLogSession();
         try
         {
-            var action = getApiAction(factory);
+            var action = GetApiAction(factory);
             var isOptional = await action.IsOptional();
             if (isOptional)
             {
@@ -81,7 +81,7 @@ public sealed class ActionRunner
         return result;
     }
 
-    private async Task<Results> run(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath, CancellationToken stoppingToken)
+    private async Task<Results> Run(XtiEnvironment xtiEnv, IActionRunnerFactory factory, XtiPath xtiPath, CancellationToken stoppingToken)
     {
         var result = Results.None;
         var session = factory.CreateTempLogSession();
@@ -89,13 +89,13 @@ public sealed class ActionRunner
         try
         {
             await session.StartRequest(path);
-            var action = getApiAction(factory);
+            var action = GetApiAction(factory);
             await action.Execute(new EmptyRequest(), stoppingToken);
             result = Results.Succeeded;
         }
         catch (Exception ex)
         {
-            if (!environment.IsProduction())
+            if (!xtiEnv.IsProduction())
             {
                 Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
             }
@@ -120,7 +120,7 @@ public sealed class ActionRunner
         return result;
     }
 
-    private AppApiAction<EmptyRequest, EmptyActionResult> getApiAction(IActionRunnerFactory factory)
+    private AppApiAction<EmptyRequest, EmptyActionResult> GetApiAction(IActionRunnerFactory factory)
     {
         var api = factory.CreateAppApi();
         return api

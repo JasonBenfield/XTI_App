@@ -97,7 +97,7 @@ internal sealed class FileUploadTemplateTest
 
     private static AppApiTemplate CreateFileUploadTemplate()
     {
-        var api = new AppApi(FakeInfo.AppKey, new AppApiSuperUser(), ResourceAccess.AllowAuthenticated());
+        var api = new AppApi(FakeInfo.AppKey, new AppApiSuperUser(), ResourceAccess.AllowAuthenticated(), "");
         var group1 = api.AddGroup("Group1");
         group1.AddAction
         (
@@ -134,7 +134,7 @@ internal sealed class FileUploadTemplateTest
             "FileUploadArraySecondLevel",
             () => new FileUploadArraySecondLevelAction()
         );
-        var template = new AppApiTemplate(api);
+        var template = new AppApiTemplate(api, "");
         return template;
     }
 

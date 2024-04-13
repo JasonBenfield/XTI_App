@@ -4,6 +4,7 @@ using System.Text.Json;
 using XTI_Core;
 using XTI_Secrets;
 using XTI_WebApp.Abstractions;
+using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
@@ -11,13 +12,13 @@ public sealed class AnonClient : IAnonClient
 {
     private readonly IDataProtector protector;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly DefaultWebAppOptions options;
 
-    private static readonly string cookieName = "xti_anon";
-
-    public AnonClient(IDataProtector protector, IHttpContextAccessor httpContextAccessor)
+    public AnonClient(IDataProtector protector, IHttpContextAccessor httpContextAccessor, DefaultWebAppOptions options)
     {
         this.protector = protector;
         this.httpContextAccessor = httpContextAccessor;
+        this.options = options;
     }
 
     public string SessionKey { get; private set; } = "";
@@ -26,7 +27,7 @@ public sealed class AnonClient : IAnonClient
 
     public void Load()
     {
-        var cookieText = httpContextAccessor.HttpContext?.Request.Cookies[cookieName];
+        var cookieText = httpContextAccessor.HttpContext?.Request.Cookies[options.AnonClient.CookieName];
         if (string.IsNullOrWhiteSpace(cookieText))
         {
             SessionKey = "";
@@ -57,9 +58,12 @@ public sealed class AnonClient : IAnonClient
             HttpOnly = true,
             Secure = true,
             Path = "/",
-            SameSite = SameSiteMode.Lax
+            SameSite = SameSiteMode.Lax,
+            Domain = string.IsNullOrWhiteSpace(this.options.AnonClient.CookieDomain) ? 
+                null : 
+                this.options.AnonClient.CookieDomain
         };
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, protectedText, options);
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(this.options.AnonClient.CookieName, protectedText, options);
         SessionKey = sessionKey;
         SessionExpirationTime = sessionExpirationTime;
         RequesterKey = requesterKey;

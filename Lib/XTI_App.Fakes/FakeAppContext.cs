@@ -5,6 +5,7 @@ namespace XTI_App.Fakes;
 public sealed class FakeAppContext : ISourceAppContext
 {
     private readonly List<AppContextModel> apps = new();
+    private readonly List<ModifierModel> modifiers = new();
     private AppContextModel? currentApp;
 
     private static int appID = 1;
@@ -53,7 +54,7 @@ public sealed class FakeAppContext : ISourceAppContext
     {
         apps.RemoveAll(a => a.App.AppKey.Equals(appTemplate.AppKey));
         var app = AddNewApp(appTemplate);
-        if(currentApp != null && currentApp.App.AppKey.Equals(appTemplate.AppKey))
+        if (currentApp != null && currentApp.App.AppKey.Equals(appTemplate.AppKey))
         {
             SetCurrentApp(app);
         }
@@ -62,42 +63,64 @@ public sealed class FakeAppContext : ISourceAppContext
 
     public AppContextModel AddModifier
     (
+        ModifierCategoryName categoryName,
+        ModifierKey modifierKey,
+        string targetKey
+    ) => AddModifier(GetCurrentApp(), categoryName, modifierKey, targetKey);
+
+    private AppContextModel AddModifier
+    (
         AppContextModel appContext,
         ModifierCategoryName categoryName,
         ModifierKey modifierKey,
         string targetKey
     )
     {
-        var modCategory = GetModifierCategory(appContext, categoryName);
-        modCategory = modCategory with
-        {
-            Modifiers = modCategory.Modifiers
-                .Union
-                (
-                    new[]
-                    {
-                        new ModifierModel(modifierID, modCategory.ModifierCategory.ID, modifierKey, targetKey, targetKey)
-                    }
-                )
-                .ToArray()
-        };
-        modifierID++;
-        var updated = Update
-        (
-            appContext,
-            a => a with
-            {
-                ModifierCategories = a.ModifierCategories
-                    .Where(mc => !mc.ModifierCategory.Name.Equals(categoryName))
-                    .Union(new[] { modCategory })
-                    .ToArray()
-            }
-        );
-        return updated;
+        var modCategory = GetModCategory(appContext, categoryName);
+        return AddModifier(appContext, modCategory, modifierKey, targetKey);
     }
 
-    public AppContextModifierCategoryModel GetModifierCategory(AppContextModel appContext, ModifierCategoryName categoryName) =>
-        appContext.ModifierCategory(categoryName);
+    public AppContextModel AddModifier
+    (
+        ModifierCategoryModel modCategory,
+        ModifierKey modifierKey,
+        string targetKey
+    ) =>
+        AddModifier(GetCurrentApp(), modCategory, modifierKey, targetKey);
+
+    private AppContextModel AddModifier
+    (
+        AppContextModel appContext,
+        ModifierCategoryModel modCategory,
+        ModifierKey modifierKey,
+        string targetKey
+    )
+    {
+        var modifier = modifiers.FirstOrDefault(m => m.ModKey.Equals(modifierKey));
+        if (modifier != null)
+        {
+            modifiers.Remove(modifier);
+        }
+        modifiers.Add
+        (
+            new ModifierModel
+            (
+                modifierID,
+                modCategory.ID,
+                modifierKey,
+                targetKey,
+                targetKey
+            )
+        );
+        modifierID++;
+        return appContext;
+    }
+
+    public ModifierCategoryModel GetModCategory(ModifierCategoryName categoryName) =>
+        GetModCategory(GetCurrentApp(), categoryName);
+
+    private ModifierCategoryModel GetModCategory(AppContextModel appContext, ModifierCategoryName categoryName) =>
+        appContext.ModCategory(categoryName);
 
     private AppContextModel AddNewApp(AppApiTemplateModel appTemplate)
     {
@@ -106,7 +129,7 @@ public sealed class FakeAppContext : ISourceAppContext
         if (!modCategoryNames.Any(mc => ModifierCategoryName.Default.Equals(mc)))
         {
             modCategoryNames = modCategoryNames
-                .Union(new[] { ModifierCategoryName.Default.DisplayText })
+                .Union(new[] { ModifierCategoryName.Default })
                 .ToArray();
         }
         var modCategories = modCategoryNames
@@ -115,32 +138,25 @@ public sealed class FakeAppContext : ISourceAppContext
             (
                 mc =>
                 {
-                    var modCategory = new AppContextModifierCategoryModel
-                    (
-                        new ModifierCategoryModel
-                        (
-                            modCategoryID,
-                            string.IsNullOrWhiteSpace(mc)
-                                ? ModifierCategoryName.Default
-                                : new ModifierCategoryName(mc)
-                        ),
-                        ModifierCategoryName.Default.Equals(mc)
-                            ? new[] { new ModifierModel(modifierID, modCategoryID, ModifierKey.Default, "", "") }
-                            : new ModifierModel[0]
-                    );
                     modCategoryID++;
-                    return modCategory;
+                    return new ModifierCategoryModel
+                    (
+                        modCategoryID,
+                        string.IsNullOrWhiteSpace(mc)
+                            ? ModifierCategoryName.Default
+                            : mc
+                    );
                 }
             )
             .ToArray();
         var roles = appTemplate.RecursiveRoles()
-            .Union(AppRoleName.DefaultRoles().Select(r => r.DisplayText))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Union(AppRoleName.DefaultRoles())
+            .Distinct()
             .Select
             (
                 r =>
                 {
-                    var role = new AppRoleModel(roleID, new AppRoleName(r));
+                    var role = new AppRoleModel(roleID, r);
                     roleID++;
                     return role;
                 }
@@ -176,8 +192,8 @@ public sealed class FakeAppContext : ISourceAppContext
                         new ResourceGroupModel
                         (
                             resourceGroupID,
-                            modCategories.First(mc => mc.ModifierCategory.Name.Equals(g.ModCategory)).ModifierCategory.ID,
-                            new ResourceGroupName(g.Name),
+                            modCategories.First(mc => mc.Name.Equals(g.ModCategory)).ID,
+                            g.Name,
                             g.IsAnonymousAllowed
                         ),
                         g.ActionTemplates.Select
@@ -189,7 +205,7 @@ public sealed class FakeAppContext : ISourceAppContext
                                     new ResourceModel
                                     (
                                         resourceID,
-                                        new ResourceName(a.Name),
+                                        a.Name,
                                         a.IsAnonymousAllowed,
                                         a.ResultType
                                     ),
@@ -219,4 +235,25 @@ public sealed class FakeAppContext : ISourceAppContext
     public AppContextModel GetCurrentApp() => currentApp ?? throw new ArgumentNullException(nameof(currentApp));
 
     public void SetCurrentApp(AppContextModel currentApp) => this.currentApp = currentApp;
+
+    public Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey)
+    {
+        var modifier = GetModifier(category, modKey);
+        return Task.FromResult(modifier);
+    }
+
+    public ModifierModel GetDefaultModifier() =>
+        GetModifier(GetCurrentApp().ModCategory(ModifierCategoryName.Default), ModifierKey.Default);
+
+    public ModifierModel GetModifier(ModifierCategoryModel category, ModifierKey modKey)
+    {
+        if (modKey.Equals(ModifierKey.Default))
+        {
+            category = GetModCategory(ModifierCategoryName.Default);
+        }
+        return modifiers.FirstOrDefault(m => m.CategoryID == category.ID && m.ModKey.Equals(modKey)) ?? new();
+    }
+
+    public AppRoleModel[] GetRoles(params AppRoleName[] roleNames) =>
+        GetCurrentApp().Roles.Where(r => roleNames.Contains(r.Name)).ToArray();
 }

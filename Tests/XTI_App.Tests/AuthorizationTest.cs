@@ -14,10 +14,10 @@ internal sealed class AuthorizationTest
     public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole()
     {
         var sp = await Setup();
-        addRolesToUser(sp, AppRoleName.Admin);
-        var api = getApi(sp);
+        AddRolesToUser(sp, AppRoleName.Admin);
+        var api = GetApi(sp);
         var action = api.Product.AddProduct;
-        setPath(sp, action);
+        SetPath(sp, action);
         Assert.DoesNotThrowAsync
         (
             () => action.Execute(new AddProductModel { Name = "Something" }),
@@ -29,10 +29,10 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotHaveAccess_WhenUserDoesNoBelongToAnAllowedRole()
     {
         var sp = await Setup();
-        addRolesToUser(sp, FakeAppRoles.Instance.Viewer);
-        var api = getApi(sp);
+        AddRolesToUser(sp, FakeAppRoles.Instance.Viewer);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action);
+        SetPath(sp, action);
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -45,10 +45,10 @@ internal sealed class AuthorizationTest
     {
         var sp = await Setup();
         var appSetup = sp.GetRequiredService<FakeAppSetup>();
-        addRolesToUser(sp, FakeAppRoles.Instance.Viewer);
-        var api = getApi(sp);
+        AddRolesToUser(sp, FakeAppRoles.Instance.Viewer);
+        var api = GetApi(sp);
         var action = api.Product.AddProduct;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddProductModel { Name = "Something" }),
@@ -60,10 +60,10 @@ internal sealed class AuthorizationTest
     public async Task ShouldHaveAccessToModifiedAction_WhenUserBelongsToAnAllowedRoleForTheDefaultModifier()
     {
         var sp = await Setup();
-        var api = getApi(sp);
-        addRolesToUser(sp, AppRoleName.Admin);
+        var api = GetApi(sp);
+        AddRolesToUser(sp, AppRoleName.Admin);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.DoesNotThrowAsync
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -75,11 +75,11 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotHaveAccessToModifiedAction_WhenUserDoesNotBelongsToAnAllowedRoleForTheModifier_IfTheyBelongToAnAllowedRoleForTheDefaultModifier()
     {
         var sp = await Setup();
-        addRolesToUser(sp, AppRoleName.Admin);
+        AddRolesToUser(sp, AppRoleName.Admin);
         addRolesToUser(sp, new ModifierKey("IT"), FakeAppRoles.Instance.Viewer);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -92,9 +92,9 @@ internal sealed class AuthorizationTest
     {
         var sp = await Setup();
         addRolesToUser(sp, new ModifierKey("IT"), AppRoleName.Admin);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.DoesNotThrowAsync
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -108,9 +108,9 @@ internal sealed class AuthorizationTest
         var sp = await Setup();
         var appSetup = sp.GetRequiredService<FakeAppSetup>();
         addRolesToUser(sp, new ModifierKey("IT"), FakeAppRoles.Instance.Viewer);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -122,10 +122,10 @@ internal sealed class AuthorizationTest
     public async Task ShouldHaveAccess_WhenUserBelongsToAnAllowedRole_AndTheActionHasTheDefaultModifier()
     {
         var sp = await Setup();
-        addRolesToUser(sp, AppRoleName.Admin);
-        var api = getApi(sp);
+        AddRolesToUser(sp, AppRoleName.Admin);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action);
+        SetPath(sp, action);
         Assert.DoesNotThrowAsync
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -138,9 +138,9 @@ internal sealed class AuthorizationTest
     {
         var sp = await Setup();
         addRolesToUser(sp, new ModifierKey("IT"), AppRoleName.Admin);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "HR");
+        SetPath(sp, action, "HR");
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -154,9 +154,9 @@ internal sealed class AuthorizationTest
         var sp = await Setup();
         var userContext = GetUserContext(sp);
         userContext.SetCurrentUser(AppUserName.Anon);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Home.DoSomething;
-        setPath(sp, action);
+        SetPath(sp, action);
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new EmptyRequest()),
@@ -170,9 +170,9 @@ internal sealed class AuthorizationTest
         var sp = await Setup();
         var userContext = GetUserContext(sp);
         userContext.SetCurrentUser(AppUserName.Anon);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Login.Authenticate;
-        setPath(sp, action);
+        SetPath(sp, action);
         Assert.DoesNotThrowAsync
         (
             () => action.Execute(new EmptyRequest()),
@@ -184,7 +184,7 @@ internal sealed class AuthorizationTest
     public async Task ShouldAllowAccess_WhenTheUserIsAuthenticatedAndTheResourceAllowsAuthenticatedUsers()
     {
         var sp = await Setup();
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var group = api.Home;
         setPath(sp, group);
         var hasAccess = await group.HasAccess();
@@ -197,7 +197,7 @@ internal sealed class AuthorizationTest
         var sp = await Setup();
         var userContext = GetUserContext(sp);
         userContext.SetCurrentUser(AppUserName.Anon);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var group = api.Home;
         setPath(sp, group);
         var hasAccess = await group.HasAccess();
@@ -208,11 +208,11 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotAllowAccess_WhenTheUserHasTheDenyAccessRole()
     {
         var sp = await Setup();
-        addRolesToUser(sp, AppRoleName.Admin);
+        AddRolesToUser(sp, AppRoleName.Admin);
         addRolesToUser(sp, new ModifierKey("IT"), AppRoleName.DenyAccess);
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -224,12 +224,12 @@ internal sealed class AuthorizationTest
     public async Task ShouldNotAllowAccess_WhenUserHasBeenDeactivated()
     {
         var sp = await Setup();
-        addRolesToUser(sp, AppRoleName.Admin);
+        AddRolesToUser(sp, AppRoleName.Admin);
         var userContext = sp.GetRequiredService<FakeUserContext>();
         userContext.DeactivateUser();
-        var api = getApi(sp);
+        var api = GetApi(sp);
         var action = api.Employee.AddEmployee;
-        setPath(sp, action, "IT");
+        SetPath(sp, action, "IT");
         Assert.ThrowsAsync<AccessDeniedException>
         (
             () => action.Execute(new AddEmployeeModel { Name = "Someone" }),
@@ -237,7 +237,7 @@ internal sealed class AuthorizationTest
         );
     }
 
-    private void addRolesToUser(IServiceProvider services, params AppRoleName[] roles) =>
+    private void AddRolesToUser(IServiceProvider services, params AppRoleName[] roles) =>
         addRolesToUser(services, ModifierKey.Default, roles);
 
     private void addRolesToUser(IServiceProvider services, ModifierKey modifierKey, params AppRoleName[] roles)
@@ -273,7 +273,7 @@ internal sealed class AuthorizationTest
         pathAccessor.SetPath(group.Path);
     }
 
-    private void setPath<TModel, TResult>(IServiceProvider sp, AppApiAction<TModel, TResult> action, string department = "")
+    private void SetPath<TModel, TResult>(IServiceProvider sp, AppApiAction<TModel, TResult> action, string department = "")
     {
         var pathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
         pathAccessor.SetPath(action.Path.WithModifier(new ModifierKey(department)));
@@ -282,6 +282,6 @@ internal sealed class AuthorizationTest
     private FakeUserContext GetUserContext(IServiceProvider sp)
         => (FakeUserContext)sp.GetRequiredService<IUserContext>();
 
-    private FakeAppApi getApi(IServiceProvider sp) => (FakeAppApi)sp.GetRequiredService<IAppApi>();
+    private FakeAppApi GetApi(IServiceProvider sp) => (FakeAppApi)sp.GetRequiredService<IAppApi>();
 
 }

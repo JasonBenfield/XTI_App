@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.OData.Query.Wrapper;
 using Microsoft.OData.UriParser;
 using System.Reflection;
 using XTI_App.Abstractions;
@@ -42,7 +41,15 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
         var result = await queryAction.Execute(options, model);
-        var queryRecords = result.ToArray();
+        if(options.Filter != null)
+        {
+            result = options.Filter.ApplyTo(result, new ODataQuerySettings()) as IQueryable<TEntity>;
+        }
+        if(options.OrderBy != null)
+        {
+            result = options.OrderBy.ApplyTo(result, new ODataQuerySettings());
+        }
+        var queryRecords = result!.ToArray();
         var selectFields = options.SelectExpand.SelectExpandClause.SelectedItems
             .OfType<PathSelectItem>()
             .Select(item => item.SelectedPath)
@@ -51,7 +58,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
             .ToArray();
         var properties = queryRecords
             .FirstOrDefault()?.GetType().GetProperties()
-            ?? new PropertyInfo[0];
+            ?? [];
         if (!selectFields.Any())
         {
             selectFields = properties.Select(p => p.Name).ToArray();
@@ -83,7 +90,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         return new WebFileResult
         (
             excelStream,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            WebContentTypes.Excel,
             queryToExcel.DownloadName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
                 ? queryToExcel.DownloadName
                 : $"{queryToExcel.DownloadName}_{DateTime.Now:yyMMdd_HHmmss}.xlsx"
@@ -93,7 +100,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
     public AppApiActionTemplate Template()
     {
         var modelTemplate = new ValueTemplateFromType(typeof(TArgs)).Template();
-        var resultTemplate = new ValueTemplateFromType(typeof(WebFileResult)).Template();
+        var resultTemplate = new EmptyValueTemplate();
         return new AppApiActionTemplate
         (
             Path.Action.DisplayText,

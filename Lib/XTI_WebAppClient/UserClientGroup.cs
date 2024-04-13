@@ -1,4 +1,4 @@
-using XTI_App.Abstractions;
+using XTI_WebApp.Abstractions;
 
 namespace XTI_WebAppClient;
 

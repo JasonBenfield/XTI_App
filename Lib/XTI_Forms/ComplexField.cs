@@ -4,7 +4,7 @@ namespace XTI_Forms;
 
 public class ComplexField : IField
 {
-    private readonly List<IField> fields = new ();
+    private readonly List<IField> fields = new();
     private readonly ConstraintCollection<IField[]> constraints = new();
 
     protected ComplexField(string prefix, string name)
@@ -35,38 +35,45 @@ public class ComplexField : IField
         }
     }
 
-    protected InputField<string> AddTextInput(string name)
-        => AddInput<string>(name);
+    protected InputField<string> AddTextInput(string name) => AddInput<string>(name);
 
-    protected InputField<DateTimeOffset?> AddDateInput(string name)
-        => AddInput<DateTimeOffset?>(name);
+    protected InputField<DateOnly?> AddDateInput(string name) => AddInput<DateOnly?>(name);
 
-    protected InputField<int?> AddInt32Input(string name)
-        => AddInput<int?>(name);
+    protected InputField<DateTimeOffset?> AddDateTimeInput(string name) => AddInput<DateTimeOffset?>(name);
 
-    protected InputField<decimal?> AddDecimalInput(string name)
-        => AddInput<decimal?>(name);
+    protected InputField<TimeOnly?> AddTimeInput(string name) => AddInput<TimeOnly?>(name);
 
-    private InputField<T> AddInput<T>(string name)
-        => AddField(name, (p, n) => new InputField<T>(p, n));
+    protected InputField<int?> AddInt32Input(string name) => AddInput<int?>(name);
 
-    protected HiddenField<string> AddTextHidden(string name, string value = "")
-        => AddHidden(name, value);
+    protected InputField<decimal?> AddDecimalInput(string name) => 
+        AddInput<decimal?>(name);
 
-    protected HiddenField<int?> AddInt32Hidden(string name, int? value = null)
-        => AddHidden(name, value);
+    private InputField<T> AddInput<T>(string name) => 
+        AddField(name, (p, n) => new InputField<T>(p, n));
 
-    protected HiddenField<DateTimeOffset?> AddDateHidden(string name, DateTimeOffset? value = null)
-        => AddHidden(name, value);
+    protected HiddenField<string> AddTextHidden(string name, string value = "") => 
+        AddHidden(name, value);
 
-    protected HiddenField<decimal?> AddDecimalHidden(string name, decimal? value = null)
-        => AddHidden(name, value);
+    protected HiddenField<int?> AddInt32Hidden(string name, int? value = null) => 
+        AddHidden(name, value);
 
-    private HiddenField<T> AddHidden<T>(string name, T? value = default)
-        => AddField(name, (p, n) => new HiddenField<T>(p, n, value));
+    protected HiddenField<DateTimeOffset?> AddDateTimeHidden(string name, DateTimeOffset? value = null) =>
+        AddHidden(name, value);
 
-    protected DropDownField<bool?> AddBooleanDropDown(string name)
-        => AddBooleanDropDown(name, "Yes", "No");
+    protected HiddenField<DateOnly?> AddDateHidden(string name, DateOnly? value = null) => 
+        AddHidden(name, value);
+
+    protected HiddenField<TimeOnly?> AddTimeHidden(string name, TimeOnly? value = null) =>
+        AddHidden(name, value);
+
+    protected HiddenField<decimal?> AddDecimalHidden(string name, decimal? value = null) => 
+        AddHidden(name, value);
+
+    private HiddenField<T> AddHidden<T>(string name, T? value = default) => 
+        AddField(name, (p, n) => new HiddenField<T>(p, n, value));
+
+    protected DropDownField<bool?> AddBooleanDropDown(string name) => 
+        AddBooleanDropDown(name, "Yes", "No");
 
     protected DropDownField<bool?> AddBooleanDropDown(string name, string trueText, string falseText)
     {
@@ -78,17 +85,23 @@ public class ComplexField : IField
         );
     }
 
-    protected DropDownField<string> AddTextDropDown(string name, params DropDownItem<string>[] items)
-        => AddDropDown(name, items);
+    protected DropDownField<string> AddTextDropDown(string name, params DropDownItem<string>[] items) => 
+        AddDropDown(name, items);
 
-    protected DropDownField<int?> AddInt32DropDown(string name, params DropDownItem<int?>[] items)
-        => AddDropDown(name, items);
+    protected DropDownField<int?> AddInt32DropDown(string name, params DropDownItem<int?>[] items) =>
+        AddDropDown(name, items);
 
-    protected DropDownField<DateTimeOffset?> AddDateDropDown(string name, params DropDownItem<DateTimeOffset?>[] items)
-        => AddDropDown(name, items);
+    protected DropDownField<DateOnly?> AddDateDropDown(string name, params DropDownItem<DateOnly?>[] items) =>
+        AddDropDown(name, items);
 
-    protected DropDownField<decimal?> AddDecimalDropDown(string name, params DropDownItem<decimal?>[] items)
-        => AddDropDown(name, items);
+    protected DropDownField<DateTimeOffset?> AddDateTimeDropDown(string name, params DropDownItem<DateTimeOffset?>[] items) =>
+        AddDropDown(name, items);
+
+    protected DropDownField<TimeOnly?> AddTimeDropDown(string name, params DropDownItem<TimeOnly?>[] items) =>
+        AddDropDown(name, items);
+
+    protected DropDownField<decimal?> AddDecimalDropDown(string name, params DropDownItem<decimal?>[] items) =>
+        AddDropDown(name, items);
 
     private DropDownField<T> AddDropDown<T>(string name, params DropDownItem<T>[] items)
     {

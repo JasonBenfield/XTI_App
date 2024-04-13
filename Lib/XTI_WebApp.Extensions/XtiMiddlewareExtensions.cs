@@ -6,6 +6,7 @@ public static class XtiMiddlewareExtensions
 {
     public static IApplicationBuilder UseXti(this IApplicationBuilder builder) =>
         builder
+            .UseMiddleware<CurrentVersionMiddleware>()
             .UseMiddleware<ErrorHandlingMiddleware>()
             .UseMiddleware<SessionLogMiddleware>();
 }

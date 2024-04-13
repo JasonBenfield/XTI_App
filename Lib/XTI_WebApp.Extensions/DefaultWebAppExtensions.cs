@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net;
 using System.Text.Json.Serialization;
 using XTI_App.Abstractions;
 using XTI_App.Extensions;
@@ -17,10 +17,28 @@ using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
-public static class WebAppExtensions
+public static class DefaultWebAppExtensions
 {
     public static void UseXtiDefaults(this WebApplication app)
     {
+        var options = app.Configuration.Get<DefaultWebAppOptions>() ?? new();
+        var origins = options.XtiCors.Origins
+            .Split(new[] { ",", " " }, StringSplitOptions.None)
+            .Where(o => !string.IsNullOrWhiteSpace(o))
+            .Select(o => o.Trim())
+            .ToArray();
+        if (origins.Any())
+        {
+            app.UseCors
+            (
+                builder =>
+                    builder
+                        .WithOrigins(origins)
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+            );
+        }
         app.UseStaticFiles();
         app.UseRouting();
         app.UseAuthentication();
@@ -34,7 +52,7 @@ public static class WebAppExtensions
         );
     }
 
-    public static void AddWebAppServices(this IServiceCollection services)
+    public static void AddDefaultWebAppServices(this IServiceCollection services)
     {
         services.Configure<RazorViewEngineOptions>(o =>
         {
@@ -42,14 +60,17 @@ public static class WebAppExtensions
             o.ViewLocationFormats.Add("/Views/Exports/Shared/{0}" + RazorViewEngine.ViewExtension);
         });
         services.AddHttpContextAccessor();
-        services.AddConfigurationOptions<WebAppOptions>(WebAppOptions.WebApp);
-        services.AddConfigurationOptions<XtiAuthenticationOptions>(XtiAuthenticationOptions.XtiAuthentication);
+        services.AddConfigurationOptions<DefaultWebAppOptions>();
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().HubClient);
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().XtiToken);
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().DB);
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
         services.AddScoped<GetUserAccessAction>();
         services.AddScoped<GetMenuLinksAction>();
         services.AddScoped<UserProfileAction>();
         services.AddScoped<CacheBust>();
+
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
@@ -65,7 +86,8 @@ public static class WebAppExtensions
         {
             var dataProtector = sp.GetDataProtector(new[] { "XTI_Apps_Anon" });
             var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-            return new AnonClient(dataProtector, httpContextAccessor);
+            var options = sp.GetRequiredService<DefaultWebAppOptions>();
+            return new AnonClient(dataProtector, httpContextAccessor, options);
         });
         services.AddScoped<IXtiPathAccessor, WebXtiPathAccessor>();
         services.AddSingleton<ISystemUserCredentials, SystemUserCredentials>();
@@ -92,12 +114,16 @@ public static class WebAppExtensions
 
     public static void SetDefaultMvcOptions(this MvcOptions options)
     {
-        options.CacheProfiles.Add("Default", new CacheProfile
-        {
-            Duration = 2592000,
-            Location = ResponseCacheLocation.Any,
-            NoStore = false
-        });
+        options.CacheProfiles.Add
+        (
+            "Default",
+            new CacheProfile
+            {
+                Duration = 2592000,
+                Location = ResponseCacheLocation.Any,
+                NoStore = false
+            }
+        );
         options.ModelBinderProviders.Insert(0, new FormModelBinderProvider());
         options.ModelBinderProviders.Insert(0, new FileUploadModelBinderProvider());
     }

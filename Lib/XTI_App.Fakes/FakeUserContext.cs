@@ -6,7 +6,8 @@ public sealed class FakeUserContext : ISourceUserContext
 {
     private readonly FakeAppContext appContext;
     private readonly FakeCurrentUserName currentUserName;
-    private readonly List<UserContextModel> userContexts = new();
+    private readonly List<AppUserModel> users = new();
+    private readonly Dictionary<string, AppRoleModel[]> userRoles = new();
 
     private static int userID = 1001;
 
@@ -19,47 +20,50 @@ public sealed class FakeUserContext : ISourceUserContext
 
     public AppUserName GetCurrentUserName() => currentUserName.GetUserName();
 
-    public Task<UserContextModel> User() => User(GetCurrentUserName());
+    public Task<AppUserModel> User() => User(GetCurrentUserName());
 
-    public Task<UserContextModel> User(AppUserName userName)
+    public Task<AppUserModel> User(AppUserName userName)
     {
         return Task.FromResult(GetUser(userName));
     }
 
-    public UserContextModel GetUser() => GetUser(GetCurrentUserName());
+    public AppUserModel GetUser() => GetUser(GetCurrentUserName());
 
-    public UserContextModel GetUser(AppUserName userName) =>
-        userContexts.First(u => u.User.UserName.Equals(userName));
+    public AppUserModel GetUser(AppUserName userName) =>
+        users.First(u => u.UserName.Equals(userName));
 
     public void SetCurrentUser(AppUserName userName) => currentUserName.SetUserName(userName);
 
-    public UserContextModel Update(UserContextModel original, Func<UserContextModel, UserContextModel> update)
+    public AppUserModel Update(AppUserModel original, Func<AppUserModel, AppUserModel> update)
     {
-        userContexts.Remove(original);
+        users.Remove(original);
         var updated = update(original);
-        userContexts.Add(updated);
+        users.Add(updated);
         return updated;
     }
 
-    public UserContextModel AddUser(UserContextModel userContext)
+    public AppUserModel AddUser(AppUserModel user)
     {
-        userContexts.RemoveAll(u => u.User.ID == userContext.User.ID);
-        userContexts.Add(userContext);
-        return userContext;
+        users.RemoveAll(u => u.ID == user.ID || u.UserName.Equals(user.UserName));
+        users.Add(user);
+        return user;
     }
 
-    public UserContextModel AddUser(AppUserName userName)
+    public AppUserModel AddUser(AppUserName userName)
     {
-        var user = userContexts.FirstOrDefault(u => u.User.UserName.Equals(userName));
+        var user = users.FirstOrDefault(u => u.UserName.Equals(userName));
         if (user == null)
         {
             var id = GetUniqueID();
-            user = new UserContextModel
+            user = new AppUserModel
             (
-                new AppUserModel(id, userName, new PersonName(userName.DisplayText), "", DateTimeOffset.MaxValue),
-                new UserContextRoleModel[0]
+                id,
+                userName,
+                new PersonName(userName.DisplayText),
+                "",
+                DateTimeOffset.MaxValue
             );
-            userContexts.Add(user);
+            users.Add(user);
         }
         return user;
     }
@@ -72,10 +76,7 @@ public sealed class FakeUserContext : ISourceUserContext
             user,
             u => u with
             {
-                User = u.User with
-                {
-                    TimeDeactivated = DateTimeOffset.Now
-                }
+                TimeDeactivated = DateTimeOffset.Now
             }
         );
     }
@@ -83,77 +84,77 @@ public sealed class FakeUserContext : ISourceUserContext
     public void AddRolesToUser(params AppRoleName[] roles) =>
         AddRolesToUser(ModifierCategoryName.Default, ModifierKey.Default, roles);
 
-    public void AddRolesToUser(ModifierCategoryName categoryName, ModifierKey modifierKey, params AppRoleName[] roles)
+    public void AddRolesToUser(ModifierCategoryName categoryName, ModifierKey modifierKey, params AppRoleName[] roleNames)
     {
         var user = GetUser(GetCurrentUserName());
-        var modCategory = appContext.GetCurrentApp().ModifierCategory(categoryName);
-        var modifier = modCategory.Modifier(modifierKey);
-        var modifiedRole = user.ModifiedRoles
-            .Where(mr => mr.Modifier.ModKey.Equals(modifierKey))
-            .FirstOrDefault()
-            ?? new UserContextRoleModel(modCategory.ModifierCategory, modifier, new AppRoleModel[0]);
-        modifiedRole = modifiedRole with
+        var modCategory = appContext.GetModCategory(categoryName);
+        var modifier = appContext.GetModifier(modCategory, modifierKey);
+        var userRoleKey = GetUserRoleKey(user, modifier);
+        var roles = appContext.GetRoles(roleNames);
+        if (userRoles.ContainsKey(userRoleKey))
         {
-            Roles = modifiedRole.Roles
-                .Union
-                (
-                    roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
-                )
+            userRoles[userRoleKey] = userRoles[userRoleKey]
+                .Union(roles)
                 .Distinct()
-                .ToArray()
-        };
-        Update
-        (
-            user,
-            u => u with
-            {
-                ModifiedRoles = u.ModifiedRoles
-                    .Where(mr => !mr.Modifier.ModKey.Equals(modifierKey))
-                    .Union(new[] { modifiedRole })
-                    .ToArray()
-            }
-        );
+                .ToArray();
+        }
+        else
+        {
+            userRoles.Add(userRoleKey, roles);
+        }
     }
 
     public void SetUserRoles(params AppRoleName[] roles) =>
         SetUserRoles(ModifierCategoryName.Default, ModifierKey.Default, roles);
 
-    public void SetUserRoles(ModifierCategoryName categoryName, ModifierKey modifierKey, params AppRoleName[] roles)
+    public void SetUserRoles(ModifierCategoryModel modCategory, ModifierKey modifierKey, params AppRoleName[] roleNames) =>
+        SetUserRoles(modCategory.Name, modifierKey, roleNames);
+
+    public void SetUserRoles(ModifierCategoryName categoryName, ModifierKey modifierKey, params AppRoleName[] roleNames)
     {
         var user = GetUser(GetCurrentUserName());
-        var modCategory = appContext.GetModifierCategory
-        (
-            appContext.GetCurrentApp(),
-            categoryName
-        );
-        var modifier = modCategory.Modifier(modifierKey);
-        var modifiedRole = user.ModifiedRoles
-            .Where(mr => mr.Modifier.ModKey.Equals(modifierKey))
-            .FirstOrDefault()
-            ?? new UserContextRoleModel(modCategory.ModifierCategory, modifier, new AppRoleModel[0]);
-        modifiedRole = modifiedRole with
+        var modCategory = appContext.GetModCategory(categoryName);
+        var modifier = appContext.GetModifier(modCategory, modifierKey);
+        var userRoleKey = GetUserRoleKey(user, modifier);
+        var roles = appContext.GetRoles(roleNames);
+        if (userRoles.ContainsKey(userRoleKey))
         {
-            Roles = roles.Select(r => appContext.GetCurrentApp().Role(r)).ToArray()
-        };
-        Update
-        (
-            user,
-            u => u with
-            {
-                ModifiedRoles = u.ModifiedRoles
-                    .Where(mr => !mr.Modifier.ModKey.Equals(modifierKey))
-                    .Union(new[] { modifiedRole })
-                    .ToArray()
-            }
-        );
+            userRoles[userRoleKey] = roles;
+        }
+        else
+        {
+            userRoles.Add(userRoleKey, roles);
+        }
     }
 
     private int GetUniqueID()
     {
-        while (userContexts.Any(u => u.User.ID.Equals(userID)))
+        while (users.Any(u => u.ID.Equals(userID)))
         {
             userID++;
         }
         return userID;
     }
+
+    public Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier)
+    {
+        var roles = GetUserRoles(user, modifier);
+        return Task.FromResult(roles);
+    }
+
+    private AppRoleModel[] GetUserRoles(AppUserModel user, ModifierModel modifier)
+    {
+        if (!userRoles.TryGetValue(GetUserRoleKey(user, modifier), out var roles))
+        {
+            var defaultModifier = appContext.GetDefaultModifier();
+            if(!userRoles.TryGetValue(GetUserRoleKey(user, defaultModifier), out roles))
+            {
+                roles = new AppRoleModel[0];
+            }
+        }
+        return roles;
+    }
+
+    private static string GetUserRoleKey(AppUserModel user, ModifierModel modifier) =>
+        $"{user.UserName.Value}_{modifier.ID}";
 }

@@ -83,7 +83,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
     private async Task<PostResult> GetPostResponse(string modKey, string query, string odataOptions, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
-        client.Timeout = options.Timeout;
+        client.InitFromOptions(options);
         var token = await xtiTokenAccessor.Value();
         if (!string.IsNullOrWhiteSpace(token))
         {
@@ -94,7 +94,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
         {
             url += $"?{query}";
         }
-        using var content = new StringContent(odataOptions, Encoding.UTF8, "text/plain");
+        using var content = new StringContent(odataOptions, Encoding.UTF8, WebContentTypes.Text);
         using var response = await client.PostAsync(url, content, ct);
         var responseContent = await response.Content.ReadAsStringAsync();
         return new PostResult(response.IsSuccessStatusCode, response.StatusCode, responseContent, url);

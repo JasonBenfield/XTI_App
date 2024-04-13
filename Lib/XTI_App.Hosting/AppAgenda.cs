@@ -1,18 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
-using XTI_TempLog;
 
 namespace XTI_App.Hosting;
 
 public sealed class AppAgenda
 {
     private readonly IServiceScope scope;
-    private TempLogSession? session;
     private readonly ImmediateAppAgendaItem[] preStartItems;
     private readonly AppAgendaItem[] items;
     private readonly ImmediateAppAgendaItem[] postStopItems;
     private readonly List<IWorker> workers = new();
-    private readonly bool isCurrentVersion;
+    private SessionWorker? sessionWorker;
+    private bool isCurrentVersion;
 
     internal AppAgenda
     (
@@ -26,16 +25,17 @@ public sealed class AppAgenda
         this.preStartItems = preStartItems;
         this.items = items;
         this.postStopItems = postStopItems;
-        isCurrentVersion = sp.GetRequiredService<AppVersionKey>().Equals(AppVersionKey.Current);
     }
 
     public async Task Start(CancellationToken stoppingToken)
     {
+        var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
+        var xtiPath = xtiPathAccessor.Value();
+        isCurrentVersion = xtiPath.Version.Equals(AppVersionKey.Current);
         if (isCurrentVersion)
         {
-            var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
-            session = factory.CreateTempLogSession();
-            await session.StartSession();
+            sessionWorker = new SessionWorker(scope.ServiceProvider);
+            var _ = sessionWorker.StartAsync(stoppingToken);
             var preStartWorker = new ImmediateActionWorker
             (
                 scope.ServiceProvider,
@@ -46,7 +46,7 @@ public sealed class AppAgenda
             {
                 await Task.Delay(100);
             }
-            startWorkers(stoppingToken);
+            StartWorkers(stoppingToken);
         }
     }
 
@@ -88,14 +88,14 @@ public sealed class AppAgenda
             {
                 await Task.Delay(100);
             }
-            if (session != null)
+            if(sessionWorker != null)
             {
-                await session.EndSession();
+                await sessionWorker.StopAsync(stoppingToken);
             }
         }
     }
 
-    private void startWorkers(CancellationToken stoppingToken)
+    private void StartWorkers(CancellationToken stoppingToken)
     {
         var immediateWorker = new ImmediateActionWorker
         (

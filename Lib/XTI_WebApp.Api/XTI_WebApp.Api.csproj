@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>API infrastructure for XTI web apps.</Description>
@@ -9,11 +9,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="System.Text.Json" Version="7.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.31" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.19" />
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.32" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21" />
 	</ItemGroup>
 
 	<ItemGroup>

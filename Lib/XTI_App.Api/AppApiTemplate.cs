@@ -4,19 +4,21 @@ namespace XTI_App.Api;
 
 public sealed class AppApiTemplate
 {
-    private List<Func<ValueTemplate, ApiCodeGenerators, bool>> isExcludedFunctions = new List<Func<ValueTemplate, ApiCodeGenerators, bool>>();
+    private List<Func<ValueTemplate, ApiCodeGenerators, bool>> isExcludedFunctions = new();
 
-    public AppApiTemplate(AppApi api)
+    public AppApiTemplate(AppApi api, string serializedDefaultOptions)
     {
         AppKey = api.AppKey;
-        GroupTemplates = api.Groups().Select(g => g.Template());
+        GroupTemplates = api.Groups().Select(g => g.Template()).ToArray();
         RoleNames = api.RoleNames();
+        SerializedDefaultOptions = serializedDefaultOptions;
     }
 
     public AppKey AppKey { get; }
     public string Name { get => AppKey.Name.DisplayText.Replace(" ", ""); }
-    public IEnumerable<AppRoleName> RoleNames { get; }
-    public IEnumerable<AppApiGroupTemplate> GroupTemplates { get; }
+    public AppRoleName[] RoleNames { get; }
+    public AppApiGroupTemplate[] GroupTemplates { get; }
+    public string SerializedDefaultOptions { get; }
 
     public void ExcludeValueTemplates(Func<ValueTemplate, ApiCodeGenerators, bool> isExcluded)
     {
@@ -24,7 +26,7 @@ public sealed class AppApiTemplate
     }
 
     public IEnumerable<FormValueTemplate> FormTemplates(ApiCodeGenerators codeGenerator) =>
-        excluding
+        Excluding
         (
             GroupTemplates
                 .SelectMany(g => g.FormTemplates())
@@ -33,7 +35,7 @@ public sealed class AppApiTemplate
         );
 
     public IEnumerable<QueryableValueTemplate> QueryableTemplates(ApiCodeGenerators codeGenerator) =>
-        excluding
+        Excluding
         (
             GroupTemplates
                 .SelectMany(g => g.QueryableTemplates())
@@ -42,7 +44,7 @@ public sealed class AppApiTemplate
         );
 
     public IEnumerable<ObjectValueTemplate> ObjectTemplates(ApiCodeGenerators codeGenerator) =>
-        excluding
+        Excluding
         (
             GroupTemplates
                 .SelectMany(g => g.ObjectTemplates())
@@ -51,7 +53,7 @@ public sealed class AppApiTemplate
         );
 
     public IEnumerable<NumericValueTemplate> NumericValueTemplates(ApiCodeGenerators codeGenerator) =>
-        excluding
+        Excluding
         (
             GroupTemplates
                 .SelectMany(g => g.NumericValueTemplates())
@@ -60,7 +62,7 @@ public sealed class AppApiTemplate
         );
 
     public IEnumerable<EnumValueTemplate> EnumValueTemplates(ApiCodeGenerators codeGenerator) =>
-        excluding
+        Excluding
         (
             GroupTemplates
                 .SelectMany(g => g.EnumValueTemplates())
@@ -68,16 +70,16 @@ public sealed class AppApiTemplate
             codeGenerator
         );
 
-    private T[] excluding<T>(IEnumerable<T> valueTemplates, ApiCodeGenerators codeGenerator)
+    private T[] Excluding<T>(IEnumerable<T> valueTemplates, ApiCodeGenerators codeGenerator)
         where T : ValueTemplate
     {
-        var excluding = valueTemplates.Where(templ => isExcluded(templ, codeGenerator)).ToArray();
+        var excluding = valueTemplates.Where(templ => IsExcluded(templ, codeGenerator)).ToArray();
         return valueTemplates.Except(excluding).ToArray();
     }
 
-    private bool isExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator)
+    private bool IsExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator)
     {
-        bool isExcluded = false;
+        var isExcluded = false;
         foreach (var isExcludedFunc in isExcludedFunctions)
         {
             if (isExcludedFunc(templ, codeGenerator))
@@ -89,12 +91,13 @@ public sealed class AppApiTemplate
         return isExcluded;
     }
 
-    public AppApiTemplateModel ToModel()
-        => new AppApiTemplateModel
-        {
-            AppKey = AppKey,
-            GroupTemplates = GroupTemplates.Select(g => g.ToModel()).ToArray()
-        };
+    public AppApiTemplateModel ToModel() =>
+        new
+        (
+            AppKey: AppKey,
+            SerializedDefaultOptions: SerializedDefaultOptions,
+            GroupTemplates: GroupTemplates.Select(g => g.ToModel()).ToArray()
+        );
 
     public bool IsAuthenticator() => Name.Equals("Hub", StringComparison.OrdinalIgnoreCase);
 }

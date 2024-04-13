@@ -11,10 +11,18 @@ public class AppClient
     private readonly XtiTokenAccessor xtiTokenAccessor;
     private readonly AppClientOptions options = new();
 
-    protected AppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string appName, string version)
+    protected AppClient
+    (
+        IHttpClientFactory httpClientFactory, 
+        XtiTokenAccessorFactory xtiTokenAccessorFactory, 
+        AppClientUrl clientUrl, 
+        IAppClientRequestKey requestKey, 
+        string appName, 
+        string version
+    )
     {
         this.httpClientFactory = httpClientFactory;
-        this.xtiTokenAccessor = xtiTokenAccessor;
+        xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         this.clientUrl = clientUrl.WithApp(appName, version);
         var jsonSerializerOptions = new JsonSerializerOptions();
         jsonSerializerOptions.PropertyNameCaseInsensitive = true;
@@ -23,6 +31,7 @@ public class AppClient
         jsonSerializerOptions.AddCoreConverters();
         options.JsonSerializerOptions = jsonSerializerOptions;
         ConfigureJsonSerializerOptions(jsonSerializerOptions);
+        options.RequestKey = requestKey;
         UserCache = CreateGroup
         (
             (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>

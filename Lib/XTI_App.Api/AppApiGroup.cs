@@ -26,9 +26,9 @@ public sealed class AppApiGroup : IAppApiGroup
     public IAppApiUser User { get => user; }
 
     public TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction =>
-        (TAppApiAction)actions[actionKey(actionName)];
+        (TAppApiAction)actions[FormatActionKey(actionName)];
 
-    public IEnumerable<IAppApiAction> Actions() => actions.Values.ToArray();
+    public IAppApiAction[] Actions() => actions.Values.ToArray();
 
     public XtiPath Path { get; }
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
@@ -42,7 +42,7 @@ public sealed class AppApiGroup : IAppApiGroup
         return new AppApiGroupTemplate(Path.Group.DisplayText, modCategory, Access, actionTemplates);
     }
 
-    internal IEnumerable<AppRoleName> RoleNames()
+    internal AppRoleName[] RoleNames()
     {
         var roleNames = new List<AppRoleName>();
         roleNames.AddRange(Access.Allowed);
@@ -50,7 +50,7 @@ public sealed class AppApiGroup : IAppApiGroup
             .SelectMany(a => a.Access.Allowed)
             .Distinct();
         roleNames.AddRange(actionRoleNames);
-        return roleNames.Distinct();
+        return roleNames.Distinct().ToArray();
     }
 
     public AppApiAction<TModel, TResult> AddAction<TModel, TResult>
@@ -101,11 +101,11 @@ public sealed class AppApiGroup : IAppApiGroup
                 FriendlyName: friendlyName
             )
         );
-        actions.Add(actionKey(action.ActionName), action);
+        actions.Add(FormatActionKey(action.ActionName), action);
         return action;
     }
 
-    private static string actionKey(string actionName) =>
+    private static string FormatActionKey(string actionName) =>
         actionName.ToLower().Replace(" ", "").Replace("_", "");
 
     public override string ToString() => $"{GetType().Name} {Path.Group}";

@@ -217,10 +217,10 @@ public sealed class AppApiActionTemplate
 
     public AppApiActionTemplateModel ToModel()
         => new AppApiActionTemplateModel
-        {
-            Name = Name,
-            IsAnonymousAllowed = Access.IsAnonymousAllowed,
-            Roles = Access.Allowed.Select(r => r.Value).ToArray(),
-            ResultType = resultType
-        };
+        (
+            Name: new ResourceName(Name),
+            IsAnonymousAllowed: Access.IsAnonymousAllowed,
+            Roles: Access.Allowed,
+            ResultType: resultType
+        );
 }

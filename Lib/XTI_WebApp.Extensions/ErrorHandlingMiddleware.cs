@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -39,7 +40,7 @@ internal sealed class ErrorHandlingMiddleware
             catch { }
             if (IsApiRequest(context.Request))
             {
-                context.Response.ContentType = "application/json";
+                context.Response.ContentType = WebContentTypes.Json;
                 var errors = ResultContainer.Create(xtiRequestContext.GetErrorResult());
                 var serializedErrors = JsonSerializer.Serialize(errors);
                 await context.Response.WriteAsync(serializedErrors);
@@ -62,13 +63,20 @@ internal sealed class ErrorHandlingMiddleware
     }
 
     private static bool IsApiRequest(HttpRequest request)
-        => request != null
-            && request.Method == "POST"
-            &&
-            (
-                request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true ||
-                request.ContentType?.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) == true
-            );
+    {
+        var contentType = request?.ContentType ?? "";
+        var method = request?.Method ?? "";
+        var displayUrl = request?.GetDisplayUrl() ?? "";
+        return 
+        (
+            displayUrl.Contains("/odata/", StringComparison.OrdinalIgnoreCase) ||
+            method == "POST"
+        ) &&
+        (
+            contentType.StartsWith(WebContentTypes.Json, StringComparison.OrdinalIgnoreCase) ||
+            contentType.StartsWith(WebContentTypes.Text, StringComparison.OrdinalIgnoreCase)
+        );
+    }
 
     private static async Task<string> RenderViewToString(IViewEngine viewEngine, HttpContext httpContext, string viewPath, object? model = null)
     {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using XTI_App.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -8,7 +7,7 @@ public sealed class XtiClaims
     private readonly HttpContext httpContext;
 
     public XtiClaims(IHttpContextAccessor httpContextAccessor)
-        : this(httpContextAccessor.HttpContext)
+        : this(httpContextAccessor.HttpContext ?? throw new ArgumentException("HttpContext is null"))
     {
     }
 

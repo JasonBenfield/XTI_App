@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Text.Json;
-using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
 using XTI_WebApp.Abstractions;
@@ -45,7 +44,7 @@ public sealed class PageContext : IPageContext
             var app = await appContext.App();
             AppTitle = app.App.AppKey.Name.DisplayText;
             EnvironmentName = xtiEnv.EnvironmentName;
-            RootUrl = httpContextAccessor.HttpContext.Request.PathBase;
+            RootUrl = httpContextAccessor.HttpContext?.Request.PathBase ?? "";
             var userName = await currentUserName.Value();
             if (userName.IsAnon())
             {

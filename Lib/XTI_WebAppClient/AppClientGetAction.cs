@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Runtime.Intrinsics.Arm;
 using XTI_Core;
 using XTI_Forms;
 
@@ -23,15 +22,25 @@ public sealed class AppClientGetAction<TModel>
         this.actionName = actionName;
     }
 
+    public Task<string> CurrentUrl() => Url("");
+
+    public Task<string> CurrentUrl(string modifier) =>
+        _Url(clientUrl.WithCurrentVersion(), default, modifier);
+
+    public Task<string> CurrentUrl(TModel model) => CurrentUrl(model, "");
+
+    public Task<string> CurrentUrl(TModel model, string modifier) =>
+        _Url(clientUrl.WithCurrentVersion(), model, modifier);
+
     public Task<string> Url() => Url("");
 
-    public Task<string> Url(string modifier) => _Url(default, modifier);
+    public Task<string> Url(string modifier) => _Url(clientUrl, default, modifier);
 
     public Task<string> Url(TModel model) => Url(model, "");
 
-    public Task<string> Url(TModel model, string modifier) => _Url(model, modifier);
+    public Task<string> Url(TModel model, string modifier) => _Url(clientUrl, model, modifier);
 
-    private async Task<string> _Url(TModel? model, string modifier)
+    private async Task<string> _Url(AppClientUrl clientUrl, TModel? model, string modifier)
     {
         var url = await clientUrl.Value(actionName, modifier);
         var query = new ObjectToQueryString(model).Value;
@@ -42,13 +51,13 @@ public sealed class AppClientGetAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<string> GetContent(string modifier, TModel model, CancellationToken ct)
-        => _GetContent(modifier, model, true, ct);
+    public Task<string> GetContent(string modifier, TModel model, CancellationToken ct) =>
+        _GetContent(modifier, model, true, ct);
 
     private async Task<string> _GetContent(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
-        client.Timeout = options.Timeout;
+        client.InitFromOptions(options);
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
             var token = await xtiTokenAccessor.Value();

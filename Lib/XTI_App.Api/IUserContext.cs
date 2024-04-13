@@ -4,6 +4,7 @@ namespace XTI_App.Api;
 
 public interface IUserContext
 {
-    Task<UserContextModel> User();
-    Task<UserContextModel> User(AppUserName userName);
+    Task<AppUserModel> User();
+    Task<AppUserModel> User(AppUserName userName);
+    Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier);
 }

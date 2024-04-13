@@ -5,9 +5,9 @@ namespace XTI_WebApp.Api;
 public sealed class LoginUrl
 {
     private readonly ILoginReturnKey returnKey;
-    private readonly XtiAuthenticationOptions options;
+    private readonly DefaultWebAppOptions options;
 
-    public LoginUrl(ILoginReturnKey returnKey, XtiAuthenticationOptions options)
+    public LoginUrl(ILoginReturnKey returnKey, DefaultWebAppOptions options)
     {
         this.returnKey = returnKey;
         this.options = options;
@@ -16,9 +16,9 @@ public sealed class LoginUrl
     public async Task<string> Value(string returnUrl)
     {
         var returnKeyValue = await returnKey.Value(returnUrl);
-        var delimiter = options.AuthenticatorUrl.Contains("?")
+        var delimiter = options.XtiAuthentication.AuthenticatorUrl.Contains("?")
             ? "&"
             : "?";
-        return $"{options.AuthenticatorUrl}{delimiter}returnKey={returnKeyValue}";
+        return $"{options.XtiAuthentication.AuthenticatorUrl}{delimiter}returnKey={returnKeyValue}";
     }
 }

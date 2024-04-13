@@ -2,8 +2,16 @@
 
 public sealed class GenericAppClient : AppClient
 {
-    public GenericAppClient(IHttpClientFactory httpClientFactory, XtiTokenAccessor xtiTokenAccessor, AppClientUrl clientUrl, string appName, AppClientVersion version)
-        : base(httpClientFactory, xtiTokenAccessor, clientUrl, appName, version.IsBlank() ? "Current" : version.Value)
+    public GenericAppClient
+    (
+        IHttpClientFactory httpClientFactory, 
+        XtiTokenAccessorFactory xtiTokenAccessorFactory, 
+        AppClientUrl clientUrl, 
+        IAppClientRequestKey requestKey, 
+        string appName, 
+        AppClientVersion version
+    )
+        : base(httpClientFactory, xtiTokenAccessorFactory, clientUrl, requestKey, appName, version.IsBlank() ? "Current" : version.Value)
     {
     }
 

@@ -33,13 +33,13 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
             {
                 if (scheduledItem.Type != ScheduledActionTypes.PeriodicUntilSuccess || !periodicSucceeded)
                 {
-                    var actionExecutor = new ActionRunner
+                    var actionRunner = new ActionRunner
                     (
                         sp,
                         scheduledItem.GroupName.DisplayText,
                         scheduledItem.ActionName.DisplayText
                     );
-                    var result = await actionExecutor.Run(stoppingToken);
+                    var result = await actionRunner.Run(stoppingToken);
                     if (result == ActionRunner.Results.Succeeded)
                     {
                         periodicSucceeded = true;

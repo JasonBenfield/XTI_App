@@ -16,12 +16,12 @@ public class AuthenticatorXtiToken : IXtiToken
     public async Task<string> Value()
     {
         var credentialsValue = await credentials.Value();
-        var loginModel = new LoginCredentials
+        var authRequest = new AuthenticateRequest
         {
             UserName = credentialsValue.UserName,
             Password = credentialsValue.Password
         };
-        var result = await authClient.AuthApi.Authenticate(loginModel);
+        var result = await authClient.AuthApi.Authenticate(authRequest);
         return result.Token;
     }
 }

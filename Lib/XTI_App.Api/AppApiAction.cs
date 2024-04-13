@@ -59,17 +59,17 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         if (model is Form form)
         {
             form.Validate(errors);
-            ensureValidInput(errors);
+            EnsureValidInput(errors);
         }
         var validation = createValidation();
         await validation.Validate(errors, model, stoppingToken);
-        ensureValidInput(errors);
+        EnsureValidInput(errors);
         var action = createAction();
         var actionResult = await action.Execute(model, stoppingToken);
         return new ResultContainer<TResult>(actionResult);
     }
 
-    private static void ensureValidInput(ErrorList errors)
+    private static void EnsureValidInput(ErrorList errors)
     {
         if (errors.Any())
         {
