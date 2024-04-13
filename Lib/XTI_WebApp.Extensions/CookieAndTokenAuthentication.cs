@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System.Text;
+using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_WebApp.Api;
 
@@ -50,7 +51,7 @@ public static class CookieAndTokenAuthentication
     {
         options.RequireHttpsMetadata = false;
         options.SaveToken = true;
-        options.TokenValidationParameters = createTokenValidationParameters(config);
+        options.TokenValidationParameters = CreateTokenValidationParameters(config);
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = c =>
@@ -69,16 +70,16 @@ public static class CookieAndTokenAuthentication
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromHours(4);
         options.Cookie.Path = "/";
-        var xtiAuthOptions = config.GetSection(XtiAuthenticationOptions.XtiAuthentication).Get<XtiAuthenticationOptions>();
-        if (!string.IsNullOrWhiteSpace(xtiAuthOptions?.CookieName))
+        var webAppOptions = config.Get<DefaultWebAppOptions>() ?? new();
+        if (!string.IsNullOrWhiteSpace(webAppOptions.XtiAuthentication.CookieName))
         {
-            options.Cookie.Name = xtiAuthOptions.CookieName;
+            options.Cookie.Name = webAppOptions.XtiAuthentication.CookieName;
         }
-        if (!string.IsNullOrWhiteSpace(xtiAuthOptions?.CookieDomain))
+        if (!string.IsNullOrWhiteSpace(webAppOptions.XtiAuthentication.CookieDomain))
         {
-            options.Cookie.Domain = xtiAuthOptions.CookieDomain;
+            options.Cookie.Domain = webAppOptions.XtiAuthentication.CookieDomain;
         }
-        options.TicketDataFormat = createAuthTicketFormat(xtiEnv, options.DataProtectionProvider, config);
+        options.TicketDataFormat = CreateAuthTicketFormat(xtiEnv, options.DataProtectionProvider, config);
         options.Events = new CookieAuthenticationEvents
         {
             OnRedirectToLogin = async (x) =>
@@ -96,17 +97,17 @@ public static class CookieAndTokenAuthentication
                 }
                 else
                 {
-                    await redirectToLogin(x.HttpContext.RequestServices, x);
+                    await RedirectToLogin(x.HttpContext.RequestServices, x);
                 }
             }
         };
         options.ReturnUrlParameter = "returnUrl";
     }
 
-    private static TokenValidationParameters createTokenValidationParameters(IConfiguration config)
+    private static TokenValidationParameters CreateTokenValidationParameters(IConfiguration config)
     {
-        var xtiAuthOptions = config.GetSection(XtiAuthenticationOptions.XtiAuthentication).Get<XtiAuthenticationOptions>();
-        var key = Encoding.ASCII.GetBytes(xtiAuthOptions?.JwtSecret ?? "");
+        var options = config.Get<DefaultWebAppOptions>();
+        var key = Encoding.ASCII.GetBytes(options?.XtiAuthentication?.JwtSecret ?? "");
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -117,10 +118,10 @@ public static class CookieAndTokenAuthentication
         return tokenValidationParameters;
     }
 
-    private static JwtAuthTicketFormat createAuthTicketFormat(XtiEnvironment xtiEnv, IDataProtectionProvider? dataProtectionProvider, IConfiguration config)
+    private static JwtAuthTicketFormat CreateAuthTicketFormat(XtiEnvironment xtiEnv, IDataProtectionProvider? dataProtectionProvider, IConfiguration config)
     {
-        var xtiAuthOptions = config.GetSection(XtiAuthenticationOptions.XtiAuthentication).Get<XtiAuthenticationOptions>() ?? new XtiAuthenticationOptions();
-        var key = Encoding.ASCII.GetBytes(xtiAuthOptions.JwtSecret);
+        var options = config.Get<DefaultWebAppOptions>() ?? new DefaultWebAppOptions();
+        var key = Encoding.ASCII.GetBytes(options.XtiAuthentication.JwtSecret);
         var dataSerializer = new TicketSerializer();
         if (dataProtectionProvider == null)
         {
@@ -146,7 +147,7 @@ public static class CookieAndTokenAuthentication
         return authTicketFormat;
     }
 
-    private static async Task redirectToLogin(IServiceProvider sp, RedirectContext<CookieAuthenticationOptions> x)
+    private static async Task RedirectToLogin(IServiceProvider sp, RedirectContext<CookieAuthenticationOptions> x)
     {
         var returnUrl = $"{x.Request.Scheme}://{x.Request.Host.Value}{x.Request.PathBase.Value}";
         if (x.Request.Path.HasValue)
@@ -168,5 +169,5 @@ public static class CookieAndTokenAuthentication
     private static bool IsApiRequest(this HttpRequest request) =>
         request != null &&
         request.Method == "POST" &&
-        request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true;
+        request.ContentType?.StartsWith(WebContentTypes.Json, StringComparison.OrdinalIgnoreCase) == true;
 }

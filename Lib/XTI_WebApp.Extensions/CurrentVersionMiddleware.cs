@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_WebApp.Api;

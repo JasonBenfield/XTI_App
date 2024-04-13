@@ -41,8 +41,14 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
         var result = await queryAction.Execute(options, model);
-        result = options.Filter.ApplyTo(result, new ODataQuerySettings()) as IQueryable<TEntity>;
-        result = options.OrderBy.ApplyTo(result, new ODataQuerySettings());
+        if(options.Filter != null)
+        {
+            result = options.Filter.ApplyTo(result, new ODataQuerySettings()) as IQueryable<TEntity>;
+        }
+        if(options.OrderBy != null)
+        {
+            result = options.OrderBy.ApplyTo(result, new ODataQuerySettings());
+        }
         var queryRecords = result!.ToArray();
         var selectFields = options.SelectExpand.SelectExpandClause.SelectedItems
             .OfType<PathSelectItem>()
@@ -52,7 +58,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
             .ToArray();
         var properties = queryRecords
             .FirstOrDefault()?.GetType().GetProperties()
-            ?? new PropertyInfo[0];
+            ?? [];
         if (!selectFields.Any())
         {
             selectFields = properties.Select(p => p.Name).ToArray();
@@ -84,7 +90,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         return new WebFileResult
         (
             excelStream,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            WebContentTypes.Excel,
             queryToExcel.DownloadName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
                 ? queryToExcel.DownloadName
                 : $"{queryToExcel.DownloadName}_{DateTime.Now:yyMMdd_HHmmss}.xlsx"

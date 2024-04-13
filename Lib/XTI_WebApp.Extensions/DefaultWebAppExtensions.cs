@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net;
 using System.Text.Json.Serialization;
 using XTI_App.Abstractions;
 using XTI_App.Extensions;
@@ -18,12 +17,16 @@ using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
-public static class WebAppExtensions
+public static class DefaultWebAppExtensions
 {
     public static void UseXtiDefaults(this WebApplication app)
     {
-        var xtiCorsOptions = app.Configuration.GetSection(XtiCorsOptions.XtiCors).Get<XtiCorsOptions>() ?? new();
-        var origins = xtiCorsOptions.Origins.Where(o => !string.IsNullOrWhiteSpace(o)).ToArray();
+        var options = app.Configuration.Get<DefaultWebAppOptions>() ?? new();
+        var origins = options.XtiCors.Origins
+            .Split(new[] { ",", " " }, StringSplitOptions.None)
+            .Where(o => !string.IsNullOrWhiteSpace(o))
+            .Select(o => o.Trim())
+            .ToArray();
         if (origins.Any())
         {
             app.UseCors
@@ -49,7 +52,7 @@ public static class WebAppExtensions
         );
     }
 
-    public static void AddWebAppServices(this IServiceCollection services)
+    public static void AddDefaultWebAppServices(this IServiceCollection services)
     {
         services.Configure<RazorViewEngineOptions>(o =>
         {
@@ -57,10 +60,10 @@ public static class WebAppExtensions
             o.ViewLocationFormats.Add("/Views/Exports/Shared/{0}" + RazorViewEngine.ViewExtension);
         });
         services.AddHttpContextAccessor();
-        services.AddConfigurationOptions<WebAppOptions>(WebAppOptions.WebApp);
-        services.AddConfigurationOptions<XtiAuthenticationOptions>(XtiAuthenticationOptions.XtiAuthentication);
-        services.AddConfigurationOptions<AnonClientOptions>(AnonClientOptions.AnonClient);
-        services.AddConfigurationOptions<XtiCorsOptions>(XtiCorsOptions.XtiCors);
+        services.AddConfigurationOptions<DefaultWebAppOptions>();
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().HubClient);
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().XtiToken);
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().DB);
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
         services.AddScoped<GetUserAccessAction>();
@@ -83,7 +86,7 @@ public static class WebAppExtensions
         {
             var dataProtector = sp.GetDataProtector(new[] { "XTI_Apps_Anon" });
             var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-            var options = sp.GetRequiredService<AnonClientOptions>();
+            var options = sp.GetRequiredService<DefaultWebAppOptions>();
             return new AnonClient(dataProtector, httpContextAccessor, options);
         });
         services.AddScoped<IXtiPathAccessor, WebXtiPathAccessor>();

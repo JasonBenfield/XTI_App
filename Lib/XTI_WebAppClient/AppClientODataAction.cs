@@ -94,7 +94,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
         {
             url += $"?{query}";
         }
-        using var content = new StringContent(odataOptions, Encoding.UTF8, "text/plain");
+        using var content = new StringContent(odataOptions, Encoding.UTF8, WebContentTypes.Text);
         using var response = await client.PostAsync(url, content, ct);
         var responseContent = await response.Content.ReadAsStringAsync();
         return new PostResult(response.IsSuccessStatusCode, response.StatusCode, responseContent, url);

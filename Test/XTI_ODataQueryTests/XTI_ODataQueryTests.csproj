@@ -8,11 +8,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.0" />
-		<PackageReference Include="nunit" Version="3.14.0" />
+		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.4" />
+		<PackageReference Include="nunit" Version="4.1.0" />
 		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21-dev231124105119373" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21" />
 	</ItemGroup>
 
 	<ItemGroup>

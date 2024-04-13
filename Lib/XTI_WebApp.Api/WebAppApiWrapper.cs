@@ -1,5 +1,5 @@
-﻿using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
+using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -40,12 +40,10 @@ public class WebAppApiWrapper : AppApiWrapper
         template.ExcludeValueTemplates(IsValueTemplateExcluded);
     }
 
-    private static bool IsValueTemplateExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator)
-    {
-        return templ.DataType == typeof(EmptyRequest)
-            || templ.DataType == typeof(EmptyActionResult)
-            || templ.DataType == typeof(LogoutRequest)
-            || templ.DataType == typeof(ResourcePath)
-            || templ.DataType == typeof(ResourcePathAccess);
-    }
+    private static bool IsValueTemplateExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator) =>
+        templ.DataType == typeof(EmptyRequest) || 
+        templ.DataType == typeof(EmptyActionResult) || 
+        templ.DataType == typeof(LogoutRequest) || 
+        templ.DataType == typeof(ResourcePath) || 
+        templ.DataType == typeof(ResourcePathAccess);
 }

@@ -24,6 +24,6 @@ internal sealed class SystemUserNameTest
     public void ShouldStartWith()
     {
         var systemUserName = new SystemUserName(FakeInfo.AppKey, Environment.MachineName);
-        StringAssert.StartsWith("xti_sys2", systemUserName.UserName.Value);
+        Assert.That(systemUserName.UserName.Value, Does.StartWith("xti_sys2"), "User name should start with xti_sys2");
     }
 }

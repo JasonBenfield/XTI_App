@@ -2,5 +2,5 @@
 
 public interface IAuthApiClientGroup
 {
-    public Task<ILoginResult> Authenticate(LoginCredentials model);
+    public Task<LoginResult> Authenticate(AuthenticateRequest authRequest);
 }

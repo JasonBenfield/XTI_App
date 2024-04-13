@@ -156,7 +156,7 @@ public sealed class AppClientPostAction<TModel, TResult>
         else
         {
             var serialized = JsonSerializer.Serialize(transformedModel, options.JsonSerializerOptions);
-            content = new StringContent(serialized, Encoding.UTF8, "application/json");
+            content = new StringContent(serialized, Encoding.UTF8, WebContentTypes.Json);
         }
         var response = await client.PostAsync(url, content, ct);
         content.Dispose();
@@ -285,7 +285,7 @@ public sealed class AppClientPostAction<TModel, TResult>
         WebErrorResult errorResult;
         if
         (
-            postResult.ContentType.Equals("application/json", StringComparison.OrdinalIgnoreCase) ||
+            postResult.ContentType.Equals(WebContentTypes.Json, StringComparison.OrdinalIgnoreCase) ||
             postResult.ContentType.Equals("text/json", StringComparison.OrdinalIgnoreCase)
         )
         {

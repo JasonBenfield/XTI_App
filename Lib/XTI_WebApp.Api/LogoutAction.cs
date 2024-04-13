@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Web;
 using XTI_App.Api;
+using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -25,7 +26,7 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
         {
             returnUrl = HttpUtility.UrlDecode(logoutRequest.ReturnUrl);
             var requestHost = httpContextAccessor.HttpContext?.Request.Host.Host;
-            if(requestHost == null)
+            if (requestHost == null)
             {
                 returnUrl = GetDefaultReturnUrl();
             }
@@ -49,6 +50,6 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
     private string GetDefaultReturnUrl()
     {
         var request = httpContextAccessor.HttpContext?.Request;
-        return request == null ? "" :  $"{request.Scheme}://{request.Host}{request.PathBase}";
+        return request == null ? "" : $"{request.Scheme}://{request.Host}{request.PathBase}";
     }
 }

@@ -14,7 +14,7 @@ public static class FakeExtensions
     {
         services.AddFakesForXtiApp();
         services.AddHttpContextAccessor();
-        services.AddConfigurationOptions<WebAppOptions>(WebAppOptions.WebApp);
+        services.AddConfigurationOptions<DefaultWebAppOptions>();
         services.AddScoped<IAnonClient, FakeAnonClient>();
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();

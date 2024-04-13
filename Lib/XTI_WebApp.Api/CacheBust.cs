@@ -7,12 +7,12 @@ namespace XTI_WebApp.Api;
 public sealed class CacheBust
 {
     private readonly IMemoryCache cache;
-    private readonly WebAppOptions options;
+    private readonly DefaultWebAppOptions options;
     private readonly XtiEnvironment xtiEnv;
     private readonly IAppContext appContext;
     private readonly IXtiPathAccessor xtiPathAccessor;
 
-    public CacheBust(IMemoryCache cache, WebAppOptions options, XtiEnvironment xtiEnv, IAppContext appContext, IXtiPathAccessor xtiPathAccessor)
+    public CacheBust(IMemoryCache cache, DefaultWebAppOptions options, XtiEnvironment xtiEnv, IAppContext appContext, IXtiPathAccessor xtiPathAccessor)
     {
         this.cache = cache;
         this.options = options;
@@ -33,7 +33,7 @@ public sealed class CacheBust
             const string cacheKey = "XTI_CacheBust";
             if (!cache.TryGetValue(cacheKey, out cacheBust))
             {
-                if (string.IsNullOrWhiteSpace(options.CacheBust))
+                if (string.IsNullOrWhiteSpace(options.WebApp.CacheBust))
                 {
                     var xtiPath = xtiPathAccessor.Value();
                     if (xtiPath.IsCurrentVersion())
@@ -45,7 +45,7 @@ public sealed class CacheBust
                 }
                 else
                 {
-                    cacheBust = options.CacheBust;
+                    cacheBust = options.WebApp.CacheBust;
                 }
             }
         }

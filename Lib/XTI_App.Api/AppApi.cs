@@ -6,18 +6,21 @@ public sealed class AppApi
 {
     private readonly IAppApiUser user;
     private readonly Dictionary<string, AppApiGroup> groups = new();
+    private readonly string serializedDefaultOptions;
 
     public AppApi
     (
         AppKey appKey,
         IAppApiUser user,
-        ResourceAccess access
+        ResourceAccess access,
+        string serializedDefaultOptions
     )
     {
         AppKey = appKey;
         Path = new XtiPath(appKey);
         this.user = user;
         Access = access ?? ResourceAccess.AllowAuthenticated();
+        this.serializedDefaultOptions = serializedDefaultOptions;
     }
 
     public XtiPath Path { get; }
@@ -49,7 +52,7 @@ public sealed class AppApi
     private static string groupKey(string groupName) =>
         groupName.ToLower().Replace(" ", "").Replace("_", "");
 
-    public AppApiTemplate Template() => new(this);
+    public AppApiTemplate Template() => new(this, serializedDefaultOptions);
 
     internal AppRoleName[] RoleNames()
     {

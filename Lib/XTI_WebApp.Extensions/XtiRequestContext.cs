@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using XTI_App.Abstractions;
-using XTI_App.Api;
 using XTI_Core;
-using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
 
@@ -51,7 +47,7 @@ public sealed class XtiRequestContext
         AppEventSeverity severity;
         if (error == null)
         {
-            errors = new[] { new ErrorModel(message, caption, "") };
+            errors = [new ErrorModel(message, caption, "")];
             severity = AppEventSeverity.Values.CriticalError;
         }
         else
@@ -63,11 +59,11 @@ public sealed class XtiRequestContext
             }
             else if (error is AppException appException)
             {
-                errors = new[] { new ErrorModel(appException.DisplayMessage) };
+                errors = [new ErrorModel(appException.DisplayMessage)];
             }
             else
             {
-                errors = new[] { new ErrorModel("An unexpected error occurred") };
+                errors = [new ErrorModel("An unexpected error occurred")];
             }
         }
         return new WebErrorResult(logEntryKey, severity, errors);
@@ -79,11 +75,11 @@ public sealed class XtiRequestContext
         string caption;
         if (error is AppException appError)
         {
-            message = xtiEnv.IsProduction() ? 
-                appError.DisplayMessage : 
+            message = xtiEnv.IsProduction() ?
+                appError.DisplayMessage :
                 error.Message;
-            caption = error is AccessDeniedException ? 
-                "Access Denied" : 
+            caption = error is AccessDeniedException ?
+                "Access Denied" :
                 "Unexpected error";
         }
         else if (xtiEnv.IsProduction())

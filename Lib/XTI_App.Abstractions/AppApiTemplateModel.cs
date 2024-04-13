@@ -1,12 +1,12 @@
 ﻿namespace XTI_App.Abstractions;
 
-public sealed record AppApiTemplateModel(AppKey AppKey, AppApiGroupTemplateModel[] GroupTemplates)
+public sealed record AppApiTemplateModel(AppKey AppKey, string SerializedDefaultOptions, AppApiGroupTemplateModel[] GroupTemplates)
 {
     public AppApiTemplateModel()
-        : this(AppKey.Unknown, new AppApiGroupTemplateModel[0])
+        : this(AppKey.Unknown, "", [])
     {
     }
 
-    public AppRoleName[] RecursiveRoles()
-        => GroupTemplates.SelectMany(g => g.RecursiveRoles()).Distinct().ToArray();
+    public AppRoleName[] RecursiveRoles() => 
+        GroupTemplates.SelectMany(g => g.RecursiveRoles()).Distinct().ToArray();
 }

@@ -72,7 +72,7 @@ public sealed class XtiTokenAccessor
             }
             var token = createToken();
             tokenValue = await token.Value();
-            cache.Set(cacheKey, tokenValue);
+            cache.Set(cacheKey, tokenValue, TimeSpan.FromDays(1));
         }
         return tokenValue;
     }

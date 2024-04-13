@@ -12,13 +12,13 @@ public sealed class AnonClient : IAnonClient
 {
     private readonly IDataProtector protector;
     private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly AnonClientOptions anonOptions;
+    private readonly DefaultWebAppOptions options;
 
-    public AnonClient(IDataProtector protector, IHttpContextAccessor httpContextAccessor, AnonClientOptions anonOptions)
+    public AnonClient(IDataProtector protector, IHttpContextAccessor httpContextAccessor, DefaultWebAppOptions options)
     {
         this.protector = protector;
         this.httpContextAccessor = httpContextAccessor;
-        this.anonOptions = anonOptions;
+        this.options = options;
     }
 
     public string SessionKey { get; private set; } = "";
@@ -27,7 +27,7 @@ public sealed class AnonClient : IAnonClient
 
     public void Load()
     {
-        var cookieText = httpContextAccessor.HttpContext?.Request.Cookies[anonOptions.CookieName];
+        var cookieText = httpContextAccessor.HttpContext?.Request.Cookies[options.AnonClient.CookieName];
         if (string.IsNullOrWhiteSpace(cookieText))
         {
             SessionKey = "";
@@ -59,11 +59,11 @@ public sealed class AnonClient : IAnonClient
             Secure = true,
             Path = "/",
             SameSite = SameSiteMode.Lax,
-            Domain = string.IsNullOrWhiteSpace(anonOptions.CookieDomain) ? 
+            Domain = string.IsNullOrWhiteSpace(this.options.AnonClient.CookieDomain) ? 
                 null : 
-                anonOptions.CookieDomain
+                this.options.AnonClient.CookieDomain
         };
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(anonOptions.CookieName, protectedText, options);
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(this.options.AnonClient.CookieName, protectedText, options);
         SessionKey = sessionKey;
         SessionExpirationTime = sessionExpirationTime;
         RequesterKey = requesterKey;

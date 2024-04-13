@@ -1,5 +1,5 @@
-﻿using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
+using XTI_Core;
 
 namespace XTI_App.Fakes;
 
@@ -13,7 +13,8 @@ public sealed class FakeAppApi : AppApiWrapper
                 FakeInfo.AppKey,
                 user,
                 ResourceAccess.AllowAuthenticated()
-                    .WithAllowed(AppRoleName.Admin)
+                    .WithAllowed(AppRoleName.Admin),
+                XtiSerializer.Serialize(new FakeAppOptions())
             )
         )
     {

@@ -399,7 +399,7 @@ internal sealed class SessionLogMiddlewareTest
                 try
                 {
                     c.Request.Method = "POST";
-                    c.Request.ContentType = "application/json";
+                    c.Request.ContentType = WebContentTypes.Json;
                     throw new AccessDeniedException("Access denied");
                 }
                 catch (AccessDeniedException ex)
@@ -484,7 +484,7 @@ internal sealed class SessionLogMiddlewareTest
              c =>
             {
                 var action = c.RequestServices.GetRequiredService<LogoutAction>();
-                return action.Execute(new LogoutRequest { ReturnUrl = "" }, CancellationToken.None);
+                return action.Execute(new LogoutRequest(""), CancellationToken.None);
             }
         );
         var response = await input.GetAsync(uri);
@@ -514,7 +514,7 @@ internal sealed class SessionLogMiddlewareTest
            {
                c.Response.StatusCode = StatusCodes.Status200OK;
                c.Request.Method = "POST";
-               c.Request.ContentType = "application/json";
+               c.Request.ContentType = WebContentTypes.Json;
                return Config(c);
            };
         }

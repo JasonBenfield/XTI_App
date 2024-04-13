@@ -12,4 +12,6 @@ public sealed class WebFileResult
     public Stream FileStream { get; }
     public string ContentType { get; }
     public string DownloadName { get; }
+
+    public byte[] GetBytes() => FileStream.GetBytes();
 }
