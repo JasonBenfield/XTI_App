@@ -23,16 +23,13 @@ public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
         {
             key = Current;
         }
+        else if (KeyRegex().IsMatch(str))
+        {
+            key = new AppVersionKey(int.Parse(str.Substring(1)));
+        }
         else
         {
-            if (KeyRegex().IsMatch(str))
-            {
-                key = new AppVersionKey(str);
-            }
-            else
-            {
-                key = None;
-            }
+            key = None;
         }
         return key;
     }
@@ -43,7 +40,7 @@ public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
     {
     }
 
-    public AppVersionKey(int versionID) : this($"V{versionID:00000}")
+    public AppVersionKey(int versionID) : this($"V{versionID}")
     {
     }
 
