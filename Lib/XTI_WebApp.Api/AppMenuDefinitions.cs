@@ -1,6 +1,4 @@
-﻿using XTI_App.Abstractions;
-
-namespace XTI_WebApp.Api;
+﻿namespace XTI_WebApp.Api;
 
 public sealed record AppMenuDefinitions(params MenuDefinition[] MenuDefinitions)
 {

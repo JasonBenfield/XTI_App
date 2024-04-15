@@ -1,7 +1,4 @@
-﻿using XTI_App.Abstractions;
-using XTI_WebApp.Abstractions;
-
-namespace XTI_WebApp.Api;
+﻿namespace XTI_WebApp.Api;
 
 public static class LinkModelExtensions
 {
