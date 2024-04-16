@@ -1,7 +1,4 @@
-﻿using NUnit.Framework;
-using XTI_App.Abstractions;
-using XTI_Core;
-using XTI_WebAppClient;
+﻿using XTI_Core;
 
 namespace XTI_App.Tests;
 

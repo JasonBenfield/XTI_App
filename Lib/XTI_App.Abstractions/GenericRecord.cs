@@ -144,6 +144,14 @@ public sealed partial class GenericRecordJsonConverter : JsonConverter<GenericRe
             {
                 writer.WriteString(key, dto.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
             }
+            else if (fieldValue is DateOnly dateOnly)
+            {
+                writer.WriteString(key, dateOnly.ToString("yyyy-MM-dd"));
+            }
+            else if (fieldValue is TimeOnly timeOnly)
+            {
+                writer.WriteString(key, timeOnly.ToString("HH:mm:ss.fff"));
+            }
             else if (fieldValue is DateTime dt)
             {
                 writer.WriteString(key, dt.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));

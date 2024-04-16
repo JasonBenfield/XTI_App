@@ -15,10 +15,10 @@ public sealed partial class JsonObjectConverter : JsonConverter<object>
             throw new JsonException();
         }
         var jsonEl = converter.Read(ref reader, type, options);
-        return deserializeValue(jsonEl, options);
+        return DeserializeValue(jsonEl, options);
     }
 
-    private static object? deserializeValue(JsonElement jsonEl, JsonSerializerOptions options)
+    private static object? DeserializeValue(JsonElement jsonEl, JsonSerializerOptions options)
     {
         object? deserializedValue;
         if (jsonEl.ValueKind == JsonValueKind.True)
@@ -43,9 +43,17 @@ public sealed partial class JsonObjectConverter : JsonConverter<object>
         else if (jsonEl.ValueKind == JsonValueKind.String)
         {
             var dateTimeText = jsonEl.GetString() ?? "";
-            if (DateTimeRegex().IsMatch(dateTimeText))
+            if (DateOnlyRegex().IsMatch(dateTimeText))
+            {
+                deserializedValue = DateOnly.Parse(dateTimeText);
+            }
+            else if (DateTimeRegex().IsMatch(dateTimeText))
             {
                 deserializedValue = DateTimeOffset.Parse(dateTimeText);
+            }
+            else if (TimeOnlyRegex().IsMatch(dateTimeText))
+            {
+                deserializedValue = TimeOnly.Parse(dateTimeText);
             }
             else
             {
@@ -65,7 +73,7 @@ public sealed partial class JsonObjectConverter : JsonConverter<object>
             }
             else if (jsonEl.ValueKind == JsonValueKind.Array)
             {
-                deserializedValue = deserializeArray(jsonEl, options);
+                deserializedValue = DeserializeArray(jsonEl, options);
             }
             else
             {
@@ -75,12 +83,12 @@ public sealed partial class JsonObjectConverter : JsonConverter<object>
         return deserializedValue;
     }
 
-    private static List<object?> deserializeArray(JsonElement jsonEl, JsonSerializerOptions options)
+    private static List<object?> DeserializeArray(JsonElement jsonEl, JsonSerializerOptions options)
     {
         var list = new List<object?>();
         foreach (var arrEl in jsonEl.EnumerateArray())
         {
-            var deserializedValue = deserializeValue(arrEl, options);
+            var deserializedValue = DeserializeValue(arrEl, options);
             list.Add(deserializedValue);
         }
         return list;
@@ -91,6 +99,12 @@ public sealed partial class JsonObjectConverter : JsonConverter<object>
         throw new InvalidOperationException("Directly writing object not supported");
     }
 
-    [GeneratedRegex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$")]
+    [GeneratedRegex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3,7}Z$")]
     private static partial Regex DateTimeRegex();
+
+    [GeneratedRegex("^\\d{2}:\\d{2}:\\d{2}\\.\\d{3,7}$")]
+    private static partial Regex TimeOnlyRegex();
+
+    [GeneratedRegex("^\\d{4}-\\d{2}-\\d{2}$")]
+    private static partial Regex DateOnlyRegex();
 }
