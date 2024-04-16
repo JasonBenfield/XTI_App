@@ -5,11 +5,11 @@ public sealed class ObjectToQueryString
     public ObjectToQueryString(object? obj)
     {
         var nameValues = new List<string>();
-        addNameValues(nameValues, "", obj);
+        AddNameValues(nameValues, "", obj);
         Value = string.Join("&", nameValues);
     }
 
-    private void addNameValues(List<string> nameValues, string prefix, object? obj)
+    private void AddNameValues(List<string> nameValues, string prefix, object? obj)
     {
         if(obj != null)
         {
@@ -24,7 +24,7 @@ public sealed class ObjectToQueryString
                     }
                     else
                     {
-                        addNameValues(nameValues, $"{prefix}{property.Name}.", value);
+                        AddNameValues(nameValues, $"{prefix}{property.Name}.", value);
                     }
                 }
             }

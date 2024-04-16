@@ -38,6 +38,7 @@ public sealed class FakeForm : Form
         (
             Int32RangeConstraint.FromOnOrAbove(10).ToBelow(20)
         );
+        DateOnlyValue = AddDateInput(nameof(DateOnlyValue));
         DecimalDropDown = AddDecimalDropDown
         (
             nameof(DecimalDropDown),
@@ -56,6 +57,7 @@ public sealed class FakeForm : Form
     public InputField<int?> NegativeNumber { get; }
     public InputField<int?> PositiveNumber { get; }
     public InputField<int?> RangedNumber { get; }
+    public InputField<DateOnly?> DateOnlyValue { get; }
     public DropDownField<decimal?> DecimalDropDown { get; }
     public DropDownField<bool?> Question { get; }
     public FakeComplexField TestComplex { get; }

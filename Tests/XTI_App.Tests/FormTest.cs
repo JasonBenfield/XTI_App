@@ -137,6 +137,7 @@ internal sealed class FormTest
             { "TestForm_NegativeNumber", -100 },
             { "TestForm_PositiveNumber", 100 },
             { "TestForm_RangedNumber", 11 },
+            { "TestForm_DateOnlyValue", "2024-04-16" },
             { "TestForm_DecimalDropDown", 5.2 },
             { "TestForm_Question", true },
             { "TestForm_TestComplex_Field1", "Something" },
@@ -146,6 +147,7 @@ internal sealed class FormTest
         Assert.That(form.NegativeNumber.Value(), Is.EqualTo(-100));
         Assert.That(form.PositiveNumber.Value(), Is.EqualTo(100));
         Assert.That(form.RangedNumber.Value(), Is.EqualTo(11));
+        Assert.That(form.DateOnlyValue.Value(), Is.EqualTo(new DateOnly(2024, 4, 16)));
         Assert.That(form.DecimalDropDown.Value(), Is.EqualTo(5.2M));
         Assert.That(form.Question.Value(), Is.True);
         Assert.That(form.TestComplex.Field1.Value(), Is.EqualTo("Something"));
@@ -164,6 +166,7 @@ internal sealed class FormTest
             { "TestForm_NegativeNumber", -100 },
             { "TestForm_PositiveNumber", 100 },
             { "TestForm_RangedNumber", 11 },
+            { "TestForm_DateOnlyValue", new DateOnly(2024, 4, 16) },
             { "TestForm_DecimalDropDown", 5.2 },
             { "TestForm_Question", true },
             { "TestForm_TestComplex_Field1", "Something" },
