@@ -40,9 +40,9 @@ public static class CookieAndTokenAuthentication
                 options =>
                 {
                     options.ForwardDefaultSelector = context =>
-                        context.IsBearerAuthentication()
-                            ? "Bearer"
-                            : "Cookies";
+                        context.IsBearerAuthentication() ? 
+                            "Bearer" : 
+                            "Cookies";
                 }
             );
     }
@@ -131,7 +131,7 @@ public static class CookieAndTokenAuthentication
                 .Path();
             dataProtectionProvider = DataProtectionProvider.Create(new DirectoryInfo(keyDirPath));
         }
-        var dataProtector = dataProtectionProvider.CreateProtector(new[] { "XTI_Apps_Auth1" });
+        var dataProtector = dataProtectionProvider.CreateProtector(["XTI_Apps_Auth1"]);
         var authTicketFormat = new JwtAuthTicketFormat
         (
             new TokenValidationParameters

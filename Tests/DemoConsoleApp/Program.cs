@@ -11,6 +11,7 @@ using XTI_Core;
 using XTI_Core.Extensions;
 using XTI_Secrets.Extensions;
 using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_TempLog.Fakes;
 
 await Host.CreateDefaultBuilder(args)

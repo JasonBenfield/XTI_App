@@ -31,7 +31,7 @@ public sealed class WebActionRunnerFactory : IActionRunnerFactory
 
     public TempLogSession CreateTempLogSession()
     {
-        var tempLog = services.GetRequiredService<TempLog>();
+        var tempLogRepo = services.GetRequiredService<TempLogRepository>();
         var appEnvContext = services.GetRequiredService<ScheduledAppEnvironmentContext>();
         var cache = services.GetRequiredService<IMemoryCache>();
         if (!cache.TryGetValue<CurrentSession>("scheduled_currentSession", out var currentSession))
@@ -41,6 +41,6 @@ public sealed class WebActionRunnerFactory : IActionRunnerFactory
         }
         var clock = services.GetRequiredService<IClock>();
         var throttleLogs = services.GetRequiredService<ThrottledLogs>();
-        return new TempLogSession(tempLog, appEnvContext, currentSession ?? new CurrentSession(), clock, throttleLogs);
+        return new TempLogSession(tempLogRepo, appEnvContext, currentSession ?? new CurrentSession(), clock, throttleLogs);
     }
 }

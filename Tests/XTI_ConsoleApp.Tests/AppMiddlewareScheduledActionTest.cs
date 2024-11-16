@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using XTI_Core;
 using XTI_Core.Fakes;
 using XTI_Schedule;
 using XTI_TempLog;
-using XTI_TempLog.Fakes;
+using XTI_TempLog.Abstractions;
 
 namespace XTI_ConsoleApp.Tests;
 
@@ -15,26 +14,30 @@ public sealed class AppMiddlewareScheduledActionTest
     [Test]
     public async Task ShouldLogSessionsAndRequests()
     {
-        var host = await runService();
+        var host = await RunService();
         var clock = host.Services.GetRequiredService<IClock>();
-        var tempLog = host.Services.GetRequiredService<TempLog>();
-        var startSessionFiles = tempLog.StartSessionFiles(clock.Now());
-        Assert.That(startSessionFiles.Count(), Is.GreaterThanOrEqualTo(1), "Should start session");
-        var startRequestFiles = tempLog.StartRequestFiles(clock.Now());
-        Assert.That(startRequestFiles.Count(), Is.GreaterThanOrEqualTo(1), "Should start request");
-        var endRequestFiles = tempLog.EndRequestFiles(clock.Now());
-        Assert.That(endRequestFiles.Count(), Is.GreaterThanOrEqualTo(1), "Should end request");
-        var endSessionFiles = tempLog.EndSessionFiles(clock.Now());
-        Assert.That(endSessionFiles.Count(), Is.GreaterThanOrEqualTo(1), "Should end session");
+        var logFiles = await WriteLogFiles(host.Services);
+        var sessionDetails = await logFiles[0].Read();
+        var sessions = sessionDetails.Select(s => s.Session).ToArray();
+        var requests = sessionDetails
+            .SelectMany(sd => sd.RequestDetails.Select(rd => rd.Request))
+            .OrderBy(r => r.TimeStarted)
+            .ToArray();
+        Assert.That(sessions.Length, Is.GreaterThanOrEqualTo(1), "Should start session");
+        Assert.That(requests.Length, Is.GreaterThanOrEqualTo(1), "Should start request");
+        var endedRequests = requests.Where(r => r.TimeEnded.Year < 9999).ToArray();
+        Assert.That(endedRequests.Length, Is.GreaterThanOrEqualTo(1), "Should end request");
+        var endedSessions = sessions.Where(s => s.TimeEnded.Year < 9999).ToArray();
+        Assert.That(endedSessions.Length, Is.GreaterThanOrEqualTo(1), "Should end session");
     }
 
-    private async Task<IHost> runService()
+    private async Task<IHost> RunService()
     {
         var host = BuildHost().Build();
-        return await runHost(host);
+        return await RunHost(host);
     }
 
-    private static async Task<IHost> runHost(IHost host)
+    private static async Task<IHost> RunHost(IHost host)
     {
         var envContext = (FakeAppEnvironmentContext)host.Services.GetRequiredService<IAppEnvironmentContext>();
         envContext.Environment = new AppEnvironment
@@ -49,8 +52,14 @@ public sealed class AppMiddlewareScheduledActionTest
         clock.Set(new DateTime(2020, 10, 16, 9, 30, 0));
         var _ = Task.Run(() => host.StartAsync());
         var counter = host.Services.GetRequiredService<Counter>();
+        var timeStarted = DateTimeOffset.UtcNow;
         while (counter.ContinuousValue == 0)
         {
+            var timeElapsed = DateTimeOffset.UtcNow - timeStarted;
+            if (timeElapsed.TotalSeconds > 5)
+            {
+                throw new Exception("Timed out");
+            }
             await Task.Delay(100);
         }
         await host.StopAsync();
@@ -59,7 +68,7 @@ public sealed class AppMiddlewareScheduledActionTest
 
     private IHostBuilder BuildHost()
     {
-        return Host.CreateDefaultBuilder(new string[0])
+        return Host.CreateDefaultBuilder([])
             .UseWindowsService()
             .ConfigureServices((hostContext, services) =>
             {
@@ -72,7 +81,7 @@ public sealed class AppMiddlewareScheduledActionTest
                             (api, sched) =>
                             {
                                 sched
-                                    .Action(api.Test.RunContinuously.Path)
+                                    .Action(api.Test.RunContinuously)
                                     .RunContinuously()
                                     .Interval(TimeSpan.FromMilliseconds(500))
                                     .AddSchedule
@@ -84,5 +93,15 @@ public sealed class AppMiddlewareScheduledActionTest
                     }
                 );
             });
+    }
+
+    private static async Task<ITempLogFile[]> WriteLogFiles(IServiceProvider sp)
+    {
+        var tempLogRepo = sp.GetRequiredService<TempLogRepository>();
+        await tempLogRepo.WriteToLocalStorage();
+        var clock = sp.GetRequiredService<IClock>();
+        var tempLog = sp.GetRequiredService<TempLog>();
+        var logFiles = tempLog.Files(clock.Now().AddSeconds(1), 100);
+        return logFiles;
     }
 }

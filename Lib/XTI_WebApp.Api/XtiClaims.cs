@@ -16,21 +16,21 @@ public sealed class XtiClaims
         this.httpContext = httpContext;
     }
 
-    public string SessionKey() => claim("SessionKey");
+    public string SessionKey() => GetClaim("SessionKey");
 
     public AppUserName UserName()
     {
-        var userNameValue = claim("UserName");
-        return string.IsNullOrWhiteSpace(userNameValue)
-            ? AppUserName.Anon
-            : new AppUserName(userNameValue);
+        var userNameValue = GetClaim("UserName");
+        return string.IsNullOrWhiteSpace(userNameValue) ? 
+            AppUserName.Anon : 
+            new AppUserName(userNameValue);
     }
 
-    private string claim(string type)
+    private string GetClaim(string type)
     {
         var httpUser = httpContext?.User;
-        return httpUser?.Identity?.IsAuthenticated == true
-            ? httpUser.Claims.First(c => c.Type == type).Value
-            : "";
+        return httpUser?.Identity?.IsAuthenticated == true ? 
+            httpUser.Claims.First(c => c.Type == type).Value : 
+            "";
     }
 }

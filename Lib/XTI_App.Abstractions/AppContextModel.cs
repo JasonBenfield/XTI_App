@@ -6,7 +6,8 @@ public sealed record AppContextModel
     XtiVersionModel Version,
     AppRoleModel[] Roles,
     ModifierCategoryModel[] ModCategories,
-    AppContextResourceGroupModel[] ResourceGroups
+    AppContextResourceGroupModel[] ResourceGroups,
+    ModifierModel DefaultModifier
 )
 {
     public AppContextModel()
@@ -14,9 +15,10 @@ public sealed record AppContextModel
         (
             new AppModel(),
             new XtiVersionModel(),
-            new AppRoleModel[0],
-            new ModifierCategoryModel[0],
-            new AppContextResourceGroupModel[0]
+            [],
+            [],
+            [],
+            new()
         )
     {
     }

@@ -4,33 +4,16 @@ namespace XTI_App.Fakes;
 
 public sealed class FakeAppContext : ISourceAppContext
 {
-    private readonly List<AppContextModel> apps = new();
     private readonly List<ModifierModel> modifiers = new();
-    private AppContextModel? currentApp;
+    private readonly AppKey appKey;
+    private readonly int currentAppID;
+    private AppContextModel currentApp;
 
-    private static int appID = 1;
-    private static int resourceGroupID = 101;
-    private static int modCategoryID = 201;
-    private static int resourceID = 301;
-    private static int roleID = 401;
-    private static int modifierID = 501;
-
-    public FakeAppContext(AppKey? appKey)
+    public FakeAppContext(AppKey appKey)
     {
-        var hubAppKey = AppKey.WebApp("Hub");
-        var hubApp = AddNewApp(new AppApiTemplateModel { AppKey = hubAppKey });
-        if (appKey != null)
-        {
-            if (appKey.Equals(hubAppKey))
-            {
-                SetCurrentApp(hubApp);
-            }
-            else
-            {
-                var app = AddApp(new AppApiTemplateModel { AppKey = appKey });
-                SetCurrentApp(app);
-            }
-        }
+        this.appKey = appKey;
+        currentAppID = FakeAppDB.GetAppID(appKey);
+        currentApp = RegisterApp(new AppApiTemplateModel { AppKey = appKey });
     }
 
     public Task<AppContextModel> App()
@@ -40,113 +23,34 @@ public sealed class FakeAppContext : ISourceAppContext
 
     public AppContextModel Update(AppContextModel original, Func<AppContextModel, AppContextModel> update)
     {
-        apps.RemoveAll(a => a.App.AppKey.Equals(original.App.AppKey));
-        var updated = update(original);
-        apps.Add(updated);
-        if (currentApp != null && currentApp.App.AppKey.Equals(updated.App.AppKey))
+        currentApp = update(original);
+        return currentApp;
+    }
+
+    public AppContextModel RegisterApp(AppApiTemplateModel appTemplate)
+    {
+        if (!appKey.Equals(appTemplate.AppKey))
         {
-            SetCurrentApp(updated);
+            throw new Exception($"App Context '{appKey.Format()}' can not register template '{appTemplate.AppKey.Format()}'");
         }
-        return updated;
-    }
-
-    public AppContextModel AddApp(AppApiTemplateModel appTemplate)
-    {
-        apps.RemoveAll(a => a.App.AppKey.Equals(appTemplate.AppKey));
-        var app = AddNewApp(appTemplate);
-        if (currentApp != null && currentApp.App.AppKey.Equals(appTemplate.AppKey))
-        {
-            SetCurrentApp(app);
-        }
-        return app;
-    }
-
-    public AppContextModel AddModifier
-    (
-        ModifierCategoryName categoryName,
-        ModifierKey modifierKey,
-        string targetKey
-    ) => AddModifier(GetCurrentApp(), categoryName, modifierKey, targetKey);
-
-    private AppContextModel AddModifier
-    (
-        AppContextModel appContext,
-        ModifierCategoryName categoryName,
-        ModifierKey modifierKey,
-        string targetKey
-    )
-    {
-        var modCategory = GetModCategory(appContext, categoryName);
-        return AddModifier(appContext, modCategory, modifierKey, targetKey);
-    }
-
-    public AppContextModel AddModifier
-    (
-        ModifierCategoryModel modCategory,
-        ModifierKey modifierKey,
-        string targetKey
-    ) =>
-        AddModifier(GetCurrentApp(), modCategory, modifierKey, targetKey);
-
-    private AppContextModel AddModifier
-    (
-        AppContextModel appContext,
-        ModifierCategoryModel modCategory,
-        ModifierKey modifierKey,
-        string targetKey
-    )
-    {
-        var modifier = modifiers.FirstOrDefault(m => m.ModKey.Equals(modifierKey));
-        if (modifier != null)
-        {
-            modifiers.Remove(modifier);
-        }
-        modifiers.Add
-        (
-            new ModifierModel
-            (
-                modifierID,
-                modCategory.ID,
-                modifierKey,
-                targetKey,
-                targetKey
-            )
-        );
-        modifierID++;
-        return appContext;
-    }
-
-    public ModifierCategoryModel GetModCategory(ModifierCategoryName categoryName) =>
-        GetModCategory(GetCurrentApp(), categoryName);
-
-    private ModifierCategoryModel GetModCategory(AppContextModel appContext, ModifierCategoryName categoryName) =>
-        appContext.ModCategory(categoryName);
-
-    private AppContextModel AddNewApp(AppApiTemplateModel appTemplate)
-    {
-        var id = appID;
         var modCategoryNames = appTemplate.GroupTemplates.Select(g => g.ModCategory).ToArray();
         if (!modCategoryNames.Any(mc => ModifierCategoryName.Default.Equals(mc)))
         {
             modCategoryNames = modCategoryNames
-                .Union(new[] { ModifierCategoryName.Default })
+                .Union([ModifierCategoryName.Default])
                 .ToArray();
         }
         var modCategories = modCategoryNames
             .Distinct()
             .Select
             (
-                mc =>
-                {
-                    modCategoryID++;
-                    return new ModifierCategoryModel
-                    (
-                        modCategoryID,
-                        string.IsNullOrWhiteSpace(mc)
-                            ? ModifierCategoryName.Default
-                            : mc
-                    );
-                }
+                mc => new ModifierCategoryModel
+                (
+                    FakeAppDB.GenerateModCategoryID(),
+                    string.IsNullOrWhiteSpace(mc)
+                        ? ModifierCategoryName.Default
+                        : mc
+                )
             )
             .ToArray();
         var roles = appTemplate.RecursiveRoles()
@@ -154,19 +58,17 @@ public sealed class FakeAppContext : ISourceAppContext
             .Distinct()
             .Select
             (
-                r =>
-                {
-                    var role = new AppRoleModel(roleID, r);
-                    roleID++;
-                    return role;
-                }
+                r => new AppRoleModel(FakeAppDB.GenerateRoleID(), r)
             )
             .ToArray();
-        var app = new AppContextModel
+        var defaultModCategory = modCategories.First(mc => mc.Name.Equals(ModifierCategoryName.Default));
+        var defaultModifier = new ModifierModel(FakeAppDB.GenerateModifierID(), defaultModCategory.ID, ModifierKey.Default, "", "");
+        modifiers.Add(defaultModifier);
+        currentApp = new AppContextModel
         (
             new AppModel
             (
-                id,
+                currentAppID,
                 appTemplate.AppKey,
                 new AppVersionName("Fake"),
                 new ModifierKey(appTemplate.AppKey.Format())
@@ -191,31 +93,26 @@ public sealed class FakeAppContext : ISourceAppContext
                     (
                         new ResourceGroupModel
                         (
-                            resourceGroupID,
+                            FakeAppDB.GenerateResourceGroupID(),
                             modCategories.First(mc => mc.Name.Equals(g.ModCategory)).ID,
                             g.Name,
                             g.IsAnonymousAllowed
                         ),
                         g.ActionTemplates.Select
                         (
-                            a =>
-                            {
-                                var resource = new AppContextResourceModel
+                            a =>  new AppContextResourceModel
+                            (
+                                new ResourceModel
                                 (
-                                    new ResourceModel
-                                    (
-                                        resourceID,
-                                        a.Name,
-                                        a.IsAnonymousAllowed,
-                                        a.ResultType
-                                    ),
-                                    a.Roles
-                                        .Select(r => roles.First(role => role.Name.Equals(r)))
-                                        .ToArray()
-                                );
-                                resourceID++;
-                                return resource;
-                            }
+                                    FakeAppDB.GenerateResourceID(),
+                                    a.Name,
+                                    a.IsAnonymousAllowed,
+                                    a.ResultType
+                                ),
+                                a.Roles
+                                    .Select(r => roles.First(role => role.Name.Equals(r)))
+                                    .ToArray()
+                            )
                         )
                         .ToArray(),
                         g.Roles
@@ -225,12 +122,73 @@ public sealed class FakeAppContext : ISourceAppContext
                     return group;
                 }
             )
-            .ToArray()
+            .ToArray(),
+            defaultModifier
         );
-        AddModifier(app, ModifierCategoryName.Default, ModifierKey.Default, "");
-        appID++;
-        return app;
+        return currentApp;
     }
+
+    public AppContextModel AddModifier
+    (
+        ModifierCategoryName categoryName,
+        ModifierKey modifierKey,
+        string targetKey
+    ) => AddModifier(GetCurrentApp(), categoryName, modifierKey, targetKey);
+
+    private AppContextModel AddModifier
+    (
+        AppContextModel appContext,
+        ModifierCategoryName categoryName,
+        ModifierKey modifierKey,
+        string targetKey
+    )
+    {
+        var modCategory = GetModCategory(appContext, categoryName);
+        _AddModifier(modCategory, modifierKey, targetKey);
+        return GetCurrentApp();
+    }
+
+    public AppContextModel AddModifier
+    (
+        ModifierCategoryModel modCategory,
+        ModifierKey modifierKey,
+        string targetKey
+    )
+    {
+        _AddModifier(modCategory, modifierKey, targetKey);
+        return GetCurrentApp();
+    }
+
+    private void _AddModifier
+    (
+        ModifierCategoryModel modCategory,
+        ModifierKey modifierKey,
+        string targetKey
+    )
+    {
+        var modifier = modifiers.FirstOrDefault(m => m.ModKey.Equals(modifierKey));
+        if (modifier != null)
+        {
+            modifiers.Remove(modifier);
+        }
+        modifiers.Add
+        (
+            new ModifierModel
+            (
+                FakeAppDB.GenerateModifierID(),
+                modCategory.ID,
+                modifierKey,
+                targetKey,
+                targetKey
+            )
+        );
+    }
+
+    public ModifierCategoryModel GetModCategory(ModifierCategoryName categoryName) =>
+        GetModCategory(GetCurrentApp(), categoryName);
+
+    private ModifierCategoryModel GetModCategory(AppContextModel appContext, ModifierCategoryName categoryName) =>
+        appContext.ModCategory(categoryName);
 
     public AppContextModel GetCurrentApp() => currentApp ?? throw new ArgumentNullException(nameof(currentApp));
 

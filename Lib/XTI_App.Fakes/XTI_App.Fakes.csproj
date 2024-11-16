@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XTI_Core.Fakes" Version="1.10.21" />
-		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.32" />
+		<PackageReference Include="XTI_Core.Fakes" Version="1.10.22-dev241112213612939" />
+		<PackageReference Include="XTI_TempLog.Fakes" Version="1.2.33-dev241116170100740" />
 	</ItemGroup>
 
 	<ItemGroup>

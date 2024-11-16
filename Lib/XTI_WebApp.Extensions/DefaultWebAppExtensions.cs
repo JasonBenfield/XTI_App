@@ -7,11 +7,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_App.Secrets;
 using XTI_Core;
 using XTI_Core.Extensions;
 using XTI_TempLog;
+using XTI_TempLog.Abstractions;
+using XTI_TempLog.Extensions;
 using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 
@@ -23,7 +26,7 @@ public static class DefaultWebAppExtensions
     {
         var options = app.Configuration.Get<DefaultWebAppOptions>() ?? new();
         var origins = options.XtiCors.Origins
-            .Split(new[] { ",", " " }, StringSplitOptions.None)
+            .Split([",", " "], StringSplitOptions.None)
             .Where(o => !string.IsNullOrWhiteSpace(o))
             .Select(o => o.Trim())
             .ToArray();
@@ -61,16 +64,13 @@ public static class DefaultWebAppExtensions
         });
         services.AddHttpContextAccessor();
         services.AddConfigurationOptions<DefaultWebAppOptions>();
-        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().HubClient);
-        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().XtiToken);
-        services.AddSingleton(sp => sp.GetRequiredService<DefaultWebAppOptions>().DB);
+        services.AddSingleton<DefaultAppOptions>(sp => sp.GetRequiredService<DefaultWebAppOptions>());
         services.AddScoped<ILogoutProcess, LogoutProcess>();
         services.AddScoped<LogoutAction>();
         services.AddScoped<GetUserAccessAction>();
         services.AddScoped<GetMenuLinksAction>();
         services.AddScoped<UserProfileAction>();
         services.AddScoped<CacheBust>();
-
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
@@ -84,7 +84,7 @@ public static class DefaultWebAppExtensions
         services.AddScoped<XtiRequestContext>();
         services.AddScoped<IAnonClient>(sp =>
         {
-            var dataProtector = sp.GetDataProtector(new[] { "XTI_Apps_Anon" });
+            var dataProtector = sp.GetDataProtector(["XTI_Apps_Anon"]);
             var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
             var options = sp.GetRequiredService<DefaultWebAppOptions>();
             return new AnonClient(dataProtector, httpContextAccessor, options);
@@ -102,6 +102,7 @@ public static class DefaultWebAppExtensions
         services.AddScoped<IMenuDefinitionBuilder, DefaultMenuDefinitionBuilder>();
         services.AddScoped(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
         services.AddSingleton<AppPageModel>();
+        services.AddTempLogWriterHostedService();
     }
 
     public static void SetDefaultJsonOptions(this JsonOptions options)

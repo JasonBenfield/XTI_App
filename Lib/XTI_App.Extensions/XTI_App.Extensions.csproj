@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21" />
-		<PackageReference Include="XTI_Secrets.Extensions" Version="1.8.10" />
-		<PackageReference Include="XTI_TempLog.Extensions" Version="1.2.32" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.22-dev241112213612939" />
+		<PackageReference Include="XTI_Secrets.Extensions" Version="1.8.11-dev241112213806362" />
+		<PackageReference Include="XTI_TempLog.Extensions" Version="1.2.33-dev241116170100740" />
 	</ItemGroup>
 
 	<ItemGroup>

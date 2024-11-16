@@ -84,11 +84,11 @@ public sealed class ActionRunner
     private async Task<Results> Run(XtiEnvironment xtiEnv, IActionRunnerFactory factory, XtiPath xtiPath, CancellationToken stoppingToken)
     {
         var result = Results.None;
-        var session = factory.CreateTempLogSession();
+        var tempLogSession = factory.CreateTempLogSession();
         var path = xtiPath.Format();
         try
         {
-            await session.StartRequest(path);
+            await tempLogSession.StartRequest(path);
             var action = GetApiAction(factory);
             await action.Execute(new EmptyRequest(), stoppingToken);
             result = Results.Succeeded;
@@ -105,7 +105,7 @@ public sealed class ActionRunner
             {
                 parentEventKey = clientEx.LogEntryKey;
             }
-            await session.LogException
+            await tempLogSession.LogException
             (
                 AppEventSeverity.Values.CriticalError,
                 ex,
@@ -115,7 +115,7 @@ public sealed class ActionRunner
         }
         finally
         {
-            await session.EndRequest();
+            await tempLogSession.EndRequest();
         }
         return result;
     }

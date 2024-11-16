@@ -1,12 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using XTI_App.Abstractions;
+﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_App.Fakes;
 using XTI_App.Hosting;
-using XTI_TempLog;
-using XTI_TempLog.Fakes;
+using XTI_TempLog.Abstractions;
 
 namespace XTI_App.Tests;
 

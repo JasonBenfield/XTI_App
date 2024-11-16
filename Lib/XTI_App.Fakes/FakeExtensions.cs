@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_Core;
-using XTI_Core.Extensions;
 using XTI_Core.Fakes;
 using XTI_Secrets.Extensions;
 using XTI_TempLog.Fakes;
@@ -43,7 +41,11 @@ public static class FakeExtensions
         services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
         services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
         services.AddScoped<IHashedPasswordFactory, FakeHashedPasswordFactory>();
-        services.AddSingleton<FakeAppContext>();
+        services.AddSingleton<FakeAppContextFactory>();
+        services.AddSingleton
+        (
+            sp => sp.GetRequiredService<FakeAppContextFactory>().Create(sp.GetRequiredService<AppKey>())
+        );
         services.AddSingleton<ISourceAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
         services.AddScoped<CachedAppContext>();
         services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());

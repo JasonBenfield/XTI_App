@@ -23,7 +23,7 @@ public sealed class CachedUserContext : ICachedUserContext
         cache.Remove(GetUserRolesCacheKey(userName));
     }
 
-    private static string GetUserCacheKey(AppUserName userName) => $"xti_{userName.Value}";
+    private static string GetUserCacheKey(AppUserName userName) => $"xti_user_{userName.Value}";
 
     public async Task<AppUserModel> User()
     {
@@ -38,6 +38,26 @@ public sealed class CachedUserContext : ICachedUserContext
         if (!cache.TryGetValue<AppUserModel>(cacheKey, out var cachedUser))
         {
             cachedUser = await sourceUserContext.User(userName);
+            if (!userName.IsAnon() && cachedUser.IsAnon())
+            {
+                throw new Exception($"User '{userName.DisplayText}' was not found.");
+            }
+            cache.Set
+            (
+                cacheKey,
+                cachedUser,
+                TimeSpan.FromHours(1)
+            );
+        }
+        return cachedUser ?? new AppUserModel();
+    }
+
+    public async Task<AppUserModel> UserOrAnon(AppUserName userName)
+    {
+        var cacheKey = GetUserCacheKey(userName);
+        if (!cache.TryGetValue<AppUserModel>(cacheKey, out var cachedUser))
+        {
+            cachedUser = await sourceUserContext.UserOrAnon(userName);
             cache.Set
             (
                 cacheKey,
@@ -76,7 +96,7 @@ public sealed class CachedUserContext : ICachedUserContext
     }
 
     private static string GetUserRolesCacheKey(AppUserName userName) =>
-        $"xti_{userName.Value}_roles";
+        $"xti_user_{userName.Value}_roles";
 
     private sealed record ModifiedUserRoles(ModifierModel Modifier, AppRoleModel[] UserRoles);
 }

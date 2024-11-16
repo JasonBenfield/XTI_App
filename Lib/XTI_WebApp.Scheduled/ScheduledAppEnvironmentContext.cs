@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using XTI_App.Abstractions;
 using XTI_App.Secrets;
-using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 
 namespace XTI_WebApp.Scheduled;
 

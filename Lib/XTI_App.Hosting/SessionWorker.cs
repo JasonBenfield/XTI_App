@@ -8,7 +8,7 @@ namespace XTI_App.Hosting;
 internal sealed class SessionWorker : BackgroundService
 {
     private readonly IServiceProvider sp;
-    private TempLogSession? session;
+    private TempLogSession? tempLogSession;
 
     public SessionWorker(IServiceProvider sp)
     {
@@ -21,8 +21,8 @@ internal sealed class SessionWorker : BackgroundService
         var clock = sp.GetRequiredService<IClock>();
         var timeStarted = clock.Now();
         var factory = sp.GetRequiredService<IActionRunnerFactory>();
-        session = factory.CreateTempLogSession();
-        await session.StartSession();
+        tempLogSession = factory.CreateTempLogSession();
+        await tempLogSession.StartSession();
         try
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -30,9 +30,9 @@ internal sealed class SessionWorker : BackgroundService
                 var currentTime = clock.Now();
                 if (currentTime > timeStarted.Add(TimeSpan.FromHours(12)))
                 {
-                    await session.EndSession();
+                    await tempLogSession.EndSession();
                     currentSession.SessionKey = "";
-                    await session.StartSession();
+                    await tempLogSession.StartSession();
                     timeStarted = clock.Now();
                 }
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
@@ -46,7 +46,7 @@ internal sealed class SessionWorker : BackgroundService
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         await base.StopAsync(cancellationToken);
-        var s = session;
+        var s = tempLogSession;
         if (s != null)
         {
             try
@@ -54,7 +54,13 @@ internal sealed class SessionWorker : BackgroundService
                 await s.EndSession();
             }
             catch { }
+            try
+            {
+                var tempLogRepo = sp.GetRequiredService<TempLogRepository>();
+                await tempLogRepo.WriteToLocalStorage();
+            }
+            catch { }
         }
-        session = null;
+        tempLogSession = null;
     }
 }

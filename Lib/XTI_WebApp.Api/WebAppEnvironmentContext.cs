@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using XTI_App.Abstractions;
-using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;

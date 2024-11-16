@@ -2,6 +2,7 @@
 using XTI_App.Fakes;
 using XTI_Core.Extensions;
 using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 using XTI_WebApp.Extensions;

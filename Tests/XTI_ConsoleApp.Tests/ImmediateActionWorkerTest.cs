@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 
@@ -7,7 +6,7 @@ namespace XTI_ConsoleApp.Tests;
 
 public sealed class ImmediateActionWorkerTest
 {
-    private static readonly Counter counter = new Counter();
+    private static readonly Counter counter = new();
 
     [Test]
     public async Task ShouldRunImmediateAction()
@@ -20,7 +19,7 @@ public sealed class ImmediateActionWorkerTest
 
     private IHostBuilder BuildHost()
     {
-        return Host.CreateDefaultBuilder(new string[0])
+        return Host.CreateDefaultBuilder([])
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddTestConsoleAppServices
