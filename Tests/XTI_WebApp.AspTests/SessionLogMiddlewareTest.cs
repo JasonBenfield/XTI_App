@@ -438,6 +438,29 @@ internal sealed class SessionLogMiddlewareTest
     }
 
     [Test]
+    public async Task ShouldPost()
+    {
+        const string envName = "Production";
+        var input = await Setup(envName);
+        var uri = $"/Fake/Current/User/Logout?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
+        input.CurrentAction.Configure
+        (
+            async c =>
+            {
+                var fakeData = await c.Request.ReadFromJsonAsync<FakeRequestData>();
+                var serializedData = XtiSerializer.Serialize(fakeData);
+                Console.WriteLine(serializedData);
+            }
+        );
+        var response = await input.PostAsync(uri, new FakeRequestData { Arg1 = "Value1" });
+    }
+
+    private sealed class FakeRequestData
+    {
+        public string Arg1 { get; set; } = "";
+    }
+
+    [Test]
     public async Task ShouldLogout()
     {
         const string envName = "Production";
@@ -445,10 +468,11 @@ internal sealed class SessionLogMiddlewareTest
         var uri = $"/Fake/Current/User/Logout?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
-             c =>
+            async c =>
             {
+                var logoutRequest = await c.Request.ReadFromJsonAsync<LogoutRequest>();
                 var action = c.RequestServices.GetRequiredService<LogoutAction>();
-                return action.Execute(new LogoutRequest(""), CancellationToken.None);
+                await action.Execute(new LogoutRequest(""), CancellationToken.None);
             }
         );
         var response = await input.GetAsync(uri);
@@ -661,6 +685,24 @@ internal sealed class SessionLogMiddlewareTest
             requestBuilder.AddHeader(HeaderNames.UserAgent, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100");
             AddCookies(requestBuilder, absoluteUrl);
             var response = await requestBuilder.GetAsync();
+            UpdateCookies(response, absoluteUrl);
+            return response;
+        }
+
+        public async Task<HttpResponseMessage> PostAsync(string relativeUrl, object data)
+        {
+            var testServer = Host.GetTestServer();
+            testServer.BaseAddress = new Uri("https://localhost");
+            var absoluteUrl = new Uri(testServer.BaseAddress, relativeUrl);
+            var requestBuilder = testServer.CreateRequest(absoluteUrl.ToString());
+            requestBuilder.AddHeader(HeaderNames.Authorization, "Test");
+            requestBuilder.AddHeader(HeaderNames.UserAgent, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100");
+            AddCookies(requestBuilder, absoluteUrl);
+            requestBuilder.And
+            (
+                r => r.Content = new StringContent(XtiSerializer.Serialize(data), System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json"))
+            );
+            var response = await requestBuilder.PostAsync();
             UpdateCookies(response, absoluteUrl);
             return response;
         }

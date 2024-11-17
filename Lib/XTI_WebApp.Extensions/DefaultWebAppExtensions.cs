@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Text.Json.Serialization;
 using XTI_App.Abstractions;
 using XTI_App.Api;
@@ -127,5 +129,6 @@ public static class DefaultWebAppExtensions
         );
         options.ModelBinderProviders.Insert(0, new FormModelBinderProvider());
         options.ModelBinderProviders.Insert(0, new FileUploadModelBinderProvider());
+        options.Filters.Add<VerifyModelStateActionFilter>();
     }
 }
