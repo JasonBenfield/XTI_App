@@ -74,7 +74,9 @@ internal sealed class ErrorHandlingMiddleware
         ) &&
         (
             contentType.StartsWith(WebContentTypes.Json, StringComparison.OrdinalIgnoreCase) ||
-            contentType.StartsWith(WebContentTypes.Text, StringComparison.OrdinalIgnoreCase)
+            contentType.StartsWith(WebContentTypes.Text, StringComparison.OrdinalIgnoreCase) ||
+            contentType.StartsWith(WebContentTypes.MultipartFormData, StringComparison.OrdinalIgnoreCase) ||
+            contentType.StartsWith(WebContentTypes.FormUrlEncoded, StringComparison.OrdinalIgnoreCase)
         );
     }
 

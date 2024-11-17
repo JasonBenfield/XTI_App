@@ -103,7 +103,7 @@ public static class AppExtensions
                 return new TempLogRepository
                 (
                     sp.GetRequiredService<TempLog>(),
-                    $"{appKey}_{Environment.ProcessId}".ToLower()
+                    $"{appKey}_{Environment.ProcessId:0000000000}".ToLower()
                 );
             }
         );
