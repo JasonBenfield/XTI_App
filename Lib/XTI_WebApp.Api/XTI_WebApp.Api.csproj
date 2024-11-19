@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.34" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.35" />
 		<PackageReference Include="XTI_Core.Extensions" Version="1.10.22" />
 	</ItemGroup>
 
