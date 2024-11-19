@@ -11,6 +11,8 @@ internal sealed class AppKeyTest
     public void ShouldParseAppKey()
     {
         var appKey = AppKey.WebApp("Test");
+        var appKey2 = AppKey.WebApp("CpwAuthenticator");
+        var appName = new AppName("Cpw Authenticator");
         var serialized = appKey.Serialize();
         var parsed = AppKey.Parse(serialized);
         Assert.That(parsed.Name, Is.EqualTo(new AppName("Test")), "Should parse app key");

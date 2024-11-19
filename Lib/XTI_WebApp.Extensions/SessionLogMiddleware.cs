@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Diagnostics;
 using System.Net;
 using XTI_App.Abstractions;
@@ -25,6 +26,7 @@ public sealed class SessionLogMiddleware
         HttpContext context,
         CurrentSession currentSession,
         TempLogSession tempLogSession,
+        IAppEnvironmentContext appEnvironmentContext,
         IAnonClient anonClient,
         IClock clock,
         XtiRequestContext xtiRequestContext
@@ -43,10 +45,15 @@ public sealed class SessionLogMiddleware
         {
             currentSession.SessionKey = anonClient.SessionKey;
         }
-        var session = await tempLogSession.StartSession();
-        if (anonClient.SessionKey != session.SessionKey)
+        if (string.IsNullOrWhiteSpace(currentSession.SessionKey))
         {
-            anonClient.Persist(session.SessionKey, clock.Now().AddHours(4), session.RequesterKey);
+            var session = await tempLogSession.StartSession();
+            currentSession.SessionKey = session.SessionKey;
+        }
+        if (anonClient.SessionKey != currentSession.SessionKey || string.IsNullOrWhiteSpace(anonClient.RequesterKey))
+        {
+            var appEnv = await appEnvironmentContext.Value();
+            anonClient.Persist(currentSession.SessionKey, clock.Now().AddHours(4), appEnv.RequesterKey);
         }
         var path = $"{context.Request.PathBase}{context.Request.Path}";
         await tempLogSession.StartRequest

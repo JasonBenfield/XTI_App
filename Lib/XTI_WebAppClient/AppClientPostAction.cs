@@ -240,6 +240,26 @@ public sealed class AppClientPostAction<TModel, TResult>
             {
                 formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, str);
             }
+            else if (sourceObj is DateTimeOffset dateTimeOffset)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateTimeOffset.ToString("O"));
+            }
+            else if (sourceObj is DateTime dateTime)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateTime.ToString("O"));
+            }
+            else if (sourceObj is DateOnly dateOnly)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateOnly.ToString("O"));
+            }
+            else if (sourceObj is TimeOnly timeOnly)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, timeOnly.ToString("O"));
+            }
+            else if (sourceObj is TimeSpan timeSpan)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, timeSpan.ToString("G"));
+            }
             else if (sourceObj.GetType().IsValueType)
             {
                 formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, sourceObj.ToString() ?? "");
@@ -297,7 +317,7 @@ public sealed class AppClientPostAction<TModel, TResult>
             (
                 "", 
                 AppEventSeverity.Values.CriticalError, 
-                new ErrorModel[0]
+                []
             );
         }
         var ex = new AppClientException
@@ -320,7 +340,7 @@ public sealed class AppClientPostAction<TModel, TResult>
             postResult.Content,
             "",
             AppEventSeverity.Values.CriticalError,
-            new[] { new ErrorModel(ex.Message) }
+            [new ErrorModel(ex.Message)]
         );
 
     private sealed record PostResult(bool IsSuccessful, HttpStatusCode StatusCode, string Content, string ContentType, string Url);

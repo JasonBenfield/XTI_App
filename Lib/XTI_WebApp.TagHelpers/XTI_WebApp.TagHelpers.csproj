@@ -1,15 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageTags>$(XtiAppName);$(XtiAppType);$(XtiVersion);Web App;</PackageTags>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\XTI_Forms\XTI_Forms.csproj" />

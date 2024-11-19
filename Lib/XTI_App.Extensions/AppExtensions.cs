@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
+using XTI_Core.Extensions;
 using XTI_TempLog;
 using XTI_TempLog.Extensions;
 
@@ -16,7 +17,7 @@ public static class AppExtensions
         this IConfigurationBuilder config,
         IHostEnvironment hostEnv,
         AppKey appKey
-    ) => config.UseXtiConfiguration(hostEnv, appKey, new string[0]);
+    ) => config.UseXtiConfiguration(hostEnv, appKey, []);
 
     public static IConfigurationBuilder UseXtiConfiguration
     (
@@ -34,24 +35,24 @@ public static class AppExtensions
 
     public static IConfigurationBuilder UseXtiConfiguration
     (
-        this IConfigurationBuilder config, 
-        XtiEnvironment environment, 
+        this IConfigurationBuilder config,
+        XtiEnvironment environment,
         AppKey appKey
-    ) => config.UseXtiConfiguration(environment, appKey, new string[0]);
+    ) => config.UseXtiConfiguration(environment, appKey, []);
 
     public static IConfigurationBuilder UseXtiConfiguration
     (
-        this IConfigurationBuilder config, 
-        XtiEnvironment xtiEnv, 
-        AppKey appKey, 
+        this IConfigurationBuilder config,
+        XtiEnvironment xtiEnv,
+        AppKey appKey,
         string[] args
-    ) => 
+    ) =>
         XTI_Core.Extensions.ConfigurationExtensions.UseXtiConfiguration
         (
-            config, 
+            config,
             xtiEnv,
-            appKey.Name.DisplayText, 
-            appKey.Type.DisplayText, 
+            appKey.Name.DisplayText,
+            appKey.Type.DisplayText,
             args
         );
 
@@ -61,10 +62,27 @@ public static class AppExtensions
         services.AddDistributedMemoryCache();
         services.AddSingleton<XtiFolder>();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
-        services.AddSingleton<IClock, UtcClock>();
+        services.AddSingleton<IClock, LocalClock>();
         services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
-        services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
-        services.AddScoped<IAppContext, CachedAppContext>();
+        services.AddConfigurationOptions<DefaultAppOptions>();
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().HubClient);
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().XtiToken);
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().DB);
+        services.AddScoped
+        (
+            sp =>
+            {
+                var options = sp.GetRequiredService<DefaultAppOptions>();
+                var versionKey = AppVersionKey.Parse(options.VersionKey);
+                if(versionKey.IsNone() || versionKey.IsBlank())
+                {
+                    versionKey = sp.GetRequiredService<XtiPath>().Version;
+                }
+                return versionKey;
+            }
+        );
+        services.AddScoped<CachedAppContext>();
+        services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
         services.AddScoped<CachedUserContext>();
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         services.AddScoped<ICachedUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
@@ -77,6 +95,18 @@ public static class AppExtensions
             return factory.Create(user);
         });
         services.AddTempLogServices();
+        services.AddSingleton
+        (
+            sp =>
+            {
+                var appKey = sp.GetRequiredService<AppKey>().Format().Replace(" ", "");
+                return new TempLogRepository
+                (
+                    sp.GetRequiredService<TempLog>(),
+                    $"{appKey}_{Environment.ProcessId:0000000000}".ToLower()
+                );
+            }
+        );
         services.AddScoped<IAppClientRequestKey, DefaultAppClientRequestKey>();
         services.AddSingleton<InstallationIDAccessor, FileInstallationIDAccessor>();
     }

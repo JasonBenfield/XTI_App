@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_App.Extensions;
 using XTI_App.Fakes;
@@ -14,8 +12,8 @@ internal sealed class CachedAppContextTest
     [Test]
     public async Task ShouldRetrieveAppFromSource()
     {
-        var services = await setup();
-        var appContext = getAppContext(services);
+        var services = await Setup();
+        var appContext = GetAppContext(services);
         var appFromContext = await appContext.App();
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         Assert.That(appFromContext.App.ID, Is.EqualTo(appSetup.App.App.ID), "Should retrieve app from source");
@@ -25,9 +23,9 @@ internal sealed class CachedAppContextTest
     [Test]
     public async Task ShouldRetrieveAppFromCache()
     {
-        var services = await setup();
-        var sourceAppContext = getSourceAppContext(services);
-        var cachedAppContext = getAppContext(services);
+        var services = await Setup();
+        var sourceAppContext = GetSourceAppContext(services);
+        var cachedAppContext = GetAppContext(services);
         var cachedApp1 = await cachedAppContext.App();
         var originalTitle = cachedApp1.App.AppKey.Name.DisplayText;
         var originalApp = await sourceAppContext.App();
@@ -53,8 +51,8 @@ internal sealed class CachedAppContextTest
     [Test]
     public async Task ShouldRetrieveAppRolesFromSource()
     {
-        var services = await setup();
-        var appContext = getAppContext(services);
+        var services = await Setup();
+        var appContext = GetAppContext(services);
         var app = await appContext.App();
         var expectedRoleNames = new[]
         {
@@ -70,7 +68,7 @@ internal sealed class CachedAppContextTest
         );
     }
 
-    private async Task<IServiceProvider> setup()
+    private async Task<IServiceProvider> Setup()
     {
         var hostBuilder = new XtiHostBuilder(XtiEnvironment.Test);
         hostBuilder.Services.AddServicesForTests();
@@ -83,9 +81,9 @@ internal sealed class CachedAppContextTest
         return sp;
     }
 
-    private FakeAppContext getSourceAppContext(IServiceProvider services) =>
-        (FakeAppContext)services.GetRequiredService<ISourceAppContext>();
+    private FakeAppContext GetSourceAppContext(IServiceProvider services) =>
+        services.GetRequiredService<FakeAppContext>();
 
-    private IAppContext getAppContext(IServiceProvider services) =>
+    private IAppContext GetAppContext(IServiceProvider services) =>
         services.GetRequiredService<IAppContext>();
 }

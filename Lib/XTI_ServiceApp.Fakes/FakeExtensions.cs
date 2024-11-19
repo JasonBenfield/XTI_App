@@ -5,7 +5,7 @@ using XTI_App.Fakes;
 using XTI_App.Hosting;
 using XTI_Core;
 using XTI_Core.Fakes;
-using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_TempLog.Fakes;
 
 namespace XTI_ConsoleApp.Fakes;
@@ -17,7 +17,8 @@ public static class FakeExtensions
         services.AddDataProtection();
         services.AddAppAgenda(build);
         services.AddSingleton(_ => AppVersionKey.Current);
-        services.AddSingleton<IClock, FakeClock>();
+        services.AddSingleton<FakeClock>();
+        services.AddSingleton<IClock>(sp => sp.GetRequiredService<FakeClock>());
         services.AddScoped<ActionRunnerXtiPathAccessor>();
         services.AddScoped<IXtiPathAccessor>(sp => sp.GetRequiredService<ActionRunnerXtiPathAccessor>());
         services.AddSingleton(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());

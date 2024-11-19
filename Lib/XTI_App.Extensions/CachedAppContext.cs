@@ -19,7 +19,7 @@ public sealed class CachedAppContext : IAppContext
 
     public async Task<AppContextModel> App()
     {
-        var cacheKey = $"xti_{appKey.Type.Value}_{appKey.Name.Value}";
+        var cacheKey = $"xti_app_{appKey.Type.Value}_{appKey.Name.Value}";
         if(!cache.TryGetValue<AppContextModel>(cacheKey, out var cachedApp))
         {
             cachedApp = await sourceAppContext.App();
@@ -35,7 +35,7 @@ public sealed class CachedAppContext : IAppContext
 
     public async Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey)
     {
-        var cacheKey = $"xti_{appKey.Type.Value}_{appKey.Name.Value}_{category.Name.DisplayText}_{modKey.DisplayText}";
+        var cacheKey = $"xti_modifier_{appKey.Type.Value}_{appKey.Name.Value}_{category.Name.DisplayText}_{modKey.DisplayText}";
         if (!cache.TryGetValue<ModifierModel>(cacheKey, out var cachedModifier))
         {
             cachedModifier = await sourceAppContext.Modifier(category, modKey);

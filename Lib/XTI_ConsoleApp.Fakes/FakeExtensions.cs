@@ -5,7 +5,7 @@ using XTI_App.Fakes;
 using XTI_App.Hosting;
 using XTI_Core;
 using XTI_Core.Fakes;
-using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_TempLog.Fakes;
 
 namespace XTI_ConsoleApp.Fakes;

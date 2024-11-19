@@ -93,7 +93,7 @@ public sealed partial class AppVersionKey : TextValue, IEquatable<AppVersionKey>
         return isEqual;
     }
 
-    [GeneratedRegex("V?(\\d+)")]
+    [GeneratedRegex("^V?(\\d+)$")]
     private static partial Regex KeyRegex();
 
     public int CompareTo(AppVersionKey? other) => sortValue.CompareTo(other?.sortValue ?? int.MaxValue);

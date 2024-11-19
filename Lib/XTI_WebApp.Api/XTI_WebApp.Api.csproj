@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>API infrastructure for XTI web apps.</Description>
@@ -10,8 +10,8 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.32" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.21" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.33" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.22" />
 	</ItemGroup>
 
 	<ItemGroup>

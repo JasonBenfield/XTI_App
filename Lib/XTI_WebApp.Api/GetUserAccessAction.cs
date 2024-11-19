@@ -1,5 +1,5 @@
-﻿using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
+using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -19,7 +19,7 @@ public sealed class GetUserAccessAction : AppAction<ResourcePath[], ResourcePath
         {
             var result = await userAccess.HasAccess
             (
-                new ResourceGroupName(path.Group), 
+                new ResourceGroupName(path.Group),
                 new ResourceName(path.Action),
                 new ModifierKey(path.ModKey)
             );

@@ -25,7 +25,7 @@ public sealed class DefaultFakeSetup : IAppSetup
     {
         var template = apiFactory.CreateTemplate();
         var templateModel = template.ToModel();
-        App = appContext.AddApp(templateModel);
+        App = appContext.RegisterApp(templateModel);
         appContext.SetCurrentApp(App);
         return Task.CompletedTask;
     }

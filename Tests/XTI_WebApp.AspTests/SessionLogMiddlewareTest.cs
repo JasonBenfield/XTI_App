@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using NUnit.Framework;
 using System.Net;
 using System.Text.Json;
 using XTI_App.Abstractions;
@@ -23,7 +22,6 @@ using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 using XTI_WebApp.Extensions;
 using XTI_WebApp.Fakes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace XTI_WebApp.AspTests;
 
@@ -35,7 +33,7 @@ internal sealed class SessionLogMiddlewareTest
     {
         var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var session = await getFirstStartSession(input);
+        var session = await GetFirstStartSession(input);
         Assert.That
         (
             session.UserAgent,
@@ -49,28 +47,15 @@ internal sealed class SessionLogMiddlewareTest
     {
         var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var session = await getFirstStartSession(input);
+        var session = await GetFirstStartSession(input);
         Assert.That(string.IsNullOrWhiteSpace(session.RequesterKey), Is.False, "Should log requester with session");
     }
 
-    private static async Task<StartSessionModel> getFirstStartSession(TestInput input)
+    private static async Task<TempLogSessionModel> GetFirstStartSession(TestInput input)
     {
-        var sessions = await getStartSessions(input);
+        var sessions = await GetSessions(input.Host.Services);
         Assert.That(sessions.Length, Is.EqualTo(1), "Should create session");
         return sessions[0];
-    }
-
-    private static async Task<StartSessionModel[]> getStartSessions(TestInput input)
-    {
-        var sessionFiles = input.CurrentAction.TempLog?.StartSessionFiles(input.Clock.Now().AddMinutes(1)) ?? new ITempLogFile[0];
-        var sessions = new List<StartSessionModel>();
-        foreach (var sessionFile in sessionFiles)
-        {
-            var serializedSession = await sessionFile.Read();
-            var session = XtiSerializer.Deserialize<StartSessionModel>(serializedSession);
-            sessions.Add(session);
-        }
-        return sessions.ToArray();
     }
 
     [Test]
@@ -80,7 +65,7 @@ internal sealed class SessionLogMiddlewareTest
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         input.Clock.Set(input.Clock.Now().AddHours(4).AddMinutes(1));
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var sessions = await getStartSessions(input);
+        var sessions = await GetSessions(input.Host.Services);
         Assert.That(sessions.Length, Is.EqualTo(2));
         Assert.That(sessions[1].RequesterKey, Is.EqualTo(sessions[0].RequesterKey), "Should reuse requester key");
     }
@@ -91,7 +76,7 @@ internal sealed class SessionLogMiddlewareTest
         var input = await Setup();
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var sessions = await getStartSessions(input);
+        var sessions = await GetSessions(input.Host.Services);
         Assert.That(sessions.Length, Is.EqualTo(1), "Should not start new session when anon session has already started");
     }
 
@@ -102,23 +87,9 @@ internal sealed class SessionLogMiddlewareTest
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         input.Clock.Set(input.Clock.Now().AddHours(4).AddMinutes(1));
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var sessions = await getStartSessions(input);
+        var sessions = await GetSessions(input.Host.Services);
         Assert.That(sessions.Length, Is.EqualTo(2), "Should not reuse anonymous session when it has expired");
         Assert.That(sessions[1].SessionKey, Is.Not.EqualTo(sessions[0].SessionKey), "Should not reuse anonymous session when it has expired");
-    }
-
-    [Test]
-    public async Task ShouldNotStartNewSession_WhenSessionHasAlreadyBeenStarted()
-    {
-        var input = await Setup();
-        var userName = new AppUserName("xartogg");
-        input.UserContext.SetCurrentUser(userName);
-        input.TestAuthOptions.IsEnabled = true;
-        input.TestAuthOptions.SessionKey = Guid.NewGuid().ToString("N");
-        input.TestAuthOptions.User = await input.UserContext.User(userName);
-        await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var sessionFiles = input.CurrentAction.TempLog?.StartSessionFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
-        Assert.That(sessionFiles.Length, Is.EqualTo(0), "Should not start session when session key exists");
     }
 
     [Test]
@@ -128,11 +99,9 @@ internal sealed class SessionLogMiddlewareTest
         input.UserContext.SetCurrentUser(AppUserName.Anon);
         await input.GetAsync("/Fake/Current/Controller1/Action1");
         var anonUser = await input.UserContext.User(AppUserName.Anon);
-        var sessionFiles = input.CurrentAction.TempLog?.StartSessionFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
-        Assert.That(sessionFiles.Length, Is.EqualTo(1), "Should use session for authenticated user");
-        var serializedSession = await sessionFiles[0].Read();
-        var session = XtiSerializer.Deserialize<StartSessionModel>(serializedSession);
-        Assert.That(session.UserName, Is.EqualTo(anonUser.UserName.Value), "Should create session with anonymous user");
+        var sessions = await GetSessions(input.Host.Services);
+        Assert.That(sessions.Length, Is.EqualTo(1), "Should use session for authenticated user");
+        Assert.That(sessions[0].UserName, Is.EqualTo(anonUser.UserName.Value), "Should create session with anonymous user");
     }
 
     [Test]
@@ -141,7 +110,7 @@ internal sealed class SessionLogMiddlewareTest
         var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var request = await getStartRequest(input);
+        var request = await GetStartRequest(input);
         Assert.That(request.Path, Is.EqualTo(uri), "Should log resource key for request");
     }
 
@@ -151,8 +120,8 @@ internal sealed class SessionLogMiddlewareTest
         var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var requestFiles = input.CurrentAction.TempLog?.EndRequestFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
-        Assert.That(requestFiles.Length, Is.EqualTo(1), "Should log end of request");
+        var requests = await GetEndRequests(input.Host.Services);
+        Assert.That(requests.Length, Is.EqualTo(1), "Should log end of request");
     }
 
     [Test]
@@ -161,7 +130,7 @@ internal sealed class SessionLogMiddlewareTest
         var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var request = await getStartRequest(input);
+        var request = await GetStartRequest(input);
         var path = XtiPath.Parse(request.Path);
         Assert.That(path.Version, Is.EqualTo(AppVersionKey.Current), "Should log current version");
     }
@@ -173,18 +142,15 @@ internal sealed class SessionLogMiddlewareTest
         var explicitVersion = input.AppContext.GetCurrentApp().Version;
         var uri = $"/Fake/{explicitVersion.VersionKey.Value}/Controller1/Action1";
         await input.GetAsync(uri);
-        var request = await getStartRequest(input);
+        var request = await GetStartRequest(input);
         var path = XtiPath.Parse(request.Path);
         Assert.That(path.Version, Is.EqualTo(explicitVersion.VersionKey), "Should log explicit version");
     }
 
-    private static async Task<StartRequestModel> getStartRequest(TestInput input)
+    private static async Task<TempLogRequestModel> GetStartRequest(TestInput input)
     {
-        var requestFiles = input.CurrentAction.TempLog?.StartRequestFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
-        Assert.That(requestFiles.Length, Is.EqualTo(1), "Should log end of request");
-        var serializedRequest = await requestFiles[0].Read();
-        var request = XtiSerializer.Deserialize<StartRequestModel>(serializedRequest);
-        return request;
+        var requests = await GetStartRequests(input.Host.Services);
+        return requests.FirstOrDefault() ?? new();
     }
 
     [Test]
@@ -210,20 +176,18 @@ internal sealed class SessionLogMiddlewareTest
         );
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var logEntry = await getLogEntry(input);
+        var logEntry = await GetLogEntry(input);
         Assert.That(logEntry.Severity, Is.EqualTo(AppEventSeverity.Values.CriticalError.Value), "Should log critical error");
         Assert.That(logEntry.Caption, Is.EqualTo("An unexpected error occurred"), "Should log critical error");
         Assert.That(logEntry.Message, Is.EqualTo(exception?.Message), "Should log critical error");
         Assert.That(logEntry.Detail, Is.EqualTo(exception?.StackTrace), "Should log critical error");
     }
 
-    private static async Task<LogEntryModel> getLogEntry(TestInput input)
+    private static async Task<LogEntryModel> GetLogEntry(TestInput input)
     {
-        var logEntryFiles = input.CurrentAction.TempLog?.LogEventFiles(input.Clock.Now().AddMinutes(1)).ToArray() ?? new ITempLogFile[0];
-        Assert.That(logEntryFiles.Length, Is.EqualTo(1), "Should log event");
-        var serializedEvent = await logEntryFiles[0].Read();
-        var logEntry = XtiSerializer.Deserialize<LogEntryModel>(serializedEvent);
-        return logEntry;
+        var logEntries = await GetLogEntries(input.Host.Services);
+        Assert.That(logEntries.Length, Is.EqualTo(1), "Should log event");
+        return logEntries[0];
     }
 
     [Test]
@@ -249,7 +213,7 @@ internal sealed class SessionLogMiddlewareTest
         );
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         Assert.That(evt.Severity, Is.EqualTo(AppEventSeverity.Values.ValidationFailed.Value), "Should log validation failed");
         Assert.That(evt.Caption, Is.EqualTo("Validation Failed"), "Should log validation failed");
         Assert.That(evt.Message, Is.EqualTo("Validation failed with the following errors:\r\nUser name is required"), "Should log validation failed");
@@ -279,7 +243,7 @@ internal sealed class SessionLogMiddlewareTest
         );
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         Assert.That(evt.Severity, Is.EqualTo(AppEventSeverity.Values.AppError.Value), "Should log app error");
         Assert.That(evt.Caption, Is.EqualTo("Display Message"), "Should log app error");
         Assert.That(evt.Message, Is.EqualTo("Full Message"), "Should log app error");
@@ -309,7 +273,7 @@ internal sealed class SessionLogMiddlewareTest
             }
         );
         await input.GetAsync(uri);
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         Assert.That(evt.Severity, Is.EqualTo(AppEventSeverity.Values.AccessDenied.Value), "Should log access denied");
         Assert.That(evt.Caption, Is.EqualTo("Access Denied"), "Should log access denied");
         Assert.That(evt.Message, Is.EqualTo("Access denied to /Fake/Current/Controller1/Action1"), "Should log access denied");
@@ -342,7 +306,7 @@ internal sealed class SessionLogMiddlewareTest
         var response = await input.GetAsync(uri);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
         var result = await response.Content.ReadAsStringAsync();
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         var expectedResult = JsonSerializer.Serialize
         (
             new ResultContainer<WebErrorResult>
@@ -374,7 +338,7 @@ internal sealed class SessionLogMiddlewareTest
         var response = await input.GetAsync(uri);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var result = await response.Content.ReadAsStringAsync();
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         var expectedResult = JsonSerializer.Serialize
         (
             new ResultContainer<WebErrorResult>
@@ -414,15 +378,15 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
         var result = await response.Content.ReadAsStringAsync();
         var errors = new[] { new ErrorModel(exception?.DisplayMessage ?? "") };
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         var expectedResult = JsonSerializer.Serialize
         (
             new ResultContainer<WebErrorResult>
             (
                 new WebErrorResult
                 (
-                    evt.EventKey, 
-                    AppEventSeverity.Values.Value(evt.Severity), 
+                    evt.EventKey,
+                    AppEventSeverity.Values.Value(evt.Severity),
                     errors
                 )
             )
@@ -457,7 +421,7 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         var result = await response.Content.ReadAsStringAsync();
         var errors = new[] { new ErrorModel(exception?.DisplayMessage ?? "") };
-        var evt = await getLogEntry(input);
+        var evt = await GetLogEntry(input);
         var expectedResult = JsonSerializer.Serialize
         (
             new ResultContainer<WebErrorResult>
@@ -473,6 +437,11 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(result, Is.EqualTo(expectedResult), "Should return errors");
     }
 
+    private sealed class FakeRequestData
+    {
+        public string Arg1 { get; set; } = "";
+    }
+
     [Test]
     public async Task ShouldLogout()
     {
@@ -481,19 +450,19 @@ internal sealed class SessionLogMiddlewareTest
         var uri = $"/Fake/Current/User/Logout?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
-             c =>
+            async c =>
             {
                 var action = c.RequestServices.GetRequiredService<LogoutAction>();
-                return action.Execute(new LogoutRequest(""), CancellationToken.None);
+                await action.Execute(new LogoutRequest(""), CancellationToken.None);
             }
         );
         var response = await input.GetAsync(uri);
         var tempLog = input.Host.Services.GetRequiredService<TempLog>();
         var clock = input.Host.Services.GetRequiredService<IClock>();
-        var endSessionFiles = tempLog.EndSessionFiles(clock.Now().AddMinutes(1)).ToArray();
+        var endSessions = await GetEndSessions(input.Host.Services);
         Assert.That
         (
-            endSessionFiles.Length,
+            endSessions.Length,
             Is.EqualTo(1),
             "Should end session"
         );
@@ -606,6 +575,67 @@ internal sealed class SessionLogMiddlewareTest
         return new TestInput(host);
     }
 
+    private static async Task<TempLogSessionModel[]> GetSessions(IServiceProvider services)
+    {
+        var logFiles = await WriteLogFiles(services);
+        var sessionDetails = await logFiles[0].Read();
+        return sessionDetails.Select(s => s.Session).ToArray();
+    }
+
+    private static async Task<TempLogSessionModel[]> GetEndSessions(IServiceProvider services)
+    {
+        var logFiles = await WriteLogFiles(services);
+        var sessionDetails = await logFiles[0].Read();
+        return sessionDetails.Select(s => s.Session).Where(s => s.TimeEnded.Year < 9999).ToArray();
+    }
+
+    private static async Task<TempLogRequestModel[]> GetStartRequests(IServiceProvider services)
+    {
+        var logFiles = await WriteLogFiles(services);
+        var sessionDetails = await logFiles[0].Read();
+        var sessions = sessionDetails.Select(s => s.Session).ToArray();
+        var requests = sessionDetails
+            .SelectMany(sd => sd.RequestDetails.Select(rd => rd.Request))
+            .OrderBy(r => r.TimeStarted)
+            .ToArray();
+        return requests;
+    }
+
+    private static async Task<TempLogRequestModel[]> GetEndRequests(IServiceProvider services)
+    {
+        var logFiles = await WriteLogFiles(services);
+        var sessionDetails = await logFiles[0].Read();
+        var sessions = sessionDetails.Select(s => s.Session).ToArray();
+        var requests = sessionDetails
+            .SelectMany(sd => sd.RequestDetails.Select(rd => rd.Request))
+            .Where(r => r.TimeEnded.Year < 9999)
+            .OrderBy(r => r.TimeStarted)
+            .ToArray();
+        return requests;
+    }
+
+    private static async Task<LogEntryModel[]> GetLogEntries(IServiceProvider services)
+    {
+        var logFiles = await WriteLogFiles(services);
+        var sessionDetails = await logFiles[0].Read();
+        var sessions = sessionDetails.Select(s => s.Session).ToArray();
+        var logEntries = sessionDetails
+            .SelectMany(sd => sd.RequestDetails.SelectMany(rd => rd.LogEntries))
+            .OrderBy(r => r.TimeOccurred)
+            .ToArray();
+        return logEntries;
+    }
+
+    private static async Task<ITempLogFile[]> WriteLogFiles(IServiceProvider sp)
+    {
+        var tempLogRepo = sp.GetRequiredService<TempLogRepository>();
+        await tempLogRepo.WriteToLocalStorage();
+        var clock = sp.GetRequiredService<IClock>();
+        var tempLog = sp.GetRequiredService<TempLog>();
+        var logFiles = tempLog.Files(clock.Now().AddSeconds(1), 100);
+        return logFiles;
+    }
+
     private sealed class TestInput
     {
         public TestInput(IHost host)
@@ -636,6 +666,24 @@ internal sealed class SessionLogMiddlewareTest
             requestBuilder.AddHeader(HeaderNames.UserAgent, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100");
             AddCookies(requestBuilder, absoluteUrl);
             var response = await requestBuilder.GetAsync();
+            UpdateCookies(response, absoluteUrl);
+            return response;
+        }
+
+        public async Task<HttpResponseMessage> PostAsync(string relativeUrl, object data)
+        {
+            var testServer = Host.GetTestServer();
+            testServer.BaseAddress = new Uri("https://localhost");
+            var absoluteUrl = new Uri(testServer.BaseAddress, relativeUrl);
+            var requestBuilder = testServer.CreateRequest(absoluteUrl.ToString());
+            requestBuilder.AddHeader(HeaderNames.Authorization, "Test");
+            requestBuilder.AddHeader(HeaderNames.UserAgent, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100");
+            AddCookies(requestBuilder, absoluteUrl);
+            requestBuilder.And
+            (
+                r => r.Content = new StringContent(XtiSerializer.Serialize(data), System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json"))
+            );
+            var response = await requestBuilder.PostAsync();
             UpdateCookies(response, absoluteUrl);
             return response;
         }

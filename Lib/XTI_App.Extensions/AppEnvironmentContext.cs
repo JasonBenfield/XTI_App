@@ -1,7 +1,7 @@
 ﻿using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using XTI_App.Abstractions;
-using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 
 namespace XTI_App.Extensions;
 
