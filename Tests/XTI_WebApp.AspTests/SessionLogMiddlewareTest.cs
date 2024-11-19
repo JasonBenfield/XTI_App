@@ -437,24 +437,6 @@ internal sealed class SessionLogMiddlewareTest
         Assert.That(result, Is.EqualTo(expectedResult), "Should return errors");
     }
 
-    [Test]
-    public async Task ShouldPost()
-    {
-        const string envName = "Production";
-        var input = await Setup(envName);
-        var uri = $"/Fake/Current/User/Logout?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
-        input.CurrentAction.Configure
-        (
-            async c =>
-            {
-                var fakeData = await c.Request.ReadFromJsonAsync<FakeRequestData>();
-                var serializedData = XtiSerializer.Serialize(fakeData);
-                Console.WriteLine(serializedData);
-            }
-        );
-        var response = await input.PostAsync(uri, new FakeRequestData { Arg1 = "Value1" });
-    }
-
     private sealed class FakeRequestData
     {
         public string Arg1 { get; set; } = "";
@@ -470,7 +452,6 @@ internal sealed class SessionLogMiddlewareTest
         (
             async c =>
             {
-                var logoutRequest = await c.Request.ReadFromJsonAsync<LogoutRequest>();
                 var action = c.RequestServices.GetRequiredService<LogoutAction>();
                 await action.Execute(new LogoutRequest(""), CancellationToken.None);
             }

@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
-		<PackageReference Include="XTI_Credentials" Version="1.8.11-dev241112213806362" />
+		<PackageReference Include="XTI_Credentials" Version="1.8.11" />
 	</ItemGroup>
 
 	<ItemGroup>

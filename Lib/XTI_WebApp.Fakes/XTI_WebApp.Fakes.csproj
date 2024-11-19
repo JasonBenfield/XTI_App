@@ -10,8 +10,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
-		<PackageReference Include="XTI_Core.Extensions" Version="1.10.22-dev241112213612939" />
-		<PackageReference Include="XTI_Secrets.Fakes" Version="1.8.11-dev241112213806362" />
+		<PackageReference Include="XTI_Core.Extensions" Version="1.10.22" />
+		<PackageReference Include="XTI_Secrets.Fakes" Version="1.8.11" />
 	</ItemGroup>
 
 	<ItemGroup>

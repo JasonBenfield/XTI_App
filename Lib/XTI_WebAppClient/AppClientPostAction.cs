@@ -244,6 +244,10 @@ public sealed class AppClientPostAction<TModel, TResult>
             {
                 formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateTimeOffset.ToString("O"));
             }
+            else if (sourceObj is DateTime dateTime)
+            {
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateTime.ToString("O"));
+            }
             else if (sourceObj is DateOnly dateOnly)
             {
                 formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateOnly.ToString("O"));
