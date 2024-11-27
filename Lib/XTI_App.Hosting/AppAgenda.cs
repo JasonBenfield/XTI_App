@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
+using XTI_TempLog;
 
 namespace XTI_App.Hosting;
 
@@ -92,6 +93,8 @@ public sealed class AppAgenda
             {
                 await sessionWorker.StopAsync(stoppingToken);
             }
+            var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
+            await tempLogRepo.WriteToLocalStorage();
         }
     }
 

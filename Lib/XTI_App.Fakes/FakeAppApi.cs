@@ -10,6 +10,7 @@ public sealed class FakeAppApi : AppApiWrapper
         (
             new AppApi
             (
+                sp,
                 FakeInfo.AppKey,
                 user,
                 ResourceAccess.AllowAuthenticated()

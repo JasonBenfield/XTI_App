@@ -58,17 +58,17 @@ public sealed class AppAgendaBuilder
 
     public AppAgendaBuilder ApplyOptions(AppAgendaOptions options)
     {
-        var immedActions = options.ImmediateItems ?? new ImmediateAppAgendaItemOptions[0];
+        var immedActions = options.ImmediateItems ?? [];
         foreach (var immedAction in immedActions)
         {
             itemBuilders.RemoveAll(b => b.HasAction(immedAction.GroupName, immedAction.ActionName));
         }
-        var schedActions = options.ScheduledItems ?? new ScheduledAppAgendaItemOptions[] { };
+        var schedActions = options.ScheduledItems ?? [];
         foreach (var schedAction in schedActions)
         {
             itemBuilders.RemoveAll(b => b.HasAction(schedAction.GroupName, schedAction.ActionName));
         }
-        var alwaysActions = options.AlwaysRunningItems ?? new AlwaysRunningAppAgendaItemOptions[] { };
+        var alwaysActions = options.AlwaysRunningItems ?? [];
         foreach (var alwaysAction in alwaysActions)
         {
             itemBuilders.RemoveAll(b => b.HasAction(alwaysAction.GroupName, alwaysAction.ActionName));

@@ -2,6 +2,7 @@
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
+using XTI_TempLog;
 
 namespace XTI_ODataQuery.Api;
 
@@ -16,7 +17,8 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
         ResourceAccess access,
         IAppApiUser user,
         Func<QueryAction<TModel, TEntity>> createQuery,
-        string friendlyName
+        string friendlyName,
+        ThrottledLogPath throttledLogPath
     )
     {
         path.EnsureActionResource();
@@ -27,12 +29,14 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
             : friendlyName;
         this.user = user;
         this.createQuery = createQuery;
+        ThrottledLogPath = throttledLogPath;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
+    public ThrottledLogPath ThrottledLogPath { get; }
 
     public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TModel model, CancellationToken stoppingToken = default)
     {

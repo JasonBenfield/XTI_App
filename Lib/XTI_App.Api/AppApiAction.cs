@@ -1,6 +1,7 @@
 ﻿using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_Forms;
+using XTI_TempLog;
 
 namespace XTI_App.Api;
 
@@ -17,7 +18,8 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         IAppApiUser user,
         Func<AppActionValidation<TModel>> createValidation,
         Func<AppAction<TModel, TResult>> createAction,
-        string friendlyName
+        string friendlyName,
+        ThrottledLogPath throttledLogPath
     )
     {
         path.EnsureActionResource();
@@ -29,12 +31,14 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         this.user = user;
         this.createValidation = createValidation;
         this.createAction = createAction;
+        ThrottledLogPath = throttledLogPath;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
+    public ThrottledLogPath ThrottledLogPath { get; }
 
     public Task<bool> IsOptional()
     {

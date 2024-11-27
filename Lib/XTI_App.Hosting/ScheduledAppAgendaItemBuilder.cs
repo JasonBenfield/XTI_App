@@ -29,12 +29,12 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
                  IsDisabled = options.IsDisabled,
                  Schedule = new ScheduleOptions
                  {
-                     WeeklySchedules = new[]
-                    {
+                     WeeklySchedules =
+                    [
                         new WeeklyScheduleOptions
                         {
-                            Days = new[]
-                            {
+                            Days =
+                            [
                                 DayOfWeek.Sunday,
                                 DayOfWeek.Monday,
                                 DayOfWeek.Tuesday,
@@ -42,17 +42,17 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
                                 DayOfWeek.Thursday,
                                 DayOfWeek.Friday,
                                 DayOfWeek.Saturday
-                            },
-                            TimeRanges = new []
-                            {
+                            ],
+                            TimeRanges =
+                            [
                                 new TimeRangeOptions
                                 {
                                     Start = new TimeOnly(),
                                     Duration = TimeSpan.FromHours(24)
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
                  }
              }
         )
@@ -126,7 +126,7 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
     }
 
     internal ScheduledAppAgendaItem Build()
-        => new ScheduledAppAgendaItem
+        => new
         (
             groupName,
             actionName,

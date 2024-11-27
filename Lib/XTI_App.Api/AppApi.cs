@@ -4,24 +4,28 @@ namespace XTI_App.Api;
 
 public sealed class AppApi
 {
+    private readonly IServiceProvider sp;
     private readonly IAppApiUser user;
     private readonly Dictionary<string, AppApiGroup> groups = new();
-    private readonly string serializedDefaultOptions;
 
     public AppApi
     (
+        IServiceProvider sp,
         AppKey appKey,
         IAppApiUser user,
         ResourceAccess access,
         string serializedDefaultOptions
     )
     {
+        this.sp = sp;
         AppKey = appKey;
         Path = new XtiPath(appKey);
         this.user = user;
         Access = access ?? ResourceAccess.AllowAuthenticated();
-        this.serializedDefaultOptions = serializedDefaultOptions;
+        SerializedDefaultOptions = serializedDefaultOptions;
     }
+
+    internal string SerializedDefaultOptions { get; }
 
     public XtiPath Path { get; }
 
@@ -40,7 +44,7 @@ public sealed class AppApi
 
     public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess access)
     {
-        var group = new AppApiGroup(Path.WithGroup(name), modCategory, access, user);
+        var group = new AppApiGroup(sp, Path.WithGroup(name), modCategory, access, user);
         groups.Add(groupKey(group.GroupName), group);
         return group;
     }
@@ -52,7 +56,7 @@ public sealed class AppApi
     private static string groupKey(string groupName) =>
         groupName.ToLower().Replace(" ", "").Replace("_", "");
 
-    public AppApiTemplate Template() => new(this, serializedDefaultOptions);
+    public AppApiTemplate Template() => new AppApiTemplate(this, SerializedDefaultOptions);
 
     internal AppRoleName[] RoleNames()
     {

@@ -3,6 +3,7 @@ using Microsoft.OData.UriParser;
 using System.Reflection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_TempLog;
 using XTI_WebApp.Api;
 
 namespace XTI_ODataQuery.Api;
@@ -20,7 +21,8 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         IAppApiUser user,
         Func<QueryAction<TArgs, TEntity>> createQuery,
         Func<IQueryToExcel> createQueryToExcel,
-        string friendlyName
+        string friendlyName,
+        ThrottledLogPath throttledLogPath
     )
     {
         Path = path;
@@ -29,12 +31,14 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         FriendlyName = friendlyName;
         this.createQueryToExcel = createQueryToExcel;
         this.createQuery = createQuery;
+        ThrottledLogPath = throttledLogPath;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
+    public ThrottledLogPath ThrottledLogPath { get; }
 
     public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TArgs model, CancellationToken stoppingToken = default)
     {

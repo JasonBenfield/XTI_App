@@ -121,14 +121,16 @@ public static class AppExtensions
             {
                 using var scope = sp.CreateScope();
                 var api = (TAppApi)scope.ServiceProvider.GetRequiredService<AppApiFactory>().CreateForSuperUser();
+                var throttledLogPaths = api.ThrottledLogPaths();
+                builder.ApplyThrottledPaths(throttledLogPaths);
                 action(api, builder);
             }
         );
     }
 
-    public static ThrottledPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action)
-        => builder.Throttle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
+    public static TempLogThrottledLogPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action) => 
+        builder.Throttle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
 
-    public static ThrottledPathBuilder AndThrottle(this ThrottledPathBuilder builder, IAppApiAction action)
-        => builder.AndThrottle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
+    public static TempLogThrottledLogPathBuilder AndThrottle(this TempLogThrottledLogPathBuilder builder, IAppApiAction action) => 
+        builder.AndThrottle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
 }

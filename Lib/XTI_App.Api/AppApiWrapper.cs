@@ -1,4 +1,5 @@
 ﻿using XTI_App.Abstractions;
+using XTI_TempLog;
 
 namespace XTI_App.Api;
 
@@ -15,17 +16,18 @@ public class AppApiWrapper : IAppApi
     public AppKey AppKey { get => source.AppKey; }
     public ResourceAccess Access { get => source.Access; }
     public IAppApiGroup Group(string groupName) => source.Group(groupName);
-    public IEnumerable<IAppApiGroup> Groups() => source.Groups();
+    public IAppApiGroup[] Groups() => source.Groups();
+
     public AppApiTemplate Template()
     {
         var template = source.Template();
         template.ExcludeValueTemplates
         (
-            (templ, codeGen) =>
+            (valueTemplate, codeGen) =>
             {
-                if(codeGen == ApiCodeGenerators.Dotnet)
+                if (codeGen == ApiCodeGenerators.Dotnet)
                 {
-                    var ns = templ.DataType.Namespace ?? "";
+                    var ns = valueTemplate.DataType.Namespace ?? "";
                     return ns.StartsWith("XTI_App.Abstractions") || ns.StartsWith("XTI_Core");
                 }
                 return false;
@@ -35,5 +37,10 @@ public class AppApiWrapper : IAppApi
         return template;
     }
 
+    internal AppRoleName[] RoleNames() => source.RoleNames();
+
     protected virtual void ConfigureTemplate(AppApiTemplate template) { }
+
+    public ThrottledLogPath[] ThrottledLogPaths() => 
+        Groups().SelectMany(g => g.ThrottledLogPaths()).ToArray();
 }
