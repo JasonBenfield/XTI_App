@@ -62,25 +62,16 @@ public static class AppExtensions
         services.AddDistributedMemoryCache();
         services.AddSingleton<XtiFolder>();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
+        services.AddSingleton<AppVersionKeyAccessor>();
+        services.AddSingleton(sp => sp.GetRequiredService<AppVersionKeyAccessor>().Value);
+        services.AddSingleton<XtiBasePath>();
+        services.AddSingleton<IModifierKeyAccessor, DefaultModifierKeyAccessor>();
         services.AddSingleton<IClock, LocalClock>();
-        services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
         services.AddConfigurationOptions<DefaultAppOptions>();
         services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().HubClient);
         services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().XtiToken);
         services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().DB);
-        services.AddScoped
-        (
-            sp =>
-            {
-                var options = sp.GetRequiredService<DefaultAppOptions>();
-                var versionKey = AppVersionKey.Parse(options.VersionKey);
-                if(versionKey.IsNone() || versionKey.IsBlank())
-                {
-                    versionKey = sp.GetRequiredService<XtiPath>().Version;
-                }
-                return versionKey;
-            }
-        );
+        services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().TempLog);
         services.AddScoped<CachedAppContext>();
         services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
         services.AddScoped<CachedUserContext>();
@@ -111,6 +102,22 @@ public static class AppExtensions
         services.AddSingleton<InstallationIDAccessor, FileInstallationIDAccessor>();
     }
 
+    public static void AddThrottledLog(this IServiceCollection services, Action<IAppApi, ThrottledLogsBuilder> action)
+    {
+        TempLogExtensions.AddThrottledLog
+        (
+            services,
+            (sp, builder) =>
+            {
+                using var scope = sp.CreateScope();
+                var api = scope.ServiceProvider.GetRequiredService<AppApiFactory>().CreateForSuperUser();
+                var throttledLogPaths = api.ThrottledLogPaths();
+                builder.ApplyThrottledPaths(throttledLogPaths);
+                action(api, builder);
+            }
+        );
+    }
+
     public static void AddThrottledLog<TAppApi>(this IServiceCollection services, Action<TAppApi, ThrottledLogsBuilder> action)
         where TAppApi : IAppApi
     {
@@ -128,9 +135,9 @@ public static class AppExtensions
         );
     }
 
-    public static TempLogThrottledLogPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action) => 
+    public static ThrottledLogPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action) => 
         builder.Throttle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
 
-    public static TempLogThrottledLogPathBuilder AndThrottle(this TempLogThrottledLogPathBuilder builder, IAppApiAction action) => 
+    public static ThrottledLogPathBuilder AndThrottle(this ThrottledLogPathBuilder builder, IAppApiAction action) => 
         builder.AndThrottle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
 }

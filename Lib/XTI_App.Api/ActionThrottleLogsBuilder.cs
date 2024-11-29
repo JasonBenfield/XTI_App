@@ -1,21 +1,46 @@
-﻿using XTI_TempLog;
+﻿using XTI_App.Abstractions;
+using XTI_TempLog;
 
 namespace XTI_App.Api;
+
+public sealed class ActionThrottledLogPathBuilder<TActionBuilder> where TActionBuilder : IAppApiActionBuilder
+{
+    private readonly ActionThrottledLogIntervalBuilder<TActionBuilder> requestIntervalBuilder;
+    private readonly ActionThrottledLogIntervalBuilder<TActionBuilder> exceptionIntervalBuilder;
+
+    public ActionThrottledLogPathBuilder(TActionBuilder actionBuilder)
+    {
+        requestIntervalBuilder = new(actionBuilder);
+        exceptionIntervalBuilder = new(actionBuilder);
+    }
+
+    public ActionThrottledLogIntervalBuilder<TActionBuilder> RequestIntervalBuilder { get => requestIntervalBuilder; }
+
+    public ActionThrottledLogIntervalBuilder<TActionBuilder> ExceptionIntervalBuilder { get => exceptionIntervalBuilder; }
+
+    public ThrottledLogPath Build(XtiPath actionPath) =>
+        new
+        (
+            path: actionPath.Value(),
+            throttleRequestInterval: requestIntervalBuilder.Interval,
+            throttleExceptionInterval: exceptionIntervalBuilder.Interval
+        );
+}
 
 public sealed class ActionThrottledLogIntervalBuilder<TActionBuilder> where TActionBuilder : IAppApiActionBuilder
 {
     private readonly TActionBuilder actionBuilder;
-    private readonly ThrottledLogIntervalBuilder intervalBuilder;
 
-    public ActionThrottledLogIntervalBuilder(TActionBuilder actionBuilder, ThrottledLogIntervalBuilder intervalBuilder)
+    public ActionThrottledLogIntervalBuilder(TActionBuilder actionBuilder)
     {
         this.actionBuilder = actionBuilder;
-        this.intervalBuilder = intervalBuilder;
     }
+
+    internal TimeSpan Interval { get; private set; }
 
     public TActionBuilder For(TimeSpan ts)
     {
-        intervalBuilder.For(ts);
+        Interval = ts;
         return actionBuilder;
     }
 

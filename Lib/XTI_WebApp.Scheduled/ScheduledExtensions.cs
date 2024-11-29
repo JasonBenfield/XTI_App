@@ -9,7 +9,6 @@ public static class ScheduledExtensions
     {
         services.AddScoped<IActionRunnerFactory, WebActionRunnerFactory>();
         services.AddSingleton<ScheduledAppEnvironmentContext>();
-        services.AddSingleton<ActionRunnerXtiPathAccessor>();
         services.AddAppAgenda(build);
         services.AddHostedService<ScheduledWebWorker>();
     }

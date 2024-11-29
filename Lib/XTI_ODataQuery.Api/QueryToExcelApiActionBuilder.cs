@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_TempLog;
 
 namespace XTI_ODataQuery.Api;
 
@@ -11,7 +10,7 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
     private readonly XtiPath groupPath;
     private readonly IAppApiUser user;
     private string friendlyName = "";
-    private readonly ThrottledLogPathBuilder pathBuilder = new();
+    private readonly ActionThrottledLogPathBuilder<QueryToExcelApiActionBuilder<TArgs, TEntity>> throttledLogPathBuilder;
     private ResourceAccess access;
     private Func<QueryAction<TArgs, TEntity>> createQuery;
     private Func<IQueryToExcel> createQueryToExcel;
@@ -30,6 +29,7 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
         this.groupPath = groupPath;
         this.user = user;
         this.access = access;
+        throttledLogPathBuilder = new(this);
         ActionName = actionName;
         createQuery = () => new EmptyQueryAction<TArgs, TEntity>();
         createQueryToExcel = () => new DefaultQueryToExcelBuilder().Build();
@@ -86,10 +86,10 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
     }
 
     public ActionThrottledLogIntervalBuilder<QueryToExcelApiActionBuilder<TArgs, TEntity>> ThrottleRequestLogging() =>
-        new(this, pathBuilder.Requests());
+        throttledLogPathBuilder.RequestIntervalBuilder;
 
     public ActionThrottledLogIntervalBuilder<QueryToExcelApiActionBuilder<TArgs, TEntity>> ThrottleExceptionLogging() =>
-        new(this, pathBuilder.Exceptions());
+        throttledLogPathBuilder.ExceptionIntervalBuilder;
 
     public QueryToExcelApiAction<TArgs, TEntity> Build()
     {
@@ -100,7 +100,6 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
     private QueryToExcelApiAction<TArgs, TEntity> BuildAction()
     {
         var actionPath = groupPath.WithAction(ActionName);
-        pathBuilder.Path(actionPath.Value());
         return new QueryToExcelApiAction<TArgs, TEntity>
         (
             actionPath,
@@ -109,7 +108,7 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
             createQuery,
             createQueryToExcel,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
-            pathBuilder.Build()
+            throttledLogPathBuilder.Build(actionPath)
         );
     }
 

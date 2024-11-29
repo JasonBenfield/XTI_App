@@ -129,6 +129,7 @@ internal sealed class PageContextTest
         hostBuilder.Services.AddFakesForXtiWebApp();
         hostBuilder.Services.AddSingleton<FakeAppOptions>();
         hostBuilder.Services.AddSingleton(sp => FakeInfo.AppKey);
+        hostBuilder.Services.AddSingleton(sp => versionKey);
         hostBuilder.Services.AddScoped<FakeAppApiFactory>();
         hostBuilder.Services.AddScoped<AppApiFactory>(sp => sp.GetRequiredService<FakeAppApiFactory>());
         hostBuilder.Services.AddScoped<FakeAppSetup>();
@@ -143,18 +144,6 @@ internal sealed class PageContextTest
             return appClients;
         });
         var sp = hostBuilder.Build().Scope();
-        var pathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
-        pathAccessor.SetPath
-        (
-            new XtiPath
-            (
-                FakeInfo.AppKey,
-                versionKey,
-                new ResourceGroupName(""),
-                new ResourceName(""),
-                ModifierKey.Default
-            )
-        );
         var setup = sp.GetRequiredService<FakeAppSetup>();
         await setup.Run(AppVersionKey.Current);
         var userContext = sp.GetRequiredService<FakeUserContext>();

@@ -1,36 +1,37 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using XTI_App.Abstractions;
 
 namespace XTI_WebApp.Extensions;
 
-public sealed class WebXtiPathAccessor : IXtiPathAccessor
+public sealed class WebXtiPathAccessor
 {
     private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly AppKey appKey;
-    private readonly IWebHostEnvironment hostEnv;
+    private readonly XtiBasePath xtiBasePath;
 
-    public WebXtiPathAccessor(IHttpContextAccessor httpContextAccessor, AppKey appKey, IWebHostEnvironment hostEnv)
+    public WebXtiPathAccessor(IHttpContextAccessor httpContextAccessor, XtiBasePath xtiBasePath)
     {
         this.httpContextAccessor = httpContextAccessor;
-        this.appKey = appKey;
-        this.hostEnv = hostEnv;
+        this.xtiBasePath = xtiBasePath;
     }
 
     public XtiPath Value()
     {
         var request = httpContextAccessor.HttpContext?.Request;
-        var path = $"{request?.PathBase}{request?.Path}";
-        if (string.IsNullOrWhiteSpace(path))
+        var pathText = $"{request?.PathBase}{request?.Path}";
+        XtiPath xtiPath;
+        if (string.IsNullOrWhiteSpace(pathText))
         {
-            var dirName = Path.GetDirectoryName(hostEnv.ContentRootPath) ?? "";
-            var versionKey = AppVersionKey.Parse(dirName);
-            if (versionKey.Equals(AppVersionKey.None))
-            {
-                versionKey = AppVersionKey.Current;
-            }
-            path = $"{appKey.Name.DisplayText}/{versionKey.DisplayText}";
+            xtiPath = xtiBasePath.Value;
         }
-        return XtiPath.Parse(path);
+        else
+        {
+            var parsedXtiPath = XtiPath.Parse(pathText);
+            xtiPath = xtiBasePath
+                .Value
+                .WithGroup(parsedXtiPath.Group)
+                .WithAction(parsedXtiPath.Action)
+                .WithModifier(parsedXtiPath.Modifier);
+        }
+        return xtiPath;
     }
 }

@@ -4,7 +4,7 @@ namespace XTI_App.Abstractions;
 
 public sealed class ResourceName : TextKeyValue, IEquatable<ResourceName>
 {
-    public static readonly ResourceName Unknown = new ResourceName("Unknown");
+    public static readonly ResourceName Unknown = new("Unknown");
 
     public ResourceName(string value) : base(value)
     {

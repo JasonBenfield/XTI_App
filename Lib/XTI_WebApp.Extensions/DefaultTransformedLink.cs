@@ -8,14 +8,14 @@ namespace XTI_WebApp.Extensions;
 internal sealed class DefaultTransformedLink : ITransformedLink
 {
     private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly IXtiPathAccessor xtiPathAccessor;
+    private readonly XtiBasePath xtiBasePath;
     private readonly IUserContext userContext;
     private readonly LinkModel link;
 
-    public DefaultTransformedLink(IHttpContextAccessor httpContextAccessor, IXtiPathAccessor xtiPathAccessor, IUserContext userContext, LinkModel link)
+    public DefaultTransformedLink(IHttpContextAccessor httpContextAccessor, XtiBasePath xtiBasePath, IUserContext userContext, LinkModel link)
     {
         this.httpContextAccessor = httpContextAccessor;
-        this.xtiPathAccessor = xtiPathAccessor;
+        this.xtiBasePath = xtiBasePath;
         this.userContext = userContext;
         this.link = link;
     }
@@ -25,8 +25,7 @@ internal sealed class DefaultTransformedLink : ITransformedLink
         var l = link;
         if (link.IsXtiPath() && httpContextAccessor.HttpContext != null)
         {
-            var xtiPath = xtiPathAccessor.Value();
-            var url = link.Url.Replace("~", $"/{xtiPath.App}/{AppVersionKey.Current.DisplayText}");
+            var url = link.Url.Replace("~", $"/{xtiBasePath.Value.App}/{AppVersionKey.Current.DisplayText}");
             l = l with { Url = url };
         }
         if (l.DisplayText == "{User.FullName}")

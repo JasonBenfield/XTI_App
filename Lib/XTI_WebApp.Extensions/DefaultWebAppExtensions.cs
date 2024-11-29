@@ -91,7 +91,8 @@ public static class DefaultWebAppExtensions
             var options = sp.GetRequiredService<DefaultWebAppOptions>();
             return new AnonClient(dataProtector, httpContextAccessor, options);
         });
-        services.AddScoped<IXtiPathAccessor, WebXtiPathAccessor>();
+        services.AddScoped<WebXtiPathAccessor>();
+        services.AddScoped<IModifierKeyAccessor, WebModifierKeyAccessor>();
         services.AddSingleton<ISystemUserCredentials, SystemUserCredentials>();
         services.AddSingleton<SystemCurrentUserName>();
         services.AddScoped<ICurrentUserName, WebCurrentUserName>();

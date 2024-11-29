@@ -5,9 +5,9 @@ public static class LinkModelExtensions
     public static bool IsXtiPath(this LinkModel link) =>
         link.Url.StartsWith("~/");
 
-    public static XtiPath GetXtiPath(this LinkModel link, XtiPath basePath)
+    public static XtiPath GetXtiPath(this LinkModel link, XtiBasePath basePath)
     {
-        var path = basePath;
+        var path = basePath.Value;
         if (link.IsXtiPath())
         {
             var url = link.Url;

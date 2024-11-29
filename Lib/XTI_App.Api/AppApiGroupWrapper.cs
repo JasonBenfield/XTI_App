@@ -18,8 +18,6 @@ public class AppApiGroupWrapper : IAppApiGroup
     public XtiPath Path { get => source.Path; }
     public ResourceAccess Access { get => source.Access; }
 
-    public Task<bool> HasAccess() => source.HasAccess();
-
     public IAppApiAction[] Actions() => source.Actions();
 
     public TAppApiAction Action<TAppApiAction>(string actionName)

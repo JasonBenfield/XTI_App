@@ -10,15 +10,15 @@ public sealed class CacheBust
     private readonly DefaultWebAppOptions options;
     private readonly XtiEnvironment xtiEnv;
     private readonly IAppContext appContext;
-    private readonly IXtiPathAccessor xtiPathAccessor;
+    private readonly XtiBasePath xtiBasePath;
 
-    public CacheBust(IMemoryCache cache, DefaultWebAppOptions options, XtiEnvironment xtiEnv, IAppContext appContext, IXtiPathAccessor xtiPathAccessor)
+    public CacheBust(IMemoryCache cache, DefaultWebAppOptions options, XtiEnvironment xtiEnv, IAppContext appContext, XtiBasePath xtiBasePath)
     {
         this.cache = cache;
         this.options = options;
         this.xtiEnv = xtiEnv;
         this.appContext = appContext;
-        this.xtiPathAccessor = xtiPathAccessor;
+        this.xtiBasePath = xtiBasePath;
     }
 
     public async Task<string> Value()
@@ -35,7 +35,7 @@ public sealed class CacheBust
             {
                 if (string.IsNullOrWhiteSpace(options.WebApp.CacheBust))
                 {
-                    var xtiPath = xtiPathAccessor.Value();
+                    var xtiPath = xtiBasePath.Value;
                     if (xtiPath.IsCurrentVersion())
                     {
                         var app = await appContext.App();

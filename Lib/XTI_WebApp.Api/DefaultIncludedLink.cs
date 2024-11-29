@@ -6,23 +6,22 @@ namespace XTI_WebApp.Api;
 internal sealed class DefaultIncludedLink : IIncludedLink
 {
     private readonly CurrentUserAccess currentUserAccess;
-    private readonly IXtiPathAccessor xtiPathAccessor;
+    private readonly XtiBasePath xtiBasePath;
     private readonly LinkModel link;
 
-    public DefaultIncludedLink(CurrentUserAccess currentUserAccess, IXtiPathAccessor xtiPathAccessor, LinkModel link)
+    public DefaultIncludedLink(CurrentUserAccess currentUserAccess, XtiBasePath xtiBasePath, LinkModel link)
     {
         this.currentUserAccess = currentUserAccess;
-        this.xtiPathAccessor = xtiPathAccessor;
+        this.xtiBasePath = xtiBasePath;
         this.link = link;
     }
 
     public async Task<bool> IsIncluded()
     {
-        var basePath = xtiPathAccessor.Value();
         bool isIncluded;
         if (link.IsXtiPath())
         {
-            var xtiPath = link.GetXtiPath(basePath);
+            var xtiPath = link.GetXtiPath(xtiBasePath);
             if (xtiPath.Group.Equals(new ResourceGroupName("User")))
             {
                 var isAnon = await currentUserAccess.IsAnon();

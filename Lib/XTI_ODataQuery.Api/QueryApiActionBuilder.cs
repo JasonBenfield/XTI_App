@@ -11,16 +11,16 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
     private readonly XtiPath groupPath;
     private readonly IAppApiUser user;
     private string friendlyName = "";
-    private readonly ThrottledLogPathBuilder pathBuilder = new();
+    private readonly ActionThrottledLogPathBuilder<QueryApiActionBuilder<TArgs, TEntity>> throttledLogPathBuilder;
     private ResourceAccess access;
     private Func<QueryAction<TArgs, TEntity>> createQuery;
     private QueryApiAction<TArgs, TEntity>? builtAction;
 
     internal QueryApiActionBuilder
     (
-        IServiceProvider sp, 
-        XtiPath groupPath, 
-        IAppApiUser user, 
+        IServiceProvider sp,
+        XtiPath groupPath,
+        IAppApiUser user,
         ResourceAccess access,
         string actionName
     )
@@ -29,6 +29,7 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
         this.groupPath = groupPath;
         this.user = user;
         this.access = access;
+        throttledLogPathBuilder = new(this);
         ActionName = actionName;
         createQuery = () => new EmptyQueryAction<TArgs, TEntity>();
     }
@@ -72,10 +73,10 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
     }
 
     public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TArgs, TEntity>> ThrottleRequestLogging() =>
-        new(this, pathBuilder.Requests());
+        throttledLogPathBuilder.RequestIntervalBuilder;
 
     public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TArgs, TEntity>> ThrottleExceptionLogging() =>
-        new(this, pathBuilder.Exceptions());
+        throttledLogPathBuilder.ExceptionIntervalBuilder;
 
     public QueryApiAction<TArgs, TEntity> Build()
     {
@@ -86,7 +87,6 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
     private QueryApiAction<TArgs, TEntity> BuildAction()
     {
         var actionPath = groupPath.WithAction(ActionName);
-        pathBuilder.Path(actionPath.Value());
         return new QueryApiAction<TArgs, TEntity>
         (
             actionPath,
@@ -94,7 +94,7 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
             user,
             createQuery,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
-            pathBuilder.Build()
+            throttledLogPathBuilder.Build(actionPath)
         );
     }
 

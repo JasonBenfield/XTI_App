@@ -9,7 +9,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-		<PackageReference Include="XTI_TempLog" Version="1.2.37-dev241127081300872" />
+		<PackageReference Include="XTI_TempLog" Version="1.2.37-dev241129095817633" />
 	</ItemGroup>
 
 	<ItemGroup>

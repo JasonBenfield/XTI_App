@@ -40,8 +40,6 @@ public sealed class AppApiGroup : IAppApiGroup
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
 
-    public Task<bool> HasAccess() => User.HasAccess(Path);
-
     public AppApiGroupTemplate Template()
     {
         var actionTemplates = Actions().Select(a => a.Template());
@@ -82,9 +80,13 @@ public sealed class AppApiGroup : IAppApiGroup
         return builder.Build();
     }
 
+    public AppApiActionBuilder<TModel, TResult> AddAction<TModel, TResult>() =>
+        AddAction<TModel, TResult>("");
+
     public AppApiActionBuilder<TModel, TResult> AddAction<TModel, TResult>(string actionName)
     {
-        var action = new AppApiActionBuilder<TModel, TResult>(sp, Path, User, Access, actionName);
+        var action = new AppApiActionBuilder<TModel, TResult>(sp, Path, User, Access);
+        action.Named(actionName);
         actionBuilders.Add(action);
         return action;
     }

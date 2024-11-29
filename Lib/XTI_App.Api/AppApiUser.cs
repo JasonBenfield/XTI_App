@@ -5,12 +5,12 @@ namespace XTI_App.Api;
 public sealed class AppApiUser : IAppApiUser
 {
     private readonly CurrentUserAccess currentUserAccess;
-    private readonly IXtiPathAccessor xtiPathAccessor;
+    private readonly IModifierKeyAccessor modifierKeyAccessor;
 
-    public AppApiUser(CurrentUserAccess currentUserAccess, IXtiPathAccessor xtiPathAccessor)
+    public AppApiUser(CurrentUserAccess currentUserAccess, IModifierKeyAccessor modifierKeyAccessor)
     {
         this.currentUserAccess = currentUserAccess;
-        this.xtiPathAccessor = xtiPathAccessor;
+        this.modifierKeyAccessor = modifierKeyAccessor;
     }
 
     public async Task<bool> HasAccess(XtiPath path)
@@ -32,10 +32,10 @@ public sealed class AppApiUser : IAppApiUser
 
     private XtiPath GetModifiedPath(XtiPath path)
     {
-        var currentPath = xtiPathAccessor.Value();
-        if (!path.Action.IsBlank() && !currentPath.Modifier.IsBlank())
+        var modKey = modifierKeyAccessor.Value();
+        if (!path.Action.IsBlank() && !modKey.IsBlank())
         {
-            path = path.WithModifier(currentPath.Modifier);
+            path = path.WithModifier(modKey);
         }
         return path;
     }

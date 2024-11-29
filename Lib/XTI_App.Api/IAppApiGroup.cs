@@ -7,7 +7,6 @@ public interface IAppApiGroup
 {
     XtiPath Path { get; }
     ResourceAccess Access { get; }
-    Task<bool> HasAccess();
     IAppApiAction[] Actions();
     TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction;
     AppApiGroupTemplate Template();

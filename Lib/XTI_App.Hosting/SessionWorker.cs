@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using XTI_Core;
 using XTI_TempLog;
 
@@ -7,20 +6,29 @@ namespace XTI_App.Hosting;
 
 internal sealed class SessionWorker : BackgroundService
 {
-    private readonly IServiceProvider sp;
+    private readonly CurrentSession currentSession;
+    private readonly IClock clock;
+    private readonly IActionRunnerFactory factory;
+    private readonly TempLogRepository tempLogRepository;
     private TempLogSession? tempLogSession;
 
-    public SessionWorker(IServiceProvider sp)
+    public SessionWorker
+    (
+        CurrentSession currentSession, 
+        IClock clock, 
+        IActionRunnerFactory factory,
+        TempLogRepository tempLogRepository
+    )
     {
-        this.sp = sp;
+        this.currentSession = currentSession;
+        this.clock = clock;
+        this.factory = factory;
+        this.tempLogRepository = tempLogRepository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var currentSession = sp.GetRequiredService<CurrentSession>();
-        var clock = sp.GetRequiredService<IClock>();
         var timeStarted = clock.Now();
-        var factory = sp.GetRequiredService<IActionRunnerFactory>();
         tempLogSession = factory.CreateTempLogSession();
         await tempLogSession.StartSession();
         try
@@ -52,12 +60,11 @@ internal sealed class SessionWorker : BackgroundService
             try
             {
                 await s.EndSession();
-            }
-            catch { }
-            try
-            {
-                var tempLogRepo = sp.GetRequiredService<TempLogRepository>();
-                await tempLogRepo.WriteToLocalStorage();
+                try
+                {
+                    await tempLogRepository.WriteToLocalStorage();
+                }
+                catch { }
             }
             catch { }
         }

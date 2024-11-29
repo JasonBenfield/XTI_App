@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using XTI_App.Api;
+using XTI_App.Fakes;
 using XTI_App.Hosting;
-using XTI_ConsoleApp.Fakes;
 using XTI_Core;
 
 namespace XTI_ConsoleApp.Tests;
@@ -14,7 +13,10 @@ public static class TestConsoleAppExtensions
     {
         services.AddMemoryCache();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
-        services.AddFakeConsoleAppServices(build);
+        services.AddFakesForXtiApp();
+        services.AddAppAgenda(build);
+        services.AddScoped<IActionRunnerFactory, ActionRunnerFactory>();
+        services.AddHostedService<AppAgendaHostedService>();
         services.AddSingleton<Counter>();
         services.AddSingleton<TestOptions>();
         services.AddScoped<IAppApiUser, AppApiSuperUser>();

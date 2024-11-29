@@ -9,7 +9,7 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     private readonly IServiceProvider sp;
     private readonly XtiPath groupPath;
     private readonly IAppApiUser user;
-    private readonly ThrottledLogPathBuilder pathBuilder = new();
+    private readonly ActionThrottledLogPathBuilder<AppApiActionBuilder<TModel, TResult>> throttledLogPathBuilder;
     private string friendlyName = "";
     private ResourceAccess access;
     private Func<AppActionValidation<TModel>> createValidation;
@@ -21,15 +21,14 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         IServiceProvider sp,
         XtiPath groupPath,
         IAppApiUser user,
-        ResourceAccess access,
-        string actionName
+        ResourceAccess access
     )
     {
         this.sp = sp;
         this.groupPath = groupPath;
         this.user = user;
         this.access = access;
-        ActionName = actionName;
+        throttledLogPathBuilder = new(this);
         createValidation = defaultValidation;
         createExecution = () => new EmptyAppAction<TModel, TResult>(() => default!);
     }
@@ -37,7 +36,13 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     private static readonly Func<AppActionValidation<TModel>> defaultValidation =
         () => new AppActionValidationNotRequired<TModel>();
 
-    public string ActionName { get; }
+    public string ActionName { get; private set; } = "";
+
+    public AppApiActionBuilder<TModel, TResult> Named(string actionName)
+    {
+        ActionName = actionName;
+        return this;
+    }
 
     public AppApiActionBuilder<TModel, TResult> WithFriendlyName(string friendlyName)
     {
@@ -87,10 +92,10 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     }
 
     public ActionThrottledLogIntervalBuilder<AppApiActionBuilder<TModel, TResult>> ThrottleRequestLogging() =>
-        new(this, pathBuilder.Requests());
+        throttledLogPathBuilder.RequestIntervalBuilder;
 
     public ActionThrottledLogIntervalBuilder<AppApiActionBuilder<TModel, TResult>> ThrottleExceptionLogging() =>
-        new(this, pathBuilder.Exceptions());
+        throttledLogPathBuilder.ExceptionIntervalBuilder;
 
     public AppApiAction<TModel, TResult> Build()
     {
@@ -98,10 +103,11 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         return builtAction;
     }
 
+    internal XtiPath ActionPath() => groupPath.WithAction(ActionName);
+
     private AppApiAction<TModel, TResult> BuildAction()
     {
-        var actionPath = groupPath.WithAction(ActionName);
-        pathBuilder.Path(actionPath.Value());
+        var actionPath = ActionPath();
         return new AppApiAction<TModel, TResult>
         (
             actionPath,
@@ -110,7 +116,7 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
             createValidation,
             createExecution,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
-            pathBuilder.Build()
+            throttledLogPathBuilder.Build(actionPath)
         );
     }
 
