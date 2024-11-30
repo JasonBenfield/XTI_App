@@ -11,5 +11,5 @@ public interface IAppApiGroup
     TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction;
     AppApiGroupTemplate Template();
     AppRoleName[] RoleNames();
-    ThrottledLogPath[] ThrottledLogPaths();
+    ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath);
 }

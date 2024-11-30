@@ -26,11 +26,22 @@ public sealed class WebXtiPathAccessor
         else
         {
             var parsedXtiPath = XtiPath.Parse(pathText);
+            if (parsedXtiPath.Group.IsBlank())
+            {
+                parsedXtiPath = parsedXtiPath.WithGroup("Home");
+            }
+            if (parsedXtiPath.Action.IsBlank())
+            {
+                parsedXtiPath = parsedXtiPath.WithAction("Index");
+            }
             xtiPath = xtiBasePath
                 .Value
                 .WithGroup(parsedXtiPath.Group)
-                .WithAction(parsedXtiPath.Action)
-                .WithModifier(parsedXtiPath.Modifier);
+                .WithAction(parsedXtiPath.Action);
+            if (!parsedXtiPath.Modifier.Equals(ModifierKey.Default))
+            {
+                xtiPath = xtiPath.WithModifier(parsedXtiPath.Modifier);
+            }
         }
         return xtiPath;
     }

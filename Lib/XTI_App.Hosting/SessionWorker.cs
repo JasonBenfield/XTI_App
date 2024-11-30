@@ -8,29 +8,26 @@ internal sealed class SessionWorker : BackgroundService
 {
     private readonly CurrentSession currentSession;
     private readonly IClock clock;
-    private readonly IActionRunnerFactory factory;
     private readonly TempLogRepository tempLogRepository;
-    private TempLogSession? tempLogSession;
+    private readonly TempLogSession tempLogSession;
 
     public SessionWorker
     (
-        CurrentSession currentSession, 
-        IClock clock, 
-        IActionRunnerFactory factory,
+        CurrentSession currentSession,
+        IClock clock,
+        TempLogSession tempLogSession,
         TempLogRepository tempLogRepository
     )
     {
         this.currentSession = currentSession;
         this.clock = clock;
-        this.factory = factory;
+        this.tempLogSession = tempLogSession;
         this.tempLogRepository = tempLogRepository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var timeStarted = clock.Now();
-        tempLogSession = factory.CreateTempLogSession();
-        await tempLogSession.StartSession();
         try
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -39,7 +36,7 @@ internal sealed class SessionWorker : BackgroundService
                 if (currentTime > timeStarted.Add(TimeSpan.FromHours(12)))
                 {
                     await tempLogSession.EndSession();
-                    currentSession.SessionKey = "";
+                    currentSession.SessionKey = new();
                     await tempLogSession.StartSession();
                     timeStarted = clock.Now();
                 }
@@ -68,6 +65,5 @@ internal sealed class SessionWorker : BackgroundService
             }
             catch { }
         }
-        tempLogSession = null;
     }
 }

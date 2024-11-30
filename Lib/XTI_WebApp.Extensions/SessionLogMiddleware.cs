@@ -37,30 +37,41 @@ public sealed class SessionLogMiddleware
         {
             ExpireAnonSession(anonClient);
         }
+        var sourceSessionKey = SessionKey.Parse(context.Request.Headers[new SourceSessionKeyHeader().Value].FirstOrDefault() ?? "");
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            currentSession.SessionKey = new XtiClaims(context).SessionKey();
+            var xtiClaims = new XtiClaims(context);
+            var userName = xtiClaims.UserName().Value;
+            if (sourceSessionKey.IsEmpty() || !sourceSessionKey.HasUserName(userName))
+            {
+                currentSession.SessionKey = xtiClaims.SessionKey();
+            }
+            else
+            {
+                currentSession.SessionKey = sourceSessionKey;
+            }
+        }
+        else if (!sourceSessionKey.IsEmpty())
+        {
+            currentSession.SessionKey = sourceSessionKey;
         }
         else
         {
-            currentSession.SessionKey = anonClient.SessionKey;
+            currentSession.SessionKey = SessionKey.Parse(anonClient.SessionKey);
         }
-        if (string.IsNullOrWhiteSpace(currentSession.SessionKey))
+        if (currentSession.SessionKey.IsEmpty())
         {
             var session = await tempLogSession.StartSession();
             currentSession.SessionKey = session.SessionKey;
         }
-        if (anonClient.SessionKey != currentSession.SessionKey || string.IsNullOrWhiteSpace(anonClient.RequesterKey))
+        if (!currentSession.SessionKey.Equals(anonClient.SessionKey) || string.IsNullOrWhiteSpace(anonClient.RequesterKey))
         {
             var appEnv = await appEnvironmentContext.Value();
-            anonClient.Persist(currentSession.SessionKey, clock.Now().AddHours(4), appEnv.RequesterKey);
+            anonClient.Persist(currentSession.SessionKey.Format(), clock.Now().AddHours(4), appEnv.RequesterKey);
         }
         var path = $"{context.Request.PathBase}{context.Request.Path}";
-        await tempLogSession.StartRequest
-        (
-            path,
-            context.Request.Headers[new SourceRequestKeyHeader().Value].FirstOrDefault() ?? ""
-        );
+        var sourceRequestKey = context.Request.Headers[new SourceRequestKeyHeader().Value].FirstOrDefault() ?? "";
+        await tempLogSession.StartRequest(path, sourceRequestKey);
         try
         {
             await _next(context);

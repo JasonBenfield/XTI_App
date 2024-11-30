@@ -18,12 +18,12 @@ public sealed class ActionThrottledLogPathBuilder<TActionBuilder> where TActionB
 
     public ActionThrottledLogIntervalBuilder<TActionBuilder> ExceptionIntervalBuilder { get => exceptionIntervalBuilder; }
 
-    public ThrottledLogPath Build(XtiPath actionPath) =>
+    public ThrottledLogXtiPath Build(XtiPath actionPath) =>
         new
         (
-            path: actionPath.Value(),
-            throttleRequestInterval: requestIntervalBuilder.Interval,
-            throttleExceptionInterval: exceptionIntervalBuilder.Interval
+            xtiPath: actionPath,
+            requestInterval: requestIntervalBuilder.Interval,
+            exceptionInterval: exceptionIntervalBuilder.Interval
         );
 }
 

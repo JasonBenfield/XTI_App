@@ -39,7 +39,9 @@ public sealed class AppAgenda
             var clock = scope.ServiceProvider.GetRequiredService<IClock>();
             var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
             var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
-            sessionWorker = new SessionWorker(currentSession, clock, factory, tempLogRepo);
+            var tempLogSession = factory.CreateTempLogSession();
+            await tempLogSession.StartSession();
+            sessionWorker = new SessionWorker(currentSession, clock, tempLogSession, tempLogRepo);
             var _ = sessionWorker.StartAsync(stoppingToken);
             var preStartWorker = new ImmediateActionWorker
             (

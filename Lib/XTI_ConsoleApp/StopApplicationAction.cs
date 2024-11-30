@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using XTI_App.Abstractions;
 using XTI_App.Api;
 
 namespace XTI_ConsoleApp;

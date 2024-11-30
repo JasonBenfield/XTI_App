@@ -1,22 +1,18 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using XTI_Core;
-
-namespace XTI_WebAppClient;
+﻿namespace XTI_WebAppClient;
 
 public class AppClient
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly AppClientUrl clientUrl;
     private readonly XtiTokenAccessor xtiTokenAccessor;
-    private readonly AppClientOptions options = new();
+    private readonly AppClientOptions options;
 
     protected AppClient
     (
         IHttpClientFactory httpClientFactory, 
         XtiTokenAccessorFactory xtiTokenAccessorFactory, 
-        AppClientUrl clientUrl, 
-        IAppClientRequestKey requestKey, 
+        AppClientUrl clientUrl,
+        AppClientOptions options, 
         string appName, 
         string version
     )
@@ -24,14 +20,7 @@ public class AppClient
         this.httpClientFactory = httpClientFactory;
         xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         this.clientUrl = clientUrl.WithApp(appName, version);
-        var jsonSerializerOptions = new JsonSerializerOptions();
-        jsonSerializerOptions.PropertyNameCaseInsensitive = true;
-        jsonSerializerOptions.PropertyNamingPolicy = null;
-        jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-        jsonSerializerOptions.AddCoreConverters();
-        options.JsonSerializerOptions = jsonSerializerOptions;
-        ConfigureJsonSerializerOptions(jsonSerializerOptions);
-        options.RequestKey = requestKey;
+        this.options = options;
         UserCache = CreateGroup
         (
             (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
@@ -68,10 +57,6 @@ public class AppClient
             groupName
         );
         return odataGroup;
-    }
-
-    protected virtual void ConfigureJsonSerializerOptions(JsonSerializerOptions options)
-    {
     }
 
     public UserCacheClientGroup UserCache { get; }

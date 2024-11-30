@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using XTI_App.Abstractions;
 using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
@@ -68,7 +69,7 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<Authenti
                 {
                     var userName = new AppUserName(apiKey.UserName);
                     var cacheKey = $"xti_apiKeyAuth_{reqHeaderName}_{apiKey.ApiKey}";
-                    if (!cache.TryGetValue<string>(cacheKey, out var sessionKey))
+                    if (!cache.TryGetValue<SessionKey>(cacheKey, out var sessionKey))
                     {
                         var authSession = await tempLog.AuthenticateSession(userName.Value);
                         sessionKey = authSession.SessionKey;
@@ -83,7 +84,7 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<Authenti
                             }
                         );
                     }
-                    var claims = new XtiClaimsCreator(sessionKey!, userName).Values();
+                    var claims = new XtiClaimsCreator(sessionKey ?? new(), userName).Values();
                     var identity = new ClaimsIdentity(claims, Scheme.Name, ClaimTypes.NameIdentifier, ClaimTypes.Role);
                     var principal = new ClaimsPrincipal(identity);
                     var ticket = new AuthenticationTicket(principal, Scheme.Name);

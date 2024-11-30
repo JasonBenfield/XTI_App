@@ -10,6 +10,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     private readonly IAppApiUser user;
     private readonly Func<AppActionValidation<TModel>> createValidation;
     private readonly Func<AppAction<TModel, TResult>> createAction;
+    private readonly ThrottledLogXtiPath throttledLogPath;
 
     public AppApiAction
     (
@@ -19,7 +20,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         Func<AppActionValidation<TModel>> createValidation,
         Func<AppAction<TModel, TResult>> createAction,
         string friendlyName,
-        ThrottledLogPath throttledLogPath
+        ThrottledLogXtiPath throttledLogPath
     )
     {
         path.EnsureActionResource();
@@ -31,14 +32,14 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         this.user = user;
         this.createValidation = createValidation;
         this.createAction = createAction;
-        ThrottledLogPath = throttledLogPath;
+        this.throttledLogPath = throttledLogPath;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
-    public ThrottledLogPath ThrottledLogPath { get; }
+    public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
     public Task<bool> IsOptional()
     {

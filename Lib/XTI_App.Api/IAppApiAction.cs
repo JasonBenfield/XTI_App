@@ -9,7 +9,8 @@ public interface IAppApiAction
     XtiPath Path { get; }
     string FriendlyName { get; }
     ResourceAccess Access { get; }
-    ThrottledLogPath ThrottledLogPath { get; }
+
+    ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath);
 
     AppApiActionTemplate Template();
 }

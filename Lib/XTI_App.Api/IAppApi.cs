@@ -11,5 +11,5 @@ public interface IAppApi
     IAppApiGroup[] Groups();
     IAppApiGroup Group(string groupName);
     AppApiTemplate Template();
-    ThrottledLogPath[] ThrottledLogPaths();
+    ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath);
 }

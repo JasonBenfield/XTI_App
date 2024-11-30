@@ -65,7 +65,8 @@ public static class AppExtensions
         services.AddSingleton<AppVersionKeyAccessor>();
         services.AddSingleton(sp => sp.GetRequiredService<AppVersionKeyAccessor>().Value);
         services.AddSingleton<XtiBasePath>();
-        services.AddSingleton<IModifierKeyAccessor, DefaultModifierKeyAccessor>();
+        services.AddSingleton<DefaultModifierKeyAccessor>();
+        services.AddSingleton<IModifierKeyAccessor>(sp => sp.GetRequiredService<DefaultModifierKeyAccessor>());
         services.AddSingleton<IClock, LocalClock>();
         services.AddConfigurationOptions<DefaultAppOptions>();
         services.AddSingleton(sp => sp.GetRequiredService<DefaultAppOptions>().HubClient);
@@ -98,7 +99,9 @@ public static class AppExtensions
                 );
             }
         );
+        services.AddScoped<IAppClientSessionKey, DefaultAppClientSessionKey>();
         services.AddScoped<IAppClientRequestKey, DefaultAppClientRequestKey>();
+        services.AddScoped<AppClientOptions>();
         services.AddSingleton<InstallationIDAccessor, FileInstallationIDAccessor>();
     }
 
@@ -111,7 +114,8 @@ public static class AppExtensions
             {
                 using var scope = sp.CreateScope();
                 var api = scope.ServiceProvider.GetRequiredService<AppApiFactory>().CreateForSuperUser();
-                var throttledLogPaths = api.ThrottledLogPaths();
+                var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
+                var throttledLogPaths = api.ThrottledLogPaths(xtiBasePath);
                 builder.ApplyThrottledPaths(throttledLogPaths);
                 action(api, builder);
             }
@@ -128,16 +132,17 @@ public static class AppExtensions
             {
                 using var scope = sp.CreateScope();
                 var api = (TAppApi)scope.ServiceProvider.GetRequiredService<AppApiFactory>().CreateForSuperUser();
-                var throttledLogPaths = api.ThrottledLogPaths();
+                var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
+                var throttledLogPaths = api.ThrottledLogPaths(xtiBasePath);
                 builder.ApplyThrottledPaths(throttledLogPaths);
                 action(api, builder);
             }
         );
     }
 
-    public static ThrottledLogPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action) => 
+    public static ThrottledLogPathBuilder Throttle(this ThrottledLogsBuilder builder, IAppApiAction action) =>
         builder.Throttle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
 
-    public static ThrottledLogPathBuilder AndThrottle(this ThrottledLogPathBuilder builder, IAppApiAction action) => 
+    public static ThrottledLogPathBuilder AndThrottle(this ThrottledLogPathBuilder builder, IAppApiAction action) =>
         builder.AndThrottle($"/{action.Path.Group.DisplayText}/{action.Path.Action.DisplayText}".Replace(" ", ""));
 }

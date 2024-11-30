@@ -27,7 +27,8 @@ public sealed class AnonClient : IAnonClient
 
     public void Load()
     {
-        var cookieText = httpContextAccessor.HttpContext?.Request.Cookies[options.AnonClient.CookieName];
+        string cookieName = GetCookieName();
+        var cookieText = httpContextAccessor.HttpContext?.Request.Cookies[cookieName];
         if (string.IsNullOrWhiteSpace(cookieText))
         {
             SessionKey = "";
@@ -59,15 +60,21 @@ public sealed class AnonClient : IAnonClient
             Secure = true,
             Path = "/",
             SameSite = SameSiteMode.Lax,
-            Domain = string.IsNullOrWhiteSpace(this.options.AnonClient.CookieDomain) ? 
-                null : 
+            Domain = string.IsNullOrWhiteSpace(this.options.AnonClient.CookieDomain) ?
+                null :
                 this.options.AnonClient.CookieDomain
         };
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(this.options.AnonClient.CookieName, protectedText, options);
+        var cookieName = GetCookieName();
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, protectedText, options);
         SessionKey = sessionKey;
         SessionExpirationTime = sessionExpirationTime;
         RequesterKey = requesterKey;
     }
+
+    private string GetCookieName() =>
+        string.IsNullOrWhiteSpace(options.AnonClient.CookieName) ?
+            "XTIANON" :
+            options.AnonClient.CookieName;
 
     private class AnonInfo
     {

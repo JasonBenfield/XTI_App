@@ -13,6 +13,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
     private readonly IAppApiUser user;
     private readonly Func<QueryAction<TArgs, TEntity>> createQuery;
     private readonly Func<IQueryToExcel> createQueryToExcel;
+    private readonly ThrottledLogXtiPath throttledLogPath;
 
     public QueryToExcelApiAction
     (
@@ -22,7 +23,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         Func<QueryAction<TArgs, TEntity>> createQuery,
         Func<IQueryToExcel> createQueryToExcel,
         string friendlyName,
-        ThrottledLogPath throttledLogPath
+        ThrottledLogXtiPath throttledLogPath
     )
     {
         Path = path;
@@ -31,14 +32,15 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         FriendlyName = friendlyName;
         this.createQueryToExcel = createQueryToExcel;
         this.createQuery = createQuery;
-        ThrottledLogPath = throttledLogPath;
+        this.throttledLogPath = throttledLogPath;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
-    public ThrottledLogPath ThrottledLogPath { get; }
+
+    public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
     public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TArgs model, CancellationToken stoppingToken = default)
     {

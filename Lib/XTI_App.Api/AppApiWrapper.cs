@@ -41,6 +41,6 @@ public class AppApiWrapper : IAppApi
 
     protected virtual void ConfigureTemplate(AppApiTemplate template) { }
 
-    public ThrottledLogPath[] ThrottledLogPaths() => 
-        Groups().SelectMany(g => g.ThrottledLogPaths()).ToArray();
+    public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) => 
+        Groups().SelectMany(g => g.ThrottledLogPaths(xtiBasePath)).ToArray();
 }

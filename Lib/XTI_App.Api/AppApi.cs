@@ -45,18 +45,18 @@ public sealed class AppApi
     public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess access)
     {
         var group = new AppApiGroup(sp, Path.WithGroup(name), modCategory, access, user);
-        groups.Add(groupKey(group.GroupName), group);
+        groups.Add(FormatGroupKey(group.GroupName), group);
         return group;
     }
 
     public AppApiGroup[] Groups() => groups.Values.ToArray();
 
-    public AppApiGroup Group(string groupName) => groups[groupKey(groupName)];
+    public AppApiGroup Group(string groupName) => groups[FormatGroupKey(groupName)];
 
-    private static string groupKey(string groupName) =>
+    private static string FormatGroupKey(string groupName) =>
         groupName.ToLower().Replace(" ", "").Replace("_", "");
 
-    public AppApiTemplate Template() => new AppApiTemplate(this, SerializedDefaultOptions);
+    public AppApiTemplate Template() => new(this, SerializedDefaultOptions);
 
     internal AppRoleName[] RoleNames()
     {

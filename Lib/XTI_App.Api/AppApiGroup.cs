@@ -117,7 +117,8 @@ public sealed class AppApiGroup : IAppApiGroup
 
     public override string ToString() => $"{GetType().Name} {Path.Group}";
 
-    public ThrottledLogPath[] ThrottledLogPaths() => Actions().Select(a => a.ThrottledLogPath).ToArray();
+    public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) =>
+        Actions().Select(a => a.ThrottledLogPath(xtiBasePath)).ToArray();
 }
 
 public sealed record AddActionData(IServiceProvider Services, XtiPath ActionPath, ResourceAccess GroupAccess, IAppApiUser User);

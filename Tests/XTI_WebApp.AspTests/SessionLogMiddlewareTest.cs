@@ -101,7 +101,7 @@ internal sealed class SessionLogMiddlewareTest
         var anonUser = await input.UserContext.User(AppUserName.Anon);
         var sessions = await GetSessions(input.Host.Services);
         Assert.That(sessions.Length, Is.EqualTo(1), "Should use session for authenticated user");
-        Assert.That(sessions[0].UserName, Is.EqualTo(anonUser.UserName.Value), "Should create session with anonymous user");
+        Assert.That(sessions[0].SessionKey.UserName, Is.EqualTo(""), "Should create session with anonymous user");
     }
 
     [Test]

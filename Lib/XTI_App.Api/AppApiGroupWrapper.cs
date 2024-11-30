@@ -28,5 +28,6 @@ public class AppApiGroupWrapper : IAppApiGroup
 
     public AppApiGroupTemplate Template() => source.Template();
 
-    public ThrottledLogPath[] ThrottledLogPaths() => source.ThrottledLogPaths();
+    public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) => 
+        source.ThrottledLogPaths(xtiBasePath);
 }

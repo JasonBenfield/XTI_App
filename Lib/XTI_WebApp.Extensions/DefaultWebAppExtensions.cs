@@ -75,7 +75,6 @@ public static class DefaultWebAppExtensions
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();
-        services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
         services.AddScoped(sp =>
         {
             var xtiFolder = sp.GetRequiredService<XtiFolder>();

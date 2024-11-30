@@ -11,7 +11,7 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
 		<PackageReference Include="XTI_Core.Extensions" Version="1.10.25" />
 		<PackageReference Include="XTI_Secrets.Extensions" Version="1.8.12" />
-		<PackageReference Include="XTI_TempLog.Extensions" Version="1.2.37-dev241129095817633" />
+		<PackageReference Include="XTI_TempLog.Extensions" Version="1.2.37-dev241130165336922" />
 	</ItemGroup>
 
 	<ItemGroup>

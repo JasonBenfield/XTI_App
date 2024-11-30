@@ -10,6 +10,7 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
 {
     private readonly IAppApiUser user;
     private readonly Func<QueryAction<TModel, TEntity>> createQuery;
+    private readonly ThrottledLogXtiPath throttledLogPath;
 
     public QueryApiAction
     (
@@ -18,7 +19,7 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
         IAppApiUser user,
         Func<QueryAction<TModel, TEntity>> createQuery,
         string friendlyName,
-        ThrottledLogPath throttledLogPath
+        ThrottledLogXtiPath throttledLogPath
     )
     {
         path.EnsureActionResource();
@@ -29,14 +30,15 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
             : friendlyName;
         this.user = user;
         this.createQuery = createQuery;
-        ThrottledLogPath = throttledLogPath;
+        this.throttledLogPath = throttledLogPath;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
-    public ThrottledLogPath ThrottledLogPath { get; }
+
+    public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
     public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TModel model, CancellationToken stoppingToken = default)
     {
