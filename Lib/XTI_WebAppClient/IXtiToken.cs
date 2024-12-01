@@ -2,5 +2,5 @@
 
 public interface IXtiToken
 {
-    Task<string> Value();
+    Task<string> Value(CancellationToken ct);
 }

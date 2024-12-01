@@ -80,7 +80,7 @@ public sealed class AppClientContentAction<TModel>
         client.InitFromOptions(options);
         if (!actionName.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
         {
-            var token = await xtiTokenAccessor.Value();
+            var token = await xtiTokenAccessor.Value(ct);
             if (!string.IsNullOrWhiteSpace(token))
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

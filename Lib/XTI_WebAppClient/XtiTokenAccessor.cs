@@ -55,7 +55,7 @@ public sealed class XtiTokenAccessor
         return Task.FromResult(userName ?? "");
     }
 
-    public async Task<string> Value()
+    public async Task<string> Value(CancellationToken ct)
     {
         var tokenType = GetCurrentTokenType();
         if (tokenType == null) { throw new ArgumentNullException(nameof(tokenType)); }
@@ -71,7 +71,7 @@ public sealed class XtiTokenAccessor
                 throw new NotSupportedException($"Token not found for type '{tokenType}'");
             }
             var token = createToken();
-            tokenValue = await token.Value();
+            tokenValue = await token.Value(ct);
             cache.Set(cacheKey, tokenValue, TimeSpan.FromDays(1));
         }
         return tokenValue;

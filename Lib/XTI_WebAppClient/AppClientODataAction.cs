@@ -84,7 +84,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
     {
         using var client = httpClientFactory.CreateClient();
         client.InitFromOptions(options);
-        var token = await xtiTokenAccessor.Value();
+        var token = await xtiTokenAccessor.Value(ct);
         if (!string.IsNullOrWhiteSpace(token))
         {
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
