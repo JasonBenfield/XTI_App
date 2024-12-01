@@ -13,7 +13,7 @@ public sealed class AppAgenda
     private readonly ImmediateAppAgendaItem[] postStopItems;
     private readonly List<IWorker> workers = new();
     private SessionWorker? sessionWorker;
-    private bool isCurrentVersion;
+    private bool hasAgenda;
 
     internal AppAgenda
     (
@@ -32,8 +32,9 @@ public sealed class AppAgenda
     public async Task Start(CancellationToken stoppingToken)
     {
         var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
-        isCurrentVersion = xtiBasePath.VersionKey.Equals(AppVersionKey.Current);
-        if (isCurrentVersion)
+        hasAgenda = xtiBasePath.VersionKey.Equals(AppVersionKey.Current) &&
+            (preStartItems.Any() || items.Any() || postStopItems.Any());
+        if (hasAgenda)
         {
             var currentSession = scope.ServiceProvider.GetRequiredService<CurrentSession>();
             var clock = scope.ServiceProvider.GetRequiredService<IClock>();
@@ -79,7 +80,7 @@ public sealed class AppAgenda
 
     public async Task Stop(CancellationToken stoppingToken)
     {
-        if (isCurrentVersion)
+        if (hasAgenda)
         {
             var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
             foreach (var worker in workers)
@@ -114,7 +115,7 @@ public sealed class AppAgenda
             {
                 await Task.Delay(100);
             }
-            if(sessionWorker != null)
+            if (sessionWorker != null)
             {
                 await sessionWorker.StopAsync(stoppingToken);
             }

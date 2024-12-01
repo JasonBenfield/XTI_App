@@ -42,6 +42,7 @@ public sealed class AppAgendaBuilder
         var api = (TAppApi)sp.GetRequiredService<AppApiFactory>().CreateForSuperUser();
         var itemBuilder = new ImmediateAppAgendaItemBuilder();
         itemBuilder.Action(createAction(api).Path);
+        itemBuilders.RemoveAll(b => b is ImmediateAppAgendaItemBuilder && b.HasAction(itemBuilder.GroupName.DisplayText, itemBuilder.ActionName.DisplayText));
         itemBuilders.Add(itemBuilder);
         return this;
     }
@@ -52,6 +53,7 @@ public sealed class AppAgendaBuilder
         var api = (TAppApi)sp.GetRequiredService<AppApiFactory>().CreateForSuperUser();
         var itemBuilder = new ScheduledAppAgendaItemBuilder();
         configure(api, itemBuilder);
+        itemBuilders.RemoveAll(b => b is ScheduledAppAgendaItemBuilder && b.HasAction(itemBuilder.GroupName.DisplayText, itemBuilder.ActionName.DisplayText));
         itemBuilders.Add(itemBuilder);
         return this;
     }
@@ -63,23 +65,16 @@ public sealed class AppAgendaBuilder
         {
             itemBuilders.RemoveAll(b => b.HasAction(immedAction.GroupName, immedAction.ActionName));
         }
-        var schedActions = options.ScheduledItems ?? [];
-        foreach (var schedAction in schedActions)
-        {
-            itemBuilders.RemoveAll(b => b.HasAction(schedAction.GroupName, schedAction.ActionName));
-        }
-        var alwaysActions = options.AlwaysRunningItems ?? [];
-        foreach (var alwaysAction in alwaysActions)
-        {
-            itemBuilders.RemoveAll(b => b.HasAction(alwaysAction.GroupName, alwaysAction.ActionName));
-        }
         foreach (var immedAction in immedActions)
         {
             itemBuilders.Add(new ImmediateAppAgendaItemBuilder(immedAction));
         }
-        foreach (var schedAction in schedActions)
+        var schedActions = options.ScheduledItems ?? [];
+        ApplyOptions(schedActions);
+        var alwaysActions = options.AlwaysRunningItems ?? [];
+        foreach (var alwaysAction in alwaysActions)
         {
-            itemBuilders.Add(new ScheduledAppAgendaItemBuilder(schedAction));
+            itemBuilders.RemoveAll(b => b.HasAction(alwaysAction.GroupName, alwaysAction.ActionName));
         }
         foreach (var alwaysAction in alwaysActions)
         {
@@ -88,8 +83,20 @@ public sealed class AppAgendaBuilder
         return this;
     }
 
-    internal AppAgenda Build()
-        => new AppAgenda
+    public void ApplyOptions(ScheduledAppAgendaItemOptions[] schedActions)
+    {
+        foreach (var schedAction in schedActions)
+        {
+            itemBuilders.RemoveAll(b => b.HasAction(schedAction.GroupName, schedAction.ActionName));
+        }
+        foreach (var schedAction in schedActions)
+        {
+            itemBuilders.Add(new ScheduledAppAgendaItemBuilder(schedAction));
+        }
+    }
+
+    internal AppAgenda Build() =>
+        new
         (
             sp,
             preStartBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray(),

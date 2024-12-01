@@ -12,4 +12,5 @@ public interface IAppApiGroup
     AppApiGroupTemplate Template();
     AppRoleName[] RoleNames();
     ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath);
+    ScheduledAppAgendaItemOptions[] ActionSchedules();
 }

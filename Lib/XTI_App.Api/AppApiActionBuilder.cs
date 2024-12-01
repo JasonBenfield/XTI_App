@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
-using XTI_TempLog;
 
 namespace XTI_App.Api;
 
@@ -10,6 +9,7 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     private readonly XtiPath groupPath;
     private readonly IAppApiUser user;
     private readonly ActionThrottledLogPathBuilder<AppApiActionBuilder<TModel, TResult>> throttledLogPathBuilder;
+    private ActionScheduleBuilder<AppApiActionBuilder<TModel, TResult>> schedule;
     private string friendlyName = "";
     private ResourceAccess access;
     private Func<AppActionValidation<TModel>> createValidation;
@@ -28,6 +28,7 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         this.groupPath = groupPath;
         this.user = user;
         this.access = access;
+        schedule = new(this);
         throttledLogPathBuilder = new(this);
         createValidation = defaultValidation;
         createExecution = () => new EmptyAppAction<TModel, TResult>(() => default!);
@@ -97,17 +98,30 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     public ActionThrottledLogIntervalBuilder<AppApiActionBuilder<TModel, TResult>> ThrottleExceptionLogging() =>
         throttledLogPathBuilder.ExceptionIntervalBuilder;
 
+    public ActionScheduleBuilder<AppApiActionBuilder<TModel, TResult>> RunContinuously()
+    {
+        schedule = new(this, ScheduledActionTypes.Continuous);
+        return schedule;
+    }
+
+    public ActionScheduleBuilder<AppApiActionBuilder<TModel, TResult>> RunUntilSuccess()
+    {
+        schedule = new(this, ScheduledActionTypes.PeriodicUntilSuccess);
+        return schedule;
+    }
+
     public AppApiAction<TModel, TResult> Build()
     {
         builtAction ??= BuildAction();
         return builtAction;
     }
 
-    internal XtiPath ActionPath() => groupPath.WithAction(ActionName);
+    public XtiPath ActionPath() => groupPath.WithAction(ActionName);
 
     private AppApiAction<TModel, TResult> BuildAction()
     {
         var actionPath = ActionPath();
+        var schedule = this.schedule.Build();
         return new AppApiAction<TModel, TResult>
         (
             actionPath,
@@ -116,7 +130,8 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
             createValidation,
             createExecution,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
-            throttledLogPathBuilder.Build(actionPath)
+            throttledLogPathBuilder.Build(actionPath),
+            schedule
         );
     }
 

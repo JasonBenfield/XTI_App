@@ -30,4 +30,6 @@ public class AppApiGroupWrapper : IAppApiGroup
 
     public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) => 
         source.ThrottledLogPaths(xtiBasePath);
+
+    public ScheduledAppAgendaItemOptions[] ActionSchedules() => source.ActionSchedules();
 }

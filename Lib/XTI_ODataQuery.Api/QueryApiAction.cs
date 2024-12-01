@@ -19,12 +19,14 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
         IAppApiUser user,
         Func<QueryAction<TModel, TEntity>> createQuery,
         string friendlyName,
-        ThrottledLogXtiPath throttledLogPath
+        ThrottledLogXtiPath throttledLogPath,
+        ScheduledAppAgendaItemOptions schedule
     )
     {
         path.EnsureActionResource();
         Access = access;
         Path = path;
+        Schedule = schedule;
         FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
             ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
             : friendlyName;
@@ -37,6 +39,7 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
+    public ScheduledAppAgendaItemOptions Schedule { get; }
 
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 

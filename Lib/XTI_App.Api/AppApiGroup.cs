@@ -40,6 +40,12 @@ public sealed class AppApiGroup : IAppApiGroup
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
 
+    public ScheduledAppAgendaItemOptions[] ActionSchedules() =>
+        Actions()
+            .Select(a => a.Schedule)
+            .Where(s => !s.IsDisabled)
+            .ToArray();
+
     public AppApiGroupTemplate Template()
     {
         var actionTemplates = Actions().Select(a => a.Template());

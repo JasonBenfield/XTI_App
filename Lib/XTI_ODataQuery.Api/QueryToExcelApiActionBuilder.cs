@@ -91,6 +91,8 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
     public ActionThrottledLogIntervalBuilder<QueryToExcelApiActionBuilder<TArgs, TEntity>> ThrottleExceptionLogging() =>
         throttledLogPathBuilder.ExceptionIntervalBuilder;
 
+    public XtiPath ActionPath() => groupPath.WithAction(ActionName);
+
     public QueryToExcelApiAction<TArgs, TEntity> Build()
     {
         builtAction ??= BuildAction();
@@ -99,7 +101,8 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
 
     private QueryToExcelApiAction<TArgs, TEntity> BuildAction()
     {
-        var actionPath = groupPath.WithAction(ActionName);
+        var actionPath = ActionPath();
+        var scheduledBuilder = new ActionScheduleBuilder<QueryToExcelApiActionBuilder<TArgs, TEntity>>(this);
         return new QueryToExcelApiAction<TArgs, TEntity>
         (
             actionPath,
@@ -108,7 +111,8 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
             createQuery,
             createQueryToExcel,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
-            throttledLogPathBuilder.Build(actionPath)
+            throttledLogPathBuilder.Build(actionPath),
+            scheduledBuilder.Build()
         );
     }
 

@@ -1,4 +1,4 @@
-﻿namespace XTI_App.Hosting;
+﻿namespace XTI_App.Api;
 
 public enum ScheduledActionTypes
 {

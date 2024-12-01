@@ -23,7 +23,8 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         Func<QueryAction<TArgs, TEntity>> createQuery,
         Func<IQueryToExcel> createQueryToExcel,
         string friendlyName,
-        ThrottledLogXtiPath throttledLogPath
+        ThrottledLogXtiPath throttledLogPath,
+        ScheduledAppAgendaItemOptions schedule
     )
     {
         Path = path;
@@ -33,12 +34,14 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         this.createQueryToExcel = createQueryToExcel;
         this.createQuery = createQuery;
         this.throttledLogPath = throttledLogPath;
+        Schedule = schedule;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
+    public ScheduledAppAgendaItemOptions Schedule { get; }
 
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 

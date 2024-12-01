@@ -1,6 +1,6 @@
 ﻿using XTI_Schedule;
 
-namespace XTI_App.Hosting;
+namespace XTI_App.Api;
 
 public sealed class ScheduledAppAgendaItemOptions
 {

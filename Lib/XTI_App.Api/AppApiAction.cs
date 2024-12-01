@@ -20,7 +20,8 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         Func<AppActionValidation<TModel>> createValidation,
         Func<AppAction<TModel, TResult>> createAction,
         string friendlyName,
-        ThrottledLogXtiPath throttledLogPath
+        ThrottledLogXtiPath throttledLogPath,
+        ScheduledAppAgendaItemOptions schedule
     )
     {
         path.EnsureActionResource();
@@ -29,6 +30,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
             ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
             : friendlyName;
+        Schedule = schedule;
         this.user = user;
         this.createValidation = createValidation;
         this.createAction = createAction;
@@ -39,6 +41,7 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
+    public ScheduledAppAgendaItemOptions Schedule { get; }
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
     public Task<bool> IsOptional()

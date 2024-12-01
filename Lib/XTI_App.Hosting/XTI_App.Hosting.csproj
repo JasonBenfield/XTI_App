@@ -10,7 +10,6 @@
 	<ItemGroup>
 		<PackageReference Include="XTI_Core.Extensions" Version="1.10.25" />
 		<PackageReference Include="XTI_TempLog" Version="1.2.37-dev241130165336922" />
-		<PackageReference Include="XTI_Schedule" Version="1.10.25" />
 	</ItemGroup>
 
 	<ItemGroup>

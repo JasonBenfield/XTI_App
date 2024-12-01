@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DocumentFormat.OpenXml.EMMA;
+using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_Schedule;
 using XTI_TempLog;
 
 namespace XTI_ODataQuery.Api;
@@ -78,6 +80,8 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
     public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TArgs, TEntity>> ThrottleExceptionLogging() =>
         throttledLogPathBuilder.ExceptionIntervalBuilder;
 
+    public XtiPath ActionPath() => groupPath.WithAction(ActionName);
+
     public QueryApiAction<TArgs, TEntity> Build()
     {
         builtAction ??= BuildAction();
@@ -86,7 +90,8 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
 
     private QueryApiAction<TArgs, TEntity> BuildAction()
     {
-        var actionPath = groupPath.WithAction(ActionName);
+        var actionPath = ActionPath();
+        var scheduledBuilder = new ActionScheduleBuilder<QueryApiActionBuilder<TArgs, TEntity>>(this);
         return new QueryApiAction<TArgs, TEntity>
         (
             actionPath,
@@ -94,7 +99,8 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
             user,
             createQuery,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
-            throttledLogPathBuilder.Build(actionPath)
+            throttledLogPathBuilder.Build(actionPath),
+            scheduledBuilder.Build()
         );
     }
 
