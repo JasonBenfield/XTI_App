@@ -40,6 +40,8 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
     public ScheduledAppAgendaItemOptions Schedule { get; }
+    public RequestDataLoggingTypes RequestDataLoggingType { get; } = RequestDataLoggingTypes.Never;
+    public bool IsResultDataLoggingEnabled { get; } = false;
 
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 

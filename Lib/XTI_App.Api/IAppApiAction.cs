@@ -10,6 +10,8 @@ public interface IAppApiAction
     string FriendlyName { get; }
     ResourceAccess Access { get; }
     ScheduledAppAgendaItemOptions Schedule { get; }
+    RequestDataLoggingTypes RequestDataLoggingType { get; }
+    bool IsResultDataLoggingEnabled { get; }
 
     ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath);
 

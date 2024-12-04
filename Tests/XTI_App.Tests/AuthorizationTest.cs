@@ -159,7 +159,7 @@ internal sealed class AuthorizationTest
         SetModifierKey(sp, action);
         Assert.ThrowsAsync<AccessDeniedException>
         (
-            () => action.Execute(new EmptyRequest()),
+            () => action.Execute(new SampleRequestData()),
             "Anon should not have access unless anons are allowed"
         );
     }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.UriParser;
-using System.Reflection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_TempLog;
@@ -42,6 +41,8 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
     public ScheduledAppAgendaItemOptions Schedule { get; }
+    public RequestDataLoggingTypes RequestDataLoggingType { get; } = RequestDataLoggingTypes.Never;
+    public bool IsResultDataLoggingEnabled { get; } = false;
 
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 

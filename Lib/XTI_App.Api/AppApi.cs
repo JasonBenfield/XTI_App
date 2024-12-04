@@ -49,6 +49,38 @@ public sealed class AppApi
         return group;
     }
 
+    public bool HasAction(XtiPath xtiPath)
+    {
+        bool hasAction;
+        var groupKey = FormatGroupKey(xtiPath.Group.DisplayText);
+        if (groups.ContainsKey(groupKey))
+        {
+            var group = groups[groupKey];
+            hasAction = group.HasAction(xtiPath.Action.DisplayText);
+        }
+        else
+        {
+            hasAction = false;
+        }
+        return hasAction;
+    }
+
+    public IAppApiAction GetAction(XtiPath xtiPath)
+    {
+        IAppApiAction action;
+        var groupKey = FormatGroupKey(xtiPath.Group.DisplayText);
+        if (groups.ContainsKey(groupKey))
+        {
+            var group = groups[groupKey];
+            action = group.Action(xtiPath.Action.DisplayText);
+        }
+        else
+        {
+            throw new Exception($"Action not found for path {xtiPath.Value()}");
+        }
+        return action;
+    }
+
     public AppApiGroup[] Groups() => groups.Values.ToArray();
 
     public AppApiGroup Group(string groupName) => groups[FormatGroupKey(groupName)];
