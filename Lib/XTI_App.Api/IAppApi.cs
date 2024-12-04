@@ -11,6 +11,9 @@ public interface IAppApi
     IAppApiGroup[] Groups();
     IAppApiGroup Group(string groupName);
     AppApiTemplate Template();
+    bool HasAction(XtiPath xtiPath);
+    IAppApiAction GetAction(XtiPath xtiPath);
+
     ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath);
     ScheduledAppAgendaItemOptions[] ActionSchedules();
 }

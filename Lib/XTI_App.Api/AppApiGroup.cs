@@ -28,8 +28,28 @@ public sealed class AppApiGroup : IAppApiGroup
     public IAppApiUser User { get; }
     internal ModifierCategoryName ModCategory { get; }
 
-    public TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction =>
-        (TAppApiAction)FetchActionDictionary()[FormatActionKey(actionName)];
+    public bool HasAction(string actionName) =>
+        FetchActionDictionary().ContainsKey(FormatActionKey(actionName));
+
+    public TAppApiAction Action<TAppApiAction>(string actionName) 
+        where TAppApiAction : IAppApiAction =>
+        (TAppApiAction)Action(actionName);
+
+    public IAppApiAction Action(string actionName)
+    {
+        var actionKey = FormatActionKey(actionName);
+        var dict = FetchActionDictionary();
+        IAppApiAction action;
+        if (dict.ContainsKey(actionKey))
+        {
+            action = dict[FormatActionKey(actionName)];
+        }
+        else
+        {
+            throw new Exception($"Action '{actionName}' not found in group '{Path.Group.DisplayText}'");
+        }
+        return action;
+    }
 
     public IAppApiAction[] Actions() => FetchActionDictionary().Values.ToArray();
 

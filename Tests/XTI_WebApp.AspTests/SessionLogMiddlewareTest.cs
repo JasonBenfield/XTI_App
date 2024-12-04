@@ -120,8 +120,85 @@ internal sealed class SessionLogMiddlewareTest
         var input = await Setup();
         var uri = "/Fake/Current/Controller1/Action1";
         await input.GetAsync(uri);
-        var requests = await GetEndRequests(input.Host.Services);
+        var requests = await GetEndedRequests(input.Host.Services);
         Assert.That(requests.Length, Is.EqualTo(1), "Should log end of request");
+    }
+
+    [Test]
+    public async Task ShouldLogRequestData_WhenRequestDataLoggingTypeIsAlways()
+    {
+        var input = await Setup();
+        var api = input.Host.Services.GetRequiredService<FakeAppApi>();
+        var requestData = new SampleRequestData { TextValue = "Testing", NumberValue = 1 };
+        await input.PostAsync(api.Home.LogRequestData, requestData);
+        var requests = await GetEndedRequests(input.Host.Services);
+        var request = requests.FirstOrDefault() ?? new();
+        var serializedRequestData = XtiSerializer.Serialize(requestData);
+        Assert.That(request.RequestData, Is.EqualTo(serializedRequestData), "Should log request data");
+    }
+
+    [Test]
+    public async Task ShouldNotLogRequestData_WhenRequestDataLoggingTypeIsNever()
+    {
+        var input = await Setup();
+        var api = input.Host.Services.GetRequiredService<FakeAppApi>();
+        var requestData = new SampleRequestData { TextValue = "Testing", NumberValue = 1 };
+        await input.PostAsync(api.Home.DoSomething, requestData);
+        var requests = await GetEndedRequests(input.Host.Services);
+        var request = requests.FirstOrDefault() ?? new();
+        Assert.That(request.RequestData, Is.EqualTo(""), "Should not log request data when request data logging type is never");
+    }
+
+    [Test]
+    public async Task ShouldNotLogRequestData_WhenRequestDataLoggingTypeIsOnError()
+    {
+        var input = await Setup();
+        var api = input.Host.Services.GetRequiredService<FakeAppApi>();
+        var requestData = new SampleRequestData { TextValue = "Testing", NumberValue = 1 };
+        await input.PostAsync(api.Home.LogRequestDataOnError, requestData);
+        var requests = await GetEndedRequests(input.Host.Services);
+        var request = requests.FirstOrDefault() ?? new();
+        Assert.That(request.RequestData, Is.EqualTo(""), "Should not log request data when request data logging type is on error");
+    }
+
+    [Test]
+    public async Task ShouldLogRequestData_WhenRequestDataLoggingTypeIsOnErrorAndThereIsAnError()
+    {
+        var input = await Setup();
+        var api = input.Host.Services.GetRequiredService<FakeAppApi>();
+        var fakeError = input.Host.Services.GetRequiredService<FakeError>();
+        fakeError.ThrowError = true;
+        var requestData = new SampleRequestData { TextValue = "Testing", NumberValue = 1 };
+        await input.PostAsync(api.Home.LogRequestDataOnError, requestData);
+        var requests = await GetEndedRequests(input.Host.Services);
+        var request = requests.FirstOrDefault() ?? new();
+        var serializedRequestData = XtiSerializer.Serialize(requestData);
+        Assert.That(request.RequestData, Is.EqualTo(serializedRequestData), "Should log request data when request data logging type is on error and there is an error");
+    }
+
+    [Test]
+    public async Task ShouldLogResultData_WhenResultDataLoggingIsEnabled()
+    {
+        var input = await Setup();
+        var api = input.Host.Services.GetRequiredService<FakeAppApi>();
+        var requestData = new SampleRequestData { TextValue = "Testing", NumberValue = 1 };
+        await input.PostAsync(api.Home.LogResultData, requestData);
+        var requests = await GetEndedRequests(input.Host.Services);
+        var request = requests.FirstOrDefault() ?? new();
+        var serializedResultData = XtiSerializer.Serialize(LogResultDataAction.Result);
+        Assert.That(request.ResultData, Is.EqualTo(serializedResultData), "Should log result data");
+    }
+
+    [Test]
+    public async Task ShouldNotLogResultData_WhenResultDataLoggingIsNotEnabled()
+    {
+        var input = await Setup();
+        var api = input.Host.Services.GetRequiredService<FakeAppApi>();
+        var requestData = new SampleRequestData { TextValue = "Testing", NumberValue = 1 };
+        await input.PostAsync(api.Home.DoSomething, requestData);
+        var requests = await GetEndedRequests(input.Host.Services);
+        var request = requests.FirstOrDefault() ?? new();
+        Assert.That(request.ResultData, Is.EqualTo(""), "Should not log result data when data logging is not enabled");
     }
 
     [Test]
@@ -491,9 +568,10 @@ internal sealed class SessionLogMiddlewareTest
         public Func<HttpContext, Task> Action { get; }
         private Func<HttpContext, Task> Config { get; set; } = (_) => Task.CompletedTask;
 
-        public void Configure(Func<HttpContext, Task> config)
+        public CurrentAction Configure(Func<HttpContext, Task> config)
         {
             Config = config;
+            return this;
         }
     }
 
@@ -548,6 +626,7 @@ internal sealed class SessionLogMiddlewareTest
                         services.AddSingleton<FakeAppOptions>();
                         services.AddScoped<FakeAppApiFactory>();
                         services.AddScoped<AppApiFactory>(sp => sp.GetRequiredService<FakeAppApiFactory>());
+                        services.AddScoped(sp => sp.GetRequiredService<FakeAppApiFactory>().CreateForSuperUser());
                         services.AddSingleton<IAnonClient, FakeAnonClient>();
                         services.AddScoped<FakeAppSetup>();
                         services.AddMvc();
@@ -601,7 +680,7 @@ internal sealed class SessionLogMiddlewareTest
         return requests;
     }
 
-    private static async Task<TempLogRequestModel[]> GetEndRequests(IServiceProvider services)
+    private static async Task<TempLogRequestModel[]> GetEndedRequests(IServiceProvider services)
     {
         var logFiles = await WriteLogFiles(services);
         var sessionDetails = await logFiles[0].Read();
@@ -667,6 +746,23 @@ internal sealed class SessionLogMiddlewareTest
             AddCookies(requestBuilder, absoluteUrl);
             var response = await requestBuilder.GetAsync();
             UpdateCookies(response, absoluteUrl);
+            return response;
+        }
+
+        public async Task<HttpResponseMessage> PostAsync<TModel, TResult>(AppApiAction<TModel, TResult> action, TModel data)
+        {
+            CurrentAction
+                .Configure
+                (
+                    async (c) =>
+                    {
+                        var resultData = await action.Execute(data);
+                        var serializedResultData = XtiSerializer.Serialize(resultData);
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(serializedResultData);
+                        await c.Response.BodyWriter.WriteAsync(bytes);
+                    }
+                );
+            var response = await PostAsync(action.Path.Value(), data!);
             return response;
         }
 

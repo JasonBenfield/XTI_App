@@ -18,6 +18,10 @@ public class AppApiWrapper : IAppApi
     public IAppApiGroup Group(string groupName) => source.Group(groupName);
     public IAppApiGroup[] Groups() => source.Groups();
 
+    public bool HasAction(XtiPath xtiPath) => source.HasAction(xtiPath);
+
+    public IAppApiAction GetAction(XtiPath xtiPath) => source.GetAction(xtiPath);
+
     public AppApiTemplate Template()
     {
         var template = source.Template();

@@ -20,6 +20,8 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         Func<AppActionValidation<TModel>> createValidation,
         Func<AppAction<TModel, TResult>> createAction,
         string friendlyName,
+        RequestDataLoggingTypes requestDataLoggingType,
+        bool isResultDataLoggingEnabled,
         ThrottledLogXtiPath throttledLogPath,
         ScheduledAppAgendaItemOptions schedule
     )
@@ -30,6 +32,8 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         FriendlyName = string.IsNullOrWhiteSpace(friendlyName)
             ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
             : friendlyName;
+        RequestDataLoggingType = requestDataLoggingType;
+        IsResultDataLoggingEnabled = isResultDataLoggingEnabled;
         Schedule = schedule;
         this.user = user;
         this.createValidation = createValidation;
@@ -42,6 +46,8 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     public string FriendlyName { get; }
     public ResourceAccess Access { get; }
     public ScheduledAppAgendaItemOptions Schedule { get; }
+    public RequestDataLoggingTypes RequestDataLoggingType { get; }
+    public bool IsResultDataLoggingEnabled { get; }
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
     public Task<bool> IsOptional()

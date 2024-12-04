@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Diagnostics;
 using System.Net;
+using System.Text.RegularExpressions;
 using XTI_App.Abstractions;
+using XTI_App.Api;
 using XTI_Core;
 using XTI_TempLog;
 using XTI_TempLog.Abstractions;
@@ -29,7 +30,8 @@ public sealed class SessionLogMiddleware
         IAppEnvironmentContext appEnvironmentContext,
         IAnonClient anonClient,
         IClock clock,
-        XtiRequestContext xtiRequestContext
+        XtiRequestContext xtiRequestContext,
+        IAppApi api
     )
     {
         anonClient.Load();
@@ -72,55 +74,58 @@ public sealed class SessionLogMiddleware
         var path = $"{context.Request.PathBase}{context.Request.Path}";
         var sourceRequestKey = context.Request.Headers[new SourceRequestKeyHeader().Value].FirstOrDefault() ?? "";
         await tempLogSession.StartRequest(path, sourceRequestKey);
+        var xtiPath = XtiPath.Parse(path);
+        var requestDataLoggingType = RequestDataLoggingTypes.Never;
+        var isResultDataLoggingEnabled = false;
+        if (api.HasAction(xtiPath))
+        {
+            var action = api.GetAction(xtiPath);
+            requestDataLoggingType = action.RequestDataLoggingType;
+            isResultDataLoggingEnabled = action.IsResultDataLoggingEnabled;
+        }
         try
         {
+            var originalResponseBody = context.Response.Body;
+            MemoryStream? newResponseBody = null;
+            if (isResultDataLoggingEnabled)
+            {
+                newResponseBody = new MemoryStream();
+                context.Response.Body = newResponseBody;
+            }
             await _next(context);
             if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 400)
             {
-                var message = $"Request failed with error {context.Response.StatusCode}. Url: {context.Request.GetDisplayUrl()}";
-                var caption = "An unexpected http error occurred";
-                var statusCode = (HttpStatusCode)context.Response.StatusCode;
-                if (statusCode == HttpStatusCode.NotFound)
+                await LogHttpError(context, tempLogSession, xtiRequestContext);
+            }
+            else
+            {
+                if (requestDataLoggingType == RequestDataLoggingTypes.Always)
                 {
-                    message = $"'{context.Request.GetDisplayUrl()}' was not found";
-                    caption = "Not Found";
+                    await LogRequestData(context, tempLogSession);
                 }
-                else if (statusCode == HttpStatusCode.Forbidden)
+                if (isResultDataLoggingEnabled)
                 {
-                    message = $"'{context.Request.GetDisplayUrl()}' is forbidden";
-                    caption = "Forbidden";
+                    newResponseBody!.Seek(0, SeekOrigin.Begin);
+                    using var streamReader = new StreamReader(newResponseBody);
+                    var responseBody = await streamReader.ReadToEndAsync();
+                    var match = dataContainerRegex.Match(responseBody);
+                    if (match.Success)
+                    {
+                        responseBody = match.Groups["ResultData"].Value;
+                    }
+                    await tempLogSession.LogResultData(responseBody);
+                    newResponseBody.Seek(0, SeekOrigin.Begin);
+                    await newResponseBody.CopyToAsync(originalResponseBody);
                 }
-                else if (statusCode == HttpStatusCode.Unauthorized)
-                {
-                    message = $"'{context.Request.GetDisplayUrl()}' is unauthorized";
-                    caption = "Unauthorized";
-                }
-                else if (statusCode == HttpStatusCode.BadGateway)
-                {
-                    message = $"Bad Gateway for '{context.Request.GetDisplayUrl()}'";
-                    caption = "Bad Gateway";
-                }
-                else if (statusCode == HttpStatusCode.UnsupportedMediaType)
-                {
-                    message = $"Unsupported Media Type for '{context.Request.GetDisplayUrl()}'";
-                    caption = "Unsupported Media Type";
-                }
-                Debug.WriteLine($"Error in {path} [{context.Response.StatusCode}]\r\n{caption}\r\n{message}");
-                var loggedError = await tempLogSession.LogError
-                (
-                    AppEventSeverity.Values.CriticalError,
-                    message,
-                    "",
-                    caption,
-                    "",
-                    $"HttpError{statusCode}"
-                );
-                xtiRequestContext.Failed(message, caption, loggedError.EventKey);
             }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error in {path}\r\n{ex}");
+            if(requestDataLoggingType == RequestDataLoggingTypes.OnError)
+            {
+                await LogRequestData(context, tempLogSession);
+            }
             var loggedException = await LogException(tempLogSession, ex);
             xtiRequestContext.Failed(ex, loggedException.EventKey);
         }
@@ -129,6 +134,62 @@ public sealed class SessionLogMiddleware
             await tempLogSession.EndRequest();
         }
     }
+
+    private static async Task LogHttpError(HttpContext context, TempLogSession tempLogSession, XtiRequestContext xtiRequestContext)
+    {
+        var path = $"{context.Request.PathBase}{context.Request.Path}";
+        var message = $"Request failed with error {context.Response.StatusCode}. Url: {context.Request.GetDisplayUrl()}";
+        var caption = "An unexpected http error occurred";
+        var statusCode = (HttpStatusCode)context.Response.StatusCode;
+        if (statusCode == HttpStatusCode.NotFound)
+        {
+            message = $"'{context.Request.GetDisplayUrl()}' was not found";
+            caption = "Not Found";
+        }
+        else if (statusCode == HttpStatusCode.Forbidden)
+        {
+            message = $"'{context.Request.GetDisplayUrl()}' is forbidden";
+            caption = "Forbidden";
+        }
+        else if (statusCode == HttpStatusCode.Unauthorized)
+        {
+            message = $"'{context.Request.GetDisplayUrl()}' is unauthorized";
+            caption = "Unauthorized";
+        }
+        else if (statusCode == HttpStatusCode.BadGateway)
+        {
+            message = $"Bad Gateway for '{context.Request.GetDisplayUrl()}'";
+            caption = "Bad Gateway";
+        }
+        else if (statusCode == HttpStatusCode.UnsupportedMediaType)
+        {
+            message = $"Unsupported Media Type for '{context.Request.GetDisplayUrl()}'";
+            caption = "Unsupported Media Type";
+        }
+        Debug.WriteLine($"Error in {path} [{context.Response.StatusCode}]\r\n{caption}\r\n{message}");
+        var loggedError = await tempLogSession.LogError
+        (
+            AppEventSeverity.Values.CriticalError,
+            message,
+            "",
+            caption,
+            "",
+            $"HttpError{statusCode}"
+        );
+        xtiRequestContext.Failed(message, caption, loggedError.EventKey);
+    }
+
+    private static async Task LogRequestData(HttpContext context, TempLogSession tempLogSession)
+    {
+        try
+        {
+            var requestData = await new BodyFromRequest(context.Request).Serialize();
+            await tempLogSession.LogRequestData(requestData);
+        }
+        catch { }
+    }
+
+    private static readonly Regex dataContainerRegex = new Regex("^{\"Data\":(?<ResultData>.*)}$");
 
     private static bool IsAnonSessionExpired(IAnonClient anonClient, IClock clock) =>
         !string.IsNullOrWhiteSpace(anonClient.SessionKey) &&

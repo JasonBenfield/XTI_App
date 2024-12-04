@@ -15,6 +15,8 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     private Func<AppActionValidation<TModel>> createValidation;
     private Func<AppAction<TModel, TResult>> createExecution;
     private AppApiAction<TModel, TResult>? builtAction;
+    private RequestDataLoggingTypes requestDataLoggingType = RequestDataLoggingTypes.Never;
+    private bool isResultDataLoggingEnabled;
 
     internal AppApiActionBuilder
     (
@@ -92,6 +94,24 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         return this;
     }
 
+    public AppApiActionBuilder<TModel, TResult> AlwaysLogRequestData()
+    {
+        requestDataLoggingType = RequestDataLoggingTypes.Always;
+        return this;
+    }
+
+    public AppApiActionBuilder<TModel, TResult> LogRequestDataOnError()
+    {
+        requestDataLoggingType = RequestDataLoggingTypes.OnError;
+        return this;
+    }
+
+    public AppApiActionBuilder<TModel, TResult> LogResultData()
+    {
+        isResultDataLoggingEnabled = true;
+        return this;
+    }
+
     public ActionThrottledLogIntervalBuilder<AppApiActionBuilder<TModel, TResult>> ThrottleRequestLogging() =>
         throttledLogPathBuilder.RequestIntervalBuilder;
 
@@ -130,6 +150,8 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
             createValidation,
             createExecution,
             new AppActionFriendlyName(friendlyName, ActionName).Value,
+            requestDataLoggingType,
+            isResultDataLoggingEnabled,
             throttledLogPathBuilder.Build(actionPath),
             schedule
         );

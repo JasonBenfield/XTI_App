@@ -51,6 +51,10 @@ public static class FakeExtensions
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
         services.AddScoped<ICachedUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         services.AddScoped<CurrentUserAccess>();
+        services.AddSingleton<FakeError>();
+        services.AddScoped<LogRequestDataAction>();
+        services.AddScoped<LogRequestDataOnErrorAction>();
+        services.AddScoped<LogResultDataAction>();
         services.AddScoped(sp =>
         {
             var factory = sp.GetRequiredService<AppApiFactory>();

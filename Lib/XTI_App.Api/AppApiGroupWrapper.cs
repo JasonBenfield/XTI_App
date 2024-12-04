@@ -20,6 +20,8 @@ public class AppApiGroupWrapper : IAppApiGroup
 
     public IAppApiAction[] Actions() => source.Actions();
 
+    public bool HasAction(string actionName) => source.HasAction(actionName);
+
     public TAppApiAction Action<TAppApiAction>(string actionName)
         where TAppApiAction : IAppApiAction =>
         source.Action<TAppApiAction>(actionName);
@@ -32,4 +34,5 @@ public class AppApiGroupWrapper : IAppApiGroup
         source.ThrottledLogPaths(xtiBasePath);
 
     public ScheduledAppAgendaItemOptions[] ActionSchedules() => source.ActionSchedules();
+
 }
