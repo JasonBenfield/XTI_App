@@ -123,18 +123,18 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
         return newPath.WithModifier(path.Modifier);
     }
 
-    public XtiPath WithNewGroup(string groupName)
-        => WithNewGroup(new ResourceGroupName(groupName));
+    public XtiPath WithNewGroup(string groupName) =>
+        WithNewGroup(new ResourceGroupName(groupName));
 
-    public XtiPath WithNewGroup(ResourceGroupName groupName)
-        => new XtiPath(App, Version, groupName, new ResourceName(""), Modifier);
+    public XtiPath WithNewGroup(ResourceGroupName groupName) =>
+        new(App, Version, groupName, new ResourceName(""), Modifier);
 
     public XtiPath WithGroup(string groupName) => WithGroup(new ResourceGroupName(groupName));
 
     public XtiPath WithGroup(ResourceGroupName groupName)
     {
         if (!string.IsNullOrWhiteSpace(Group)) { throw new ArgumentException("Cannot create group for a group"); }
-        return new XtiPath(App, Version, groupName, new ResourceName(""), Modifier);
+        return new(App, Version, groupName, new ResourceName(""), Modifier);
     }
 
     public XtiPath WithAction(string actionName) => WithAction(new ResourceName(actionName));
@@ -142,19 +142,20 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
     public XtiPath WithAction(ResourceName action)
     {
         if (!string.IsNullOrWhiteSpace(Action)) { throw new ArgumentException("Cannot create action for an action"); }
-        return new XtiPath(App, Version, Group, action, Modifier);
+        return new(App, Version, Group, action, Modifier);
     }
 
     public XtiPath WithModifier(ModifierKey modKey)
     {
-        EnsureActionResource();
-        return new XtiPath(App, Version, Group, Action, modKey);
+        if (!modKey.Equals(ModifierKey.Default))
+        {
+            EnsureActionResource();
+        }
+        return new(App, Version, Group, Action, modKey);
     }
 
-    public XtiPath WithVersion(AppVersionKey versionKey)
-    {
-        return new XtiPath(App, versionKey, Group, Action, Modifier);
-    }
+    public XtiPath WithVersion(AppVersionKey versionKey) =>
+        new(App, versionKey, Group, Action, Modifier);
 
     public string Format()
     {

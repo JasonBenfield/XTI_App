@@ -15,7 +15,7 @@ internal sealed class XtiTokenAccessorTest
         xtiTokenAccessorFactory.AddToken(() => new FakeXtiToken1("TokenValue"));
         var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
-        var token = await xtiTokenAccessor.Value();
+        var token = await xtiTokenAccessor.Value(default);
         Assert.That(token, Is.EqualTo("TokenValue"), "Should get token");
     }
 
@@ -28,9 +28,9 @@ internal sealed class XtiTokenAccessorTest
         xtiTokenAccessorFactory.AddToken(() => fakeToken);
         var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
-        await xtiTokenAccessor.Value();
+        await xtiTokenAccessor.Value(default);
         fakeToken.SetValue("ChangedTokenValue");
-        var cachedToken = await xtiTokenAccessor.Value();
+        var cachedToken = await xtiTokenAccessor.Value(default);
         Assert.That(cachedToken, Is.EqualTo("TokenValue"), "Should get cached token");
     }
 
@@ -43,10 +43,10 @@ internal sealed class XtiTokenAccessorTest
         xtiTokenAccessorFactory.AddToken(() => fakeToken);
         var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
-        await xtiTokenAccessor.Value();
+        await xtiTokenAccessor.Value(default);
         fakeToken.SetValue("ChangedTokenValue");
         xtiTokenAccessor.Reset();
-        var cachedToken = await xtiTokenAccessor.Value();
+        var cachedToken = await xtiTokenAccessor.Value(default);
         Assert.That(cachedToken, Is.EqualTo("ChangedTokenValue"), "Should get cached token until reset");
     }
 
@@ -59,10 +59,10 @@ internal sealed class XtiTokenAccessorTest
         xtiTokenAccessorFactory.AddToken(() => new FakeXtiToken2("Token2"));
         var xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         xtiTokenAccessor.UseToken<FakeXtiToken1>();
-        var token = await xtiTokenAccessor.Value();
+        var token = await xtiTokenAccessor.Value(default);
         Assert.That(token, Is.EqualTo("Token1"), "Should use current token");
         xtiTokenAccessor.UseToken<FakeXtiToken2>();
-        token = await xtiTokenAccessor.Value();
+        token = await xtiTokenAccessor.Value(default);
         Assert.That(token, Is.EqualTo("Token2"), "Should use current token");
     }
 
@@ -81,7 +81,7 @@ internal sealed class XtiTokenAccessorTest
 
         public Task<string> UserName() => Task.FromResult("Fake.user1");
 
-        public Task<string> Value() => Task.FromResult(value);
+        public Task<string> Value(CancellationToken ct) => Task.FromResult(value);
 
         public void SetValue(string value) => this.value = value;
     }
@@ -101,7 +101,7 @@ internal sealed class XtiTokenAccessorTest
 
         public Task<string> UserName() => Task.FromResult("Fake.user2");
 
-        public Task<string> Value() => Task.FromResult(value);
+        public Task<string> Value(CancellationToken ct) => Task.FromResult(value);
 
         public void SetValue(string value) => this.value = value;
     }

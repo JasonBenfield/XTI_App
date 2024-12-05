@@ -37,9 +37,8 @@ public sealed class ActionRunner
         using var scope = sp.CreateScope();
         var environment = scope.ServiceProvider.GetRequiredService<XtiEnvironment>();
         var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
-        var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
-        xtiPathAccessor.FinishPath(groupName, actionName);
-        var xtiPath = xtiPathAccessor.Value();
+        var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
+        var xtiPath = xtiBasePath.Finish(groupName, actionName);
         result = await VerifyActionIsRequired(environment, factory, xtiPath);
         if (result == Results.None)
         {

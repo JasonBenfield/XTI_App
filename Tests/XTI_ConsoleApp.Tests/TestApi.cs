@@ -27,6 +27,7 @@ public sealed class TestApi : ConsoleAppApiWrapper
         (
             new AppApi
             (
+                sp,
                 TestAppInfo.AppKey,
                 user,
                 ResourceAccess.AllowAuthenticated(),

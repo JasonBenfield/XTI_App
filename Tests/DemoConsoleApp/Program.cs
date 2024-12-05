@@ -30,8 +30,6 @@ await Host.CreateDefaultBuilder(args)
             return xtiFolder.AppDataFolder(appKey);
         });
         services.AddSingleton<CurrentSession>();
-        services.AddScoped<ActionRunnerXtiPathAccessor>();
-        services.AddScoped<IXtiPathAccessor>(sp => sp.GetRequiredService<ActionRunnerXtiPathAccessor>());
         services.AddScoped<IActionRunnerFactory, ActionRunnerFactory>();
         services.AddSingleton<ICurrentUserName>(_ => new FakeCurrentUserName(new AppUserName("test.user")));
         services.AddSingleton<IAppEnvironmentContext, AppEnvironmentContext>();

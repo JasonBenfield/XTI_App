@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using XTI_Core;
 using XTI_TempLog;
 
@@ -7,22 +6,28 @@ namespace XTI_App.Hosting;
 
 internal sealed class SessionWorker : BackgroundService
 {
-    private readonly IServiceProvider sp;
-    private TempLogSession? tempLogSession;
+    private readonly CurrentSession currentSession;
+    private readonly IClock clock;
+    private readonly TempLogRepository tempLogRepository;
+    private readonly TempLogSession tempLogSession;
 
-    public SessionWorker(IServiceProvider sp)
+    public SessionWorker
+    (
+        CurrentSession currentSession,
+        IClock clock,
+        TempLogSession tempLogSession,
+        TempLogRepository tempLogRepository
+    )
     {
-        this.sp = sp;
+        this.currentSession = currentSession;
+        this.clock = clock;
+        this.tempLogSession = tempLogSession;
+        this.tempLogRepository = tempLogRepository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var currentSession = sp.GetRequiredService<CurrentSession>();
-        var clock = sp.GetRequiredService<IClock>();
         var timeStarted = clock.Now();
-        var factory = sp.GetRequiredService<IActionRunnerFactory>();
-        tempLogSession = factory.CreateTempLogSession();
-        await tempLogSession.StartSession();
         try
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -31,7 +36,7 @@ internal sealed class SessionWorker : BackgroundService
                 if (currentTime > timeStarted.Add(TimeSpan.FromHours(12)))
                 {
                     await tempLogSession.EndSession();
-                    currentSession.SessionKey = "";
+                    currentSession.SessionKey = new();
                     await tempLogSession.StartSession();
                     timeStarted = clock.Now();
                 }
@@ -52,15 +57,13 @@ internal sealed class SessionWorker : BackgroundService
             try
             {
                 await s.EndSession();
-            }
-            catch { }
-            try
-            {
-                var tempLogRepo = sp.GetRequiredService<TempLogRepository>();
-                await tempLogRepo.WriteToLocalStorage();
+                try
+                {
+                    await tempLogRepository.WriteToLocalStorage();
+                }
+                catch { }
             }
             catch { }
         }
-        tempLogSession = null;
     }
 }

@@ -4,70 +4,27 @@ namespace XTI_ODataQuery.Api;
 
 public static class AppApiGroupExtensions
 {
-    public static QueryApiAction<TArgs, TEntity> AddQueryAction<TArgs, TEntity>
-    (
-        this AppApiGroup group,
-        string actionName,
-        Func<QueryAction<TArgs, TEntity>> createQuery,
-        ResourceAccess? access = null,
-        string friendlyName = ""
-    ) =>
-        (QueryApiAction<TArgs, TEntity>)group.AddAction
+    public static QueryApiActionBuilder<TArgs, TEntity> AddQueryAction<TArgs, TEntity>(this AppApiGroup group, string actionName) =>
+        (QueryApiActionBuilder<TArgs, TEntity>)group.AddAction
         (
             actionName,
-            friendlyName,
-            (addData) => new QueryApiAction<TArgs, TEntity>
-            (
-                addData.ActionPath,
-                access ?? addData.GroupAccess,
-                addData.User,
-                createQuery,
-                addData.FriendlyName
-            )
+            (addData) => new QueryApiActionBuilder<TArgs, TEntity>(addData.Services, group.Path, addData.User, addData.GroupAccess, actionName)
         );
 
     public static QueryApiAction<TArgs, TEntity> Query<TArgs, TEntity>(this IAppApiGroup group, string actionName) =>
         group.Action<QueryApiAction<TArgs, TEntity>>(actionName);
 
-    public static QueryToExcelApiAction<TArgs, TEntity> AddQueryToExcelAction<TArgs, TEntity>
-    (
-        this AppApiGroup group,
-        string actionName,
-        Func<QueryAction<TArgs, TEntity>> createQuery,
-        Func<DefaultQueryToExcelBuilder>? createQueryToExcelBuilder = null,
-        ResourceAccess? access = null,
-        string friendlyName = ""
-    ) =>
-        group.AddQueryToExcelAction
+    public static QueryToExcelApiActionBuilder<TArgs, TEntity> AddQueryToExcelAction<TArgs, TEntity>(this AppApiGroup group,string actionName) =>
+        (QueryToExcelApiActionBuilder<TArgs, TEntity>)group.AddAction
         (
             actionName,
-            createQuery,
-            () => (createQueryToExcelBuilder?.Invoke() ?? new DefaultQueryToExcelBuilder()).Build(),
-            access,
-            friendlyName
-        );
-
-    public static QueryToExcelApiAction<TArgs, TEntity> AddQueryToExcelAction<TArgs, TEntity>
-    (
-        this AppApiGroup group,
-        string actionName,
-        Func<QueryAction<TArgs, TEntity>> createQuery,
-        Func<IQueryToExcel> createQueryToExcel,
-        ResourceAccess? access = null,
-        string friendlyName = ""
-    ) =>
-        (QueryToExcelApiAction<TArgs, TEntity>)group.AddAction
-        (
-            actionName,
-            friendlyName,
-            (addData) => new QueryToExcelApiAction<TArgs, TEntity>
+            (addData) => new QueryToExcelApiActionBuilder<TArgs, TEntity>
             (
-                addData.ActionPath,
-                access ?? addData.GroupAccess,
-                addData.User,
-                createQuery,
-                createQueryToExcel,
-                addData.FriendlyName
+                addData.Services, 
+                group.Path, 
+                addData.User, 
+                addData.GroupAccess, 
+                actionName
             )
         );
 

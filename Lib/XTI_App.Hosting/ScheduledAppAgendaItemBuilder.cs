@@ -6,8 +6,6 @@ namespace XTI_App.Hosting;
 
 public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
 {
-    private ResourceGroupName groupName = ResourceGroupName.Unknown;
-    private ResourceName actionName = ResourceName.Unknown;
     private bool isEnabled = true;
     private readonly List<Schedule> schedules = new();
     private ScheduledActionTypes type = ScheduledActionTypes.Continuous;
@@ -29,12 +27,12 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
                  IsDisabled = options.IsDisabled,
                  Schedule = new ScheduleOptions
                  {
-                     WeeklySchedules = new[]
-                    {
+                     WeeklySchedules =
+                    [
                         new WeeklyScheduleOptions
                         {
-                            Days = new[]
-                            {
+                            Days =
+                            [
                                 DayOfWeek.Sunday,
                                 DayOfWeek.Monday,
                                 DayOfWeek.Tuesday,
@@ -42,17 +40,17 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
                                 DayOfWeek.Thursday,
                                 DayOfWeek.Friday,
                                 DayOfWeek.Saturday
-                            },
-                            TimeRanges = new []
-                            {
+                            ],
+                            TimeRanges =
+                            [
                                 new TimeRangeOptions
                                 {
                                     Start = new TimeOnly(),
                                     Duration = TimeSpan.FromHours(24)
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
                  }
              }
         )
@@ -75,8 +73,11 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
         schedules.AddRange(options.Schedule.ToSchedules());
     }
 
-    public bool HasAction(string groupName, string actionName)
-        => this.groupName.Equals(groupName) && this.actionName.Equals(actionName);
+    public ResourceGroupName GroupName { get; private set; } = ResourceGroupName.Unknown;
+    public ResourceName ActionName { get; private set; } = ResourceName.Unknown;
+
+    public bool HasAction(string groupName, string actionName) =>
+        GroupName.Equals(groupName) && ActionName.Equals(actionName);
 
     public ScheduledAppAgendaItemActionBuilder Action(IAppApiAction action) => Action(action.Path);
 
@@ -84,8 +85,8 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
 
     public ScheduledAppAgendaItemActionBuilder Action(ResourceGroupName groupName, ResourceName actionName)
     {
-        this.groupName = groupName;
-        this.actionName = actionName;
+        GroupName = groupName;
+        ActionName = actionName;
         return new ScheduledAppAgendaItemActionBuilder(this);
     }
 
@@ -126,10 +127,10 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
     }
 
     internal ScheduledAppAgendaItem Build()
-        => new ScheduledAppAgendaItem
+        => new
         (
-            groupName,
-            actionName,
+            GroupName,
+            ActionName,
             isEnabled,
             new AggregateSchedule(schedules.ToArray()),
             type,
@@ -138,50 +139,4 @@ public sealed class ScheduledAppAgendaItemBuilder : IAppAgendaItemBuilder
         );
 
     AppAgendaItem IAppAgendaItemBuilder.Build() => Build();
-}
-
-public sealed class ScheduledAppAgendaItemActionBuilder
-{
-    private readonly ScheduledAppAgendaItemBuilder builder;
-
-    internal ScheduledAppAgendaItemActionBuilder(ScheduledAppAgendaItemBuilder builder)
-    {
-        this.builder = builder;
-    }
-
-    public ScheduledAppAgendaItemActionBuilder Disable()
-    {
-        builder.Disable();
-        return this;
-    }
-
-    public ScheduledAppAgendaItemActionBuilder RunContinuously()
-    {
-        builder.RunContinuously();
-        return this;
-    }
-
-    public ScheduledAppAgendaItemActionBuilder RunUntilSuccess()
-    {
-        builder.RunUntilSuccess();
-        return this;
-    }
-
-    public ScheduledAppAgendaItemActionBuilder AddSchedule(Schedule schedule)
-    {
-        builder.AddSchedule(schedule);
-        return this;
-    }
-
-    public ScheduledAppAgendaItemActionBuilder DelayAfterStart(TimeSpan delayAfterStart)
-    {
-        builder.DelayAfterStart(delayAfterStart);
-        return this;
-    }
-
-    public ScheduledAppAgendaItemActionBuilder Interval(TimeSpan interval)
-    {
-        builder.Interval(interval);
-        return this;
-    }
 }

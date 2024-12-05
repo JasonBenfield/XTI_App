@@ -2,5 +2,5 @@
 
 public sealed class AnonymousXtiToken : IXtiToken
 {
-    public Task<string> Value() => Task.FromResult("");
+    public Task<string> Value(CancellationToken ct) => Task.FromResult("");
 }

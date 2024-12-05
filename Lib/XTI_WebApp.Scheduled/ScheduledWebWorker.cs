@@ -14,15 +14,11 @@ public sealed class ScheduledWebWorker : BackgroundService
         this.sp = sp;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var scope = sp.CreateScope();
-        var pathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
-        if (pathAccessor.Value().IsCurrentVersion())
-        {
-            appAgenda = scope.ServiceProvider.GetRequiredService<AppAgenda>();
-            await appAgenda.Start(stoppingToken);
-        }
+        appAgenda = scope.ServiceProvider.GetRequiredService<AppAgenda>();
+        return appAgenda.Start(stoppingToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
@@ -30,6 +26,7 @@ public sealed class ScheduledWebWorker : BackgroundService
         if (appAgenda != null)
         {
             await appAgenda.Stop(cancellationToken);
+            appAgenda = null;
         }
         await base.StopAsync(cancellationToken);
     }

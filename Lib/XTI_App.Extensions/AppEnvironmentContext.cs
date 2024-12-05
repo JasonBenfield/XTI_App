@@ -28,7 +28,7 @@ public sealed class AppEnvironmentContext : IAppEnvironmentContext
         var installationID = await installationIDAccessor.Value();
         return new AppEnvironment
         (
-            userName.Value,
+            userName.IsAnon() ? "" : userName.Value,
             firstMacAddress,
             Environment.MachineName,
             $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}",

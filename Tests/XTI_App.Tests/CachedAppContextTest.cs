@@ -75,8 +75,6 @@ internal sealed class CachedAppContextTest
         hostBuilder.Services.AddScoped<IAppContext>(sp => sp.GetRequiredService<CachedAppContext>());
         hostBuilder.Services.AddScoped<IUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         var sp = hostBuilder.Build().Scope();
-        var xtiPathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
-        xtiPathAccessor.SetPath(XtiPath.Parse("/Fake/Current/Employees/Index"));
         await sp.Setup();
         return sp;
     }

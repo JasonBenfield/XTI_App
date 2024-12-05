@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using XTI_TempLog.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -16,21 +17,21 @@ public sealed class XtiClaims
         this.httpContext = httpContext;
     }
 
-    public string SessionKey() => GetClaim("SessionKey");
+    public SessionKey SessionKey() => XTI_TempLog.Abstractions.SessionKey.Parse(GetClaim("SessionKey"));
 
     public AppUserName UserName()
     {
         var userNameValue = GetClaim("UserName");
-        return string.IsNullOrWhiteSpace(userNameValue) ? 
-            AppUserName.Anon : 
+        return string.IsNullOrWhiteSpace(userNameValue) ?
+            AppUserName.Anon :
             new AppUserName(userNameValue);
     }
 
     private string GetClaim(string type)
     {
         var httpUser = httpContext?.User;
-        return httpUser?.Identity?.IsAuthenticated == true ? 
-            httpUser.Claims.First(c => c.Type == type).Value : 
+        return httpUser?.Identity?.IsAuthenticated == true ?
+            httpUser.Claims.First(c => c.Type == type).Value :
             "";
     }
 }

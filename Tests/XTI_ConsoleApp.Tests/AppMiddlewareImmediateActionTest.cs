@@ -57,7 +57,7 @@ public sealed class AppMiddlewareImmediateActionTest
 
     private static async Task<IHost> RunHost(IHost host)
     {
-        var envContext = (FakeAppEnvironmentContext)host.Services.GetRequiredService<IAppEnvironmentContext>();
+        var envContext = host.Services.GetRequiredService<FakeAppEnvironmentContext>();
         envContext.Environment = new AppEnvironment
         (
             "test.user",

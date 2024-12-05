@@ -22,7 +22,6 @@ internal static class Extensions
         services.AddScoped<IAppSetup>(sp => sp.GetRequiredService<FakeAppSetup>());
         services.AddScoped<IActionRunnerFactory, ActionRunnerFactory>();
         services.AddScoped<IAppEnvironmentContext, FakeAppEnvironmentContext>();
-        services.AddScoped<ActionRunnerXtiPathAccessor>();
         services.AddThrottledLog<FakeAppApi>
         (
             (api, log) => log

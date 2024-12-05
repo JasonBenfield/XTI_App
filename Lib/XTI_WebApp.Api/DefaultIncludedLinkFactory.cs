@@ -5,14 +5,14 @@ namespace XTI_WebApp.Api;
 public sealed class DefaultIncludedLinkFactory : IIncludedLinkFactory
 {
     private readonly CurrentUserAccess currentUserAccess;
-    private readonly IXtiPathAccessor xtiPathAccessor;
+    private readonly XtiBasePath xtiBasePath;
 
-    public DefaultIncludedLinkFactory(CurrentUserAccess currentUserAccess, IXtiPathAccessor xtiPathAccessor)
+    public DefaultIncludedLinkFactory(CurrentUserAccess currentUserAccess, XtiBasePath xtiBasePath)
     {
         this.currentUserAccess = currentUserAccess;
-        this.xtiPathAccessor = xtiPathAccessor;
+        this.xtiBasePath = xtiBasePath;
     }
 
     public IIncludedLink Create(string menuName, LinkModel link) =>
-        new DefaultIncludedLink(currentUserAccess, xtiPathAccessor, link);
+        new DefaultIncludedLink(currentUserAccess, xtiBasePath, link);
 }

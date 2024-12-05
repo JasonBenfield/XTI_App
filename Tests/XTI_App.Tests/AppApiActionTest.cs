@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using XTI_App.Api;
 using XTI_App.Fakes;
 using XTI_Core;
 using XTI_Core.Extensions;
@@ -13,7 +11,7 @@ internal sealed class AppApiActionTest
     [Test]
     public void ShouldValidateForm()
     {
-        var services = setup();
+        var services = Setup();
         var api = services.GetRequiredService<FakeAppApi>();
         var form = new FakeForm();
         form.TestText.SetValue(null);
@@ -26,7 +24,7 @@ internal sealed class AppApiActionTest
     [Test]
     public async Task ShouldExecuteAction_WhenFormIsValid()
     {
-        var services = setup();
+        var services = Setup();
         var api = services.GetRequiredService<FakeAppApi>();
         var form = new FakeForm();
         form.TestText.SetValue("Valid");
@@ -34,7 +32,7 @@ internal sealed class AppApiActionTest
         Assert.That(result.Data, Is.EqualTo("Valid"));
     }
 
-    private IServiceProvider setup()
+    private IServiceProvider Setup()
     {
         var hostBuilder = new XtiHostBuilder();
         hostBuilder.Services.AddServicesForTests();

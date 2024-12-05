@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
+using XTI_TempLog.Abstractions;
 using XTI_WebApp.Fakes;
 
 namespace XTI_WebApp.AspTests;
@@ -24,7 +25,7 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         {
             var principal = new FakeHttpUser().Create
             (
-                testOptions.SessionKey, 
+                SessionKey.Parse(testOptions.SessionKey),
                 testOptions.User ?? throw new ArgumentNullException("testOptions.User")
             );
             var ticket = new AuthenticationTicket(principal, "Test");

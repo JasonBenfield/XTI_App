@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 
 namespace XTI_ODataQuery.Api;
 
@@ -15,19 +13,14 @@ public sealed class ODataGroup<TArgs, TEntity> : AppApiGroupWrapper
     )
         : base(source)
     {
-        Get = source.AddQueryAction
-        (
-            nameof(Get),
-            createQuery,
-            access
-        );
-        ToExcel = source.AddQueryToExcelAction
-        (
-            nameof(ToExcel),
-            createQuery,
-            createQueryToExcelBuilder ?? (() => new DefaultQueryToExcelBuilder()),
-            access
-        );
+        Get = source.AddQueryAction<TArgs, TEntity>(nameof(Get))
+            .WithQuery(createQuery)
+            .WithAccess(access ?? source.Access)
+            .Build();
+        ToExcel = source.AddQueryToExcelAction<TArgs, TEntity>(nameof(ToExcel))
+            .WithQuery(createQuery)
+            .WithAccess(access ?? source.Access)
+            .Build();
     }
 
     public QueryApiAction<TArgs, TEntity> Get { get; }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
+using XTI_Core;
+using XTI_TempLog;
 
 namespace XTI_App.Hosting;
 
@@ -11,7 +13,7 @@ public sealed class AppAgenda
     private readonly ImmediateAppAgendaItem[] postStopItems;
     private readonly List<IWorker> workers = new();
     private SessionWorker? sessionWorker;
-    private bool isCurrentVersion;
+    private bool hasAgenda;
 
     internal AppAgenda
     (
@@ -29,12 +31,18 @@ public sealed class AppAgenda
 
     public async Task Start(CancellationToken stoppingToken)
     {
-        var xtiPathAccessor = scope.ServiceProvider.GetRequiredService<ActionRunnerXtiPathAccessor>();
-        var xtiPath = xtiPathAccessor.Value();
-        isCurrentVersion = xtiPath.Version.Equals(AppVersionKey.Current);
-        if (isCurrentVersion)
+        var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
+        hasAgenda = xtiBasePath.VersionKey.Equals(AppVersionKey.Current) &&
+            (preStartItems.Any() || items.Any() || postStopItems.Any());
+        if (hasAgenda)
         {
-            sessionWorker = new SessionWorker(scope.ServiceProvider);
+            var currentSession = scope.ServiceProvider.GetRequiredService<CurrentSession>();
+            var clock = scope.ServiceProvider.GetRequiredService<IClock>();
+            var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
+            var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
+            var tempLogSession = factory.CreateTempLogSession();
+            await tempLogSession.StartSession();
+            sessionWorker = new SessionWorker(currentSession, clock, tempLogSession, tempLogRepo);
             var _ = sessionWorker.StartAsync(stoppingToken);
             var preStartWorker = new ImmediateActionWorker
             (
@@ -46,7 +54,25 @@ public sealed class AppAgenda
             {
                 await Task.Delay(100);
             }
-            StartWorkers(stoppingToken);
+            StartWorkers(scope.ServiceProvider, stoppingToken);
+        }
+    }
+
+    private void StartWorkers(IServiceProvider sp, CancellationToken stoppingToken)
+    {
+        var immediateWorker = new ImmediateActionWorker
+        (
+            sp,
+            items.OfType<ImmediateAppAgendaItem>().ToArray()
+        );
+        immediateWorker.StartAsync(stoppingToken);
+        workers.Add(immediateWorker);
+        var scheduledAppAgendaItems = items.OfType<ScheduledAppAgendaItem>().ToArray();
+        foreach (var scheduledItem in scheduledAppAgendaItems.Where(item => item.IsEnabled))
+        {
+            var worker = new ScheduledActionWorker(sp, scheduledItem);
+            worker.StartAsync(stoppingToken);
+            workers.Add(worker);
         }
     }
 
@@ -54,8 +80,9 @@ public sealed class AppAgenda
 
     public async Task Stop(CancellationToken stoppingToken)
     {
-        if (isCurrentVersion)
+        if (hasAgenda)
         {
+            var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
             foreach (var worker in workers)
             {
                 try
@@ -88,28 +115,12 @@ public sealed class AppAgenda
             {
                 await Task.Delay(100);
             }
-            if(sessionWorker != null)
+            if (sessionWorker != null)
             {
                 await sessionWorker.StopAsync(stoppingToken);
             }
+            await tempLogRepo.WriteToLocalStorage();
         }
     }
 
-    private void StartWorkers(CancellationToken stoppingToken)
-    {
-        var immediateWorker = new ImmediateActionWorker
-        (
-            scope.ServiceProvider,
-            items.OfType<ImmediateAppAgendaItem>().ToArray()
-        );
-        immediateWorker.StartAsync(stoppingToken);
-        workers.Add(immediateWorker);
-        var scheduledAppAgendaItems = items.OfType<ScheduledAppAgendaItem>().ToArray();
-        foreach (var scheduledItem in scheduledAppAgendaItems.Where(item => item.IsEnabled))
-        {
-            var worker = new ScheduledActionWorker(scope.ServiceProvider, scheduledItem);
-            worker.StartAsync(stoppingToken);
-            workers.Add(worker);
-        }
-    }
 }

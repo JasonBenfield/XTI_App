@@ -18,28 +18,22 @@ public static class FakeExtensions
         services.AddXtiDataProtection();
         services.AddSingleton<FakeInstallationIDAccessor>();
         services.AddSingleton<InstallationIDAccessor>(sp => sp.GetRequiredService<FakeInstallationIDAccessor>());
-        services.AddSingleton<IHostEnvironment, FakeHostEnvironment>();
+        services.AddSingleton<FakeModifierKeyAccessor>();
+        services.AddSingleton<IModifierKeyAccessor>(sp => sp.GetRequiredService<FakeModifierKeyAccessor>());
+        services.AddSingleton<FakeHostEnvironment>();
+        services.AddSingleton<IHostEnvironment>(sp => sp.GetRequiredService<FakeHostEnvironment>());
         services.AddSingleton<FakeClock>();
         services.AddSingleton<IClock>(sp => sp.GetRequiredService<FakeClock>());
         services.AddScoped<IAppApiUser, AppApiUser>();
-        services.AddScoped(sp =>
-        {
-            var appKey = sp.GetRequiredService<AppKey>();
-            return new FakeXtiPathAccessor
+        services.AddSingleton(sp => AppVersionKey.Current);
+        services.AddSingleton
+        (
+            sp => new XtiBasePath
             (
-                new XtiPath
-                (
-                    appKey,
-                    AppVersionKey.Current,
-                    new ResourceGroupName("Home"),
-                    new ResourceName("Index"),
-                    ModifierKey.Default
-                )
-            );
-        });
-        services.AddScoped<IXtiPathAccessor>(sp => sp.GetRequiredService<FakeXtiPathAccessor>());
-        services.AddScoped(sp => sp.GetRequiredService<IXtiPathAccessor>().Value());
-        services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
+                sp.GetRequiredService<AppKey>(), 
+                sp.GetRequiredService<AppVersionKey>()
+            )
+        );
         services.AddScoped<IHashedPasswordFactory, FakeHashedPasswordFactory>();
         services.AddSingleton<FakeAppContextFactory>();
         services.AddSingleton
@@ -49,7 +43,7 @@ public static class FakeExtensions
         services.AddSingleton<ISourceAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
         services.AddScoped<CachedAppContext>();
         services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
-        services.AddSingleton(_ => new FakeCurrentUserName());
+        services.AddSingleton<FakeCurrentUserName>();
         services.AddSingleton<ICurrentUserName>(sp => sp.GetRequiredService<FakeCurrentUserName>());
         services.AddSingleton<FakeUserContext>();
         services.AddSingleton<ISourceUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
@@ -57,6 +51,10 @@ public static class FakeExtensions
         services.AddScoped<IUserContext>(sp => sp.GetRequiredService<FakeUserContext>());
         services.AddScoped<ICachedUserContext>(sp => sp.GetRequiredService<CachedUserContext>());
         services.AddScoped<CurrentUserAccess>();
+        services.AddSingleton<FakeError>();
+        services.AddScoped<LogRequestDataAction>();
+        services.AddScoped<LogRequestDataOnErrorAction>();
+        services.AddScoped<LogResultDataAction>();
         services.AddScoped(sp =>
         {
             var factory = sp.GetRequiredService<AppApiFactory>();

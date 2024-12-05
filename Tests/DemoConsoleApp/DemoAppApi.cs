@@ -10,6 +10,7 @@ public sealed class DemoAppApi : ConsoleAppApiWrapper
         (
             new AppApi
             (
+                sp,
                 DemoInfo.AppKey,
                 user,
                 ResourceAccess.AllowAuthenticated(),

@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using XTI_App.Abstractions;
 using XTI_TempLog;
+using XTI_TempLog.Abstractions;
 using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 
@@ -46,7 +47,7 @@ public sealed class BasicAuthenticationHandler : AuthenticationHandler<Authentic
             var cacheKey = $"xti_basicAuth_{auth}";
             if (!cache.TryGetValue<CachedClaims>(cacheKey, out var cachedClaims))
             {
-                cachedClaims = new CachedClaims("", "");
+                cachedClaims = new CachedClaims(new(), "");
                 var creds = BasicAuthenticationCredentials.Parse(auth);
                 if (!string.IsNullOrWhiteSpace(creds.UserName))
                 {
@@ -84,5 +85,5 @@ public sealed class BasicAuthenticationHandler : AuthenticationHandler<Authentic
         return authResult;
     }
 
-    private sealed record CachedClaims(string SessionKey, string UserName);
+    private sealed record CachedClaims(SessionKey SessionKey, string UserName);
 }

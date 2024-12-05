@@ -1,48 +1,78 @@
 ﻿using XTI_App.Abstractions;
-using XTI_Core;
+using XTI_TempLog;
 
 namespace XTI_App.Api;
 
 public sealed class AppApiGroup : IAppApiGroup
 {
-    private readonly ModifierCategoryName modCategory;
-    private readonly IAppApiUser user;
-    private readonly Dictionary<string, IAppApiAction> actions = new();
+    private readonly IServiceProvider sp;
+    private readonly List<IAppApiActionBuilder> actionBuilders = new();
+    private Dictionary<string, IAppApiAction>? actions;
 
     public AppApiGroup
     (
+        IServiceProvider sp,
         XtiPath path,
         ModifierCategoryName modCategory,
         ResourceAccess access,
         IAppApiUser user
     )
     {
+        this.sp = sp;
         Path = path;
-        this.modCategory = modCategory ?? ModifierCategoryName.Default;
-        Access = access ?? ResourceAccess.AllowAuthenticated();
-        this.user = user;
+        ModCategory = modCategory;
+        Access = access;
+        User = user;
     }
 
-    public IAppApiUser User { get => user; }
+    public IAppApiUser User { get; }
+    internal ModifierCategoryName ModCategory { get; }
 
-    public TAppApiAction Action<TAppApiAction>(string actionName) where TAppApiAction : IAppApiAction =>
-        (TAppApiAction)actions[FormatActionKey(actionName)];
+    public bool HasAction(string actionName) =>
+        FetchActionDictionary().ContainsKey(FormatActionKey(actionName));
 
-    public IAppApiAction[] Actions() => actions.Values.ToArray();
+    public TAppApiAction Action<TAppApiAction>(string actionName) 
+        where TAppApiAction : IAppApiAction =>
+        (TAppApiAction)Action(actionName);
+
+    public IAppApiAction Action(string actionName)
+    {
+        var actionKey = FormatActionKey(actionName);
+        var dict = FetchActionDictionary();
+        IAppApiAction action;
+        if (dict.ContainsKey(actionKey))
+        {
+            action = dict[FormatActionKey(actionName)];
+        }
+        else
+        {
+            throw new Exception($"Action '{actionName}' not found in group '{Path.Group.DisplayText}'");
+        }
+        return action;
+    }
+
+    public IAppApiAction[] Actions() => FetchActionDictionary().Values.ToArray();
+
+    private Dictionary<string, IAppApiAction> FetchActionDictionary() =>
+        actions ??= actionBuilders.ToDictionary(ab => FormatActionKey(ab.ActionName), ab => ab.Build());
 
     public XtiPath Path { get; }
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
 
-    public Task<bool> HasAccess() => user.HasAccess(Path);
+    public ScheduledAppAgendaItemOptions[] ActionSchedules() =>
+        Actions()
+            .Select(a => a.Schedule)
+            .Where(s => !s.IsDisabled)
+            .ToArray();
 
     public AppApiGroupTemplate Template()
     {
         var actionTemplates = Actions().Select(a => a.Template());
-        return new AppApiGroupTemplate(Path.Group.DisplayText, modCategory, Access, actionTemplates);
+        return new AppApiGroupTemplate(Path.Group.DisplayText, ModCategory, Access, actionTemplates);
     }
 
-    internal AppRoleName[] RoleNames()
+    public AppRoleName[] RoleNames()
     {
         var roleNames = new List<AppRoleName>();
         roleNames.AddRange(Access.Allowed);
@@ -60,48 +90,51 @@ public sealed class AppApiGroup : IAppApiGroup
         Func<AppActionValidation<TModel>>? createValidation = null,
         ResourceAccess? access = null,
         string friendlyName = ""
-    ) =>
-        (AppApiAction<TModel, TResult>)AddAction
-        (
-            actionName,
-            friendlyName,
-            (addData) =>
-                new AppApiAction<TModel, TResult>
-                (
-                    addData.ActionPath,
-                    access ?? addData.GroupAccess,
-                    addData.User,
-                    createValidation ?? defaultCreateValidation<TModel>(),
-                    createExecution,
-                    addData.FriendlyName
-                )
-        );
+    )
+    {
+        var builder = AddAction<TModel, TResult>(actionName)
+            .WithExecution(createExecution)
+            .WithFriendlyName(friendlyName);
+        if (access != null)
+        {
+            builder.WithAccess(access);
+        }
+        if (createValidation != null)
+        {
+            builder.WithValidation(createValidation);
+        }
+        return builder.Build();
+    }
 
-    public static Func<AppActionValidation<TModel>> defaultCreateValidation<TModel>() =>
-        () => new AppActionValidationNotRequired<TModel>();
+    public AppApiActionBuilder<TModel, TResult> AddAction<TModel, TResult>() =>
+        AddAction<TModel, TResult>("");
 
-    public IAppApiAction AddAction
+    public AppApiActionBuilder<TModel, TResult> AddAction<TModel, TResult>(string actionName)
+    {
+        var action = new AppApiActionBuilder<TModel, TResult>(sp, Path, User, Access);
+        action.Named(actionName);
+        actionBuilders.Add(action);
+        return action;
+    }
+
+    public IAppApiActionBuilder AddAction
     (
         string actionName,
-        string friendlyName,
-        Func<AddActionData, IAppApiAction> createAction
+        Func<AddActionData, IAppApiActionBuilder> createAction
     )
     {
         var path = Path.WithAction(actionName);
-        friendlyName = string.IsNullOrWhiteSpace(friendlyName)
-            ? string.Join(" ", new CamelCasedWord(path.Action.DisplayText).Words())
-            : friendlyName;
         var action = createAction
         (
             new AddActionData
             (
-                ActionPath: path, 
-                GroupAccess: Access, 
-                User: User, 
-                FriendlyName: friendlyName
+                Services: sp,
+                ActionPath: path,
+                GroupAccess: Access,
+                User: User
             )
         );
-        actions.Add(FormatActionKey(action.ActionName), action);
+        actionBuilders.Add(action);
         return action;
     }
 
@@ -109,6 +142,9 @@ public sealed class AppApiGroup : IAppApiGroup
         actionName.ToLower().Replace(" ", "").Replace("_", "");
 
     public override string ToString() => $"{GetType().Name} {Path.Group}";
+
+    public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) =>
+        Actions().Select(a => a.ThrottledLogPath(xtiBasePath)).ToArray();
 }
 
-public sealed record AddActionData(XtiPath ActionPath, ResourceAccess GroupAccess, IAppApiUser User, string FriendlyName);
+public sealed record AddActionData(IServiceProvider Services, XtiPath ActionPath, ResourceAccess GroupAccess, IAppApiUser User);

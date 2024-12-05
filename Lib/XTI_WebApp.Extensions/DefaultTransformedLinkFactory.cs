@@ -8,16 +8,16 @@ namespace XTI_WebApp.Extensions;
 public sealed class DefaultTransformedLinkFactory : ITransformedLinkFactory
 {
     private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly IXtiPathAccessor xtiPathAccessor;
+    private readonly XtiBasePath xtiBasePath;
     private readonly IUserContext userContext;
 
-    public DefaultTransformedLinkFactory(IHttpContextAccessor httpContextAccessor, IXtiPathAccessor xtiPathAccessor, IUserContext userContext)
+    public DefaultTransformedLinkFactory(IHttpContextAccessor httpContextAccessor, XtiBasePath xtiBasePath, IUserContext userContext)
     {
         this.httpContextAccessor = httpContextAccessor;
-        this.xtiPathAccessor = xtiPathAccessor;
+        this.xtiBasePath = xtiBasePath;
         this.userContext = userContext;
     }
 
     public ITransformedLink Create(LinkModel link) => 
-        new DefaultTransformedLink(httpContextAccessor, xtiPathAccessor, userContext, link);
+        new DefaultTransformedLink(httpContextAccessor, xtiBasePath, userContext, link);
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.UriParser;
-using System.Reflection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_TempLog;
 using XTI_WebApp.Api;
 
 namespace XTI_ODataQuery.Api;
@@ -12,6 +12,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
     private readonly IAppApiUser user;
     private readonly Func<QueryAction<TArgs, TEntity>> createQuery;
     private readonly Func<IQueryToExcel> createQueryToExcel;
+    private readonly ThrottledLogXtiPath throttledLogPath;
 
     public QueryToExcelApiAction
     (
@@ -20,7 +21,9 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         IAppApiUser user,
         Func<QueryAction<TArgs, TEntity>> createQuery,
         Func<IQueryToExcel> createQueryToExcel,
-        string friendlyName
+        string friendlyName,
+        ThrottledLogXtiPath throttledLogPath,
+        ScheduledAppAgendaItemOptions schedule
     )
     {
         Path = path;
@@ -29,12 +32,19 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         FriendlyName = friendlyName;
         this.createQueryToExcel = createQueryToExcel;
         this.createQuery = createQuery;
+        this.throttledLogPath = throttledLogPath;
+        Schedule = schedule;
     }
 
     public XtiPath Path { get; }
     public string ActionName { get => Path.Action.DisplayText.Replace(" ", ""); }
     public ResourceAccess Access { get; }
     public string FriendlyName { get; }
+    public ScheduledAppAgendaItemOptions Schedule { get; }
+    public RequestDataLoggingTypes RequestDataLoggingType { get; } = RequestDataLoggingTypes.Never;
+    public bool IsResultDataLoggingEnabled { get; } = false;
+
+    public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
     public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TArgs model, CancellationToken stoppingToken = default)
     {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using XTI_App.Api;
 using XTI_Core;
 
 namespace XTI_App.Hosting;

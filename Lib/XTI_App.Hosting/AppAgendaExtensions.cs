@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using XTI_App.Api;
 using XTI_Core.Extensions;
 
 namespace XTI_App.Hosting;
@@ -18,6 +19,10 @@ public static class AppAgendaExtensions
         services.AddScoped(sp =>
         {
             var builder = new AppAgendaBuilder(sp);
+            var apiFactory = sp.GetRequiredService<AppApiFactory>();
+            var api = apiFactory.CreateForSuperUser();
+            var schedules = api.ActionSchedules();
+            builder.ApplyOptions(schedules);
             build(sp, builder);
             var options = sp.GetRequiredService<AppAgendaOptions>();
             builder.ApplyOptions(options);

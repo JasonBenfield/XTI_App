@@ -4,7 +4,12 @@ namespace XTI_App.Abstractions;
 
 public sealed class ValidationFailedException : AppException
 {
-    public ValidationFailedException(ErrorModel[] errors)
+    public ValidationFailedException(params string[] errors)
+        : this(errors.Select(e => new ErrorModel(e)).ToArray(), null)
+    {
+    }
+
+    public ValidationFailedException(params ErrorModel[] errors)
         : this(errors, null)
     {
     }

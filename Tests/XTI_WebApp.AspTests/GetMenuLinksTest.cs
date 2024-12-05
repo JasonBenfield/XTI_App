@@ -145,18 +145,6 @@ internal sealed class GetMenuLinksTest
         hostBuilder.Services.AddSingleton<IMenuDefinitionBuilder>(sp => sp.GetRequiredService<FakeMenuDefinitionBuilder>());
         hostBuilder.Services.AddSingleton(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
         var sp = hostBuilder.Build().Scope();
-        var pathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
-        pathAccessor.SetPath
-        (
-            new XtiPath
-            (
-                FakeInfo.AppKey,
-                AppVersionKey.Current,
-                new ResourceGroupName(""),
-                new ResourceName(""),
-                ModifierKey.Default
-            )
-        );
         var setup = sp.GetRequiredService<FakeAppSetup>();
         await setup.Run(AppVersionKey.Current);
         var userContext = sp.GetRequiredService<FakeUserContext>();

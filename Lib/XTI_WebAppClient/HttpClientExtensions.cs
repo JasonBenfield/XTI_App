@@ -12,5 +12,10 @@ internal static class HttpClientExtensions
         {
             client.DefaultRequestHeaders.Add(new SourceRequestKeyHeader().Value, requestKey);
         }
+        var sessionKey = options.SessionKey.Value();
+        if (!string.IsNullOrWhiteSpace(sessionKey))
+        {
+            client.DefaultRequestHeaders.Add(new SourceSessionKeyHeader().Value, sessionKey);
+        }
     }
 }

@@ -22,7 +22,7 @@ internal sealed class MainScriptTagHelperTest
     public async Task ShouldOutputScript()
     {
         var sp = await setup();
-        var result = await execute(sp);
+        var result = await Execute(sp);
         Assert.That(result.TagName, Is.EqualTo("script"));
     }
 
@@ -30,7 +30,7 @@ internal sealed class MainScriptTagHelperTest
     public async Task ShouldAddSrcAttribute()
     {
         var sp = await setup();
-        var result = await execute(sp);
+        var result = await Execute(sp);
         Assert.That(result.Attributes.Count, Is.EqualTo(1));
         Assert.That(result.Attributes[0].Name, Is.EqualTo("src"));
     }
@@ -41,7 +41,7 @@ internal sealed class MainScriptTagHelperTest
         var sp = await setup();
         var tagHelper = sp.GetRequiredService<MainScriptTagHelper>();
         tagHelper.PageName = "home";
-        var result = await execute(sp);
+        var result = await Execute(sp);
         var src = result.Attributes[0].Value;
         Assert.That(src, Does.Contain($"/home.js?"));
     }
@@ -51,7 +51,7 @@ internal sealed class MainScriptTagHelperTest
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
         var sp = await setup(cacheBust: "X");
-        var result = await execute(sp);
+        var result = await Execute(sp);
         var src = result.Attributes[0].Value;
         Assert.That(src, Does.EndWith("?cacheBust=X"));
     }
@@ -61,7 +61,7 @@ internal sealed class MainScriptTagHelperTest
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
         var sp = await setup("/Shared/Current/Home/Index");
-        var result = await execute(sp);
+        var result = await Execute(sp);
         var src = result.Attributes[0].Value;
         var cacheBust = await sp.GetRequiredService<CacheBust>().Value();
         Console.WriteLine($"cacheBust: {cacheBust}");
@@ -77,7 +77,7 @@ internal sealed class MainScriptTagHelperTest
     {
         Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", envName);
         var sp = await setup();
-        var result = await execute(sp);
+        var result = await Execute(sp);
         var src = result.Attributes[0].Value;
         Assert.That(src, Does.StartWith($"/js/{expectedPath}/"));
     }
@@ -106,9 +106,6 @@ internal sealed class MainScriptTagHelperTest
         hostBuilder.Services.AddScoped<MainScriptTagHelper>();
         hostBuilder.Services.AddSingleton(_ => XtiEnvironment.Parse(envName));
         var sp = hostBuilder.Build().Scope();
-        var xtiPath = XtiPath.Parse(path);
-        var pathAccessor = (FakeXtiPathAccessor)sp.GetRequiredService<IXtiPathAccessor>();
-        pathAccessor.SetPath(XtiPath.Parse(path));
         var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
         httpContextAccessor.HttpContext = new DefaultHttpContext
         {
@@ -133,7 +130,7 @@ internal sealed class MainScriptTagHelperTest
         return sp;
     }
 
-    private async Task<TagHelperOutput> execute(IServiceProvider sp)
+    private async Task<TagHelperOutput> Execute(IServiceProvider sp)
     {
         var tagHelperContext = new TagHelperContext
         (

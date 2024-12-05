@@ -37,7 +37,7 @@ public sealed class WebAppEnvironmentContext : IAppEnvironmentContext
             var installationID = await installationIDAccessor.Value();
             value = new AppEnvironment
             (
-                user.Value,
+                user.IsAnon() ? "" : user.Value,
                 requesterKey,
                 remoteAddress,
                 userAgent,

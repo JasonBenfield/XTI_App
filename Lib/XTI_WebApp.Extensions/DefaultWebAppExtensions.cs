@@ -75,7 +75,6 @@ public static class DefaultWebAppExtensions
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();
-        services.AddScoped(sp => sp.GetRequiredService<XtiPath>().Version);
         services.AddScoped(sp =>
         {
             var xtiFolder = sp.GetRequiredService<XtiFolder>();
@@ -91,7 +90,8 @@ public static class DefaultWebAppExtensions
             var options = sp.GetRequiredService<DefaultWebAppOptions>();
             return new AnonClient(dataProtector, httpContextAccessor, options);
         });
-        services.AddScoped<IXtiPathAccessor, WebXtiPathAccessor>();
+        services.AddScoped<WebXtiPathAccessor>();
+        services.AddScoped<IModifierKeyAccessor, WebModifierKeyAccessor>();
         services.AddSingleton<ISystemUserCredentials, SystemUserCredentials>();
         services.AddSingleton<SystemCurrentUserName>();
         services.AddScoped<ICurrentUserName, WebCurrentUserName>();

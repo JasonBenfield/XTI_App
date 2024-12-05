@@ -24,8 +24,8 @@ public sealed class WebActionRunnerFactory : IActionRunnerFactory
         var appContext = services.GetRequiredService<IAppContext>();
         var systemCurrentUserName = services.GetRequiredService<SystemCurrentUserName>();
         var currentUserAccess = new CurrentUserAccess(userContext, appContext, systemCurrentUserName);
-        var pathAccessor = services.GetRequiredService<ActionRunnerXtiPathAccessor>();
-        var apiUser = new AppApiUser(currentUserAccess, pathAccessor);
+        var modKeyAccessor = services.GetRequiredService<DefaultModifierKeyAccessor>();
+        var apiUser = new AppApiUser(currentUserAccess, modKeyAccessor);
         return apiFactory.Create(apiUser);
     }
 
@@ -43,4 +43,8 @@ public sealed class WebActionRunnerFactory : IActionRunnerFactory
         var throttleLogs = services.GetRequiredService<ThrottledLogs>();
         return new TempLogSession(tempLogRepo, appEnvContext, currentSession ?? new CurrentSession(), clock, throttleLogs);
     }
+
+    public TempLogRepository CreateTempLogRepository() =>
+        services.GetRequiredService<TempLogRepository>();
+
 }

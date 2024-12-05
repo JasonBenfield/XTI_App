@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XTI_App.Api;
 using XTI_App.Fakes;
+using XTI_Core.Extensions;
 
 namespace XTI_App.Tests;
 
@@ -14,7 +10,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldNotHaveFileUploads_WhenNoFileUploadsAreRequested()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -26,7 +23,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldHaveFileUploads_WhenFileUploadIsTheRequest()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -38,7 +36,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldHaveFileUploads_WhenFileUploadArrayIsTheRequest()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -50,7 +49,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldHaveFileUploads_WhenFileUploadIsThePropertyOfAnObject()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -62,7 +62,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldHaveFileUpload_WhenFileUploadArrayIsThePropertyOfAnObject()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -74,7 +75,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldHaveFileUploads_WhenFileUploadIsThePropertyOfANestedObject()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -86,7 +88,8 @@ internal sealed class FileUploadTemplateTest
     [Test]
     public void ShouldHaveFileUploads_WhenFileUploadArrayIsThePropertyOfANestedObject()
     {
-        var template = CreateFileUploadTemplate();
+        var sp = new XtiHostBuilder().Build().Scope();
+        var template = CreateFileUploadTemplate(sp);
         var actionTemplate = template.GroupTemplates
             .First(gt => gt.Name == "Group1")
             .ActionTemplates
@@ -95,9 +98,9 @@ internal sealed class FileUploadTemplateTest
         Assert.That(hasFileUploads, Is.True);
     }
 
-    private static AppApiTemplate CreateFileUploadTemplate()
+    private static AppApiTemplate CreateFileUploadTemplate(IServiceProvider sp)
     {
-        var api = new AppApi(FakeInfo.AppKey, new AppApiSuperUser(), ResourceAccess.AllowAuthenticated(), "");
+        var api = new AppApi(sp, FakeInfo.AppKey, new AppApiSuperUser(), ResourceAccess.AllowAuthenticated(), "");
         var group1 = api.AddGroup("Group1");
         group1.AddAction
         (
@@ -145,7 +148,7 @@ internal sealed class FileUploadTemplateTest
 
     private sealed class FileUploadArrayRequest
     {
-        public IFormFile[] Files { get; set; } = new IFormFile[0];
+        public IFormFile[] Files { get; set; } = [];
     }
 
     private sealed class FileUploadSecondLevelRequest
@@ -155,7 +158,7 @@ internal sealed class FileUploadTemplateTest
 
     private sealed class FileUploadArraySecondLevelRequest
     {
-        public IFormFile[] Files { get; set; } = new IFormFile[0];
+        public IFormFile[] Files { get; set; } = [];
     }
 
     private sealed class NoFileUploadRequest
