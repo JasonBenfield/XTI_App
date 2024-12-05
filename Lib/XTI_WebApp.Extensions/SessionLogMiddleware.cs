@@ -83,6 +83,10 @@ public sealed class SessionLogMiddleware
             requestDataLoggingType = action.RequestDataLoggingType;
             isResultDataLoggingEnabled = action.IsResultDataLoggingEnabled;
         }
+        if(requestDataLoggingType != RequestDataLoggingTypes.Never)
+        {
+            context.Request.EnableBuffering();
+        }
         try
         {
             var originalResponseBody = context.Response.Body;
