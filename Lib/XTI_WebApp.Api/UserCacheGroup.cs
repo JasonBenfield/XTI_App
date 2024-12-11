@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using XTI_App.Abstractions;
 using XTI_App.Api;
 
 namespace XTI_WebApp.Api;
@@ -8,14 +7,16 @@ public sealed class UserCacheGroup : AppApiGroupWrapper
 {
     public UserCacheGroup(AppApiGroup source, IServiceProvider sp) : base(source)
     {
-        ClearCache = source.AddAction
-        (
-            nameof(ClearCache),
-            () => new ClearCacheAction
+        ClearCache = source.AddAction<string, EmptyActionResult>()
+            .Named(nameof(ClearCache))
+            .WithExecution
             (
-                sp.GetRequiredService<ICachedUserContext>()
+                () => new ClearCacheAction
+                (
+                    sp.GetRequiredService<ICachedUserContext>()
+                )
             )
-        );
+            .Build();
     }
 
     public AppApiAction<string, EmptyActionResult> ClearCache { get; }

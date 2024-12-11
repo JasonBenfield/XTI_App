@@ -11,7 +11,7 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
     private readonly ActionThrottledLogPathBuilder<AppApiActionBuilder<TModel, TResult>> throttledLogPathBuilder;
     private ActionScheduleBuilder<AppApiActionBuilder<TModel, TResult>> schedule;
     private string friendlyName = "";
-    private ResourceAccess access;
+    private readonly ResourceAccessBuilder accessBuilder;
     private Func<AppActionValidation<TModel>> createValidation;
     private Func<AppAction<TModel, TResult>> createExecution;
     private AppApiAction<TModel, TResult>? builtAction;
@@ -23,13 +23,13 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         IServiceProvider sp,
         XtiPath groupPath,
         IAppApiUser user,
-        ResourceAccess access
+        ResourceAccessBuilder groupAccessBuilder
     )
     {
         this.sp = sp;
         this.groupPath = groupPath;
         this.user = user;
-        this.access = access;
+        accessBuilder = new ResourceAccessBuilder(groupAccessBuilder);
         schedule = new(this);
         throttledLogPathBuilder = new(this);
         createValidation = defaultValidation;
@@ -53,21 +53,39 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         return this;
     }
 
-    public AppApiActionBuilder<TModel, TResult> WithAccess(ResourceAccess access)
+    public AppApiActionBuilder<TModel, TResult> AllowAnonymousAccess()
     {
-        this.access = access;
+        accessBuilder.AllowAnonymous();
+        return this;
+    }
+
+    public AppApiActionBuilder<TModel, TResult> ResetAccess()
+    {
+        accessBuilder.Reset();
+        return this;
+    }
+
+    public AppApiActionBuilder<TModel, TResult> ResetAccess(ResourceAccess access)
+    {
+        accessBuilder.Reset(access);
+        return this;
+    }
+
+    public AppApiActionBuilder<TModel, TResult> ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.Reset(roleNames);
         return this;
     }
 
     public AppApiActionBuilder<TModel, TResult> WithAllowed(params AppRoleName[] roleNames)
     {
-        access = access.WithAllowed(roleNames);
+        accessBuilder.WithAllowed(roleNames);
         return this;
     }
 
     public AppApiActionBuilder<TModel, TResult> WithoutAllowed(params AppRoleName[] roleNames)
     {
-        access = access.WithoutAllowed(roleNames);
+        accessBuilder.WithoutAllowed(roleNames);
         return this;
     }
 
@@ -145,7 +163,7 @@ public sealed class AppApiActionBuilder<TModel, TResult> : IAppApiActionBuilder
         return new AppApiAction<TModel, TResult>
         (
             actionPath,
-            access,
+            accessBuilder.Build(),
             user,
             createValidation,
             createExecution,

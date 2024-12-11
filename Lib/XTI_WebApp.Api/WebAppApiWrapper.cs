@@ -1,5 +1,4 @@
 ﻿using XTI_App.Api;
-using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -33,17 +32,4 @@ public class WebAppApiWrapper : AppApiWrapper
 
     public UserGroup User { get; }
     public UserCacheGroup UserCache { get; }
-
-    protected override void ConfigureTemplate(AppApiTemplate template)
-    {
-        base.ConfigureTemplate(template);
-        template.ExcludeValueTemplates(IsValueTemplateExcluded);
-    }
-
-    private static bool IsValueTemplateExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator) =>
-        templ.DataType == typeof(EmptyRequest) || 
-        templ.DataType == typeof(EmptyActionResult) || 
-        templ.DataType == typeof(LogoutRequest) || 
-        templ.DataType == typeof(ResourcePath) || 
-        templ.DataType == typeof(ResourcePathAccess);
 }

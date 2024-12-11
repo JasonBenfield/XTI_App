@@ -10,11 +10,14 @@ public class AppApiWrapper : IAppApi
     public AppApiWrapper(AppApi source)
     {
         this.source = source;
+        Path = source.Path;
+        AppKey = source.AppKey;
+        Access = source.Access;
     }
 
-    public XtiPath Path { get => source.Path; }
-    public AppKey AppKey { get => source.AppKey; }
-    public ResourceAccess Access { get => source.Access; }
+    public XtiPath Path { get; }
+    public AppKey AppKey { get; }
+    public ResourceAccess Access { get; }
     public IAppApiGroup Group(string groupName) => source.Group(groupName);
     public IAppApiGroup[] Groups() => source.Groups();
 
@@ -32,9 +35,16 @@ public class AppApiWrapper : IAppApi
                 if (codeGen == ApiCodeGenerators.Dotnet)
                 {
                     var ns = valueTemplate.DataType.Namespace ?? "";
-                    return ns.StartsWith("XTI_App.Abstractions") || ns.StartsWith("XTI_Core");
+                    return ns.StartsWith("XTI_App.Abstractions") ||
+                        ns.StartsWith("XTI_WebApp.Abstractions") ||
+                        ns.StartsWith("XTI_Core");
                 }
-                return false;
+                var name = valueTemplate.DataType.Name ?? "";
+                return name.Equals("EmptyRequest") ||
+                    name.Equals("EmptyActionResult") ||
+                    name.Equals("LogoutRequest") ||
+                    name.Equals("ResourcePath") ||
+                    name.Equals("ResourcePathAccess");
             }
         );
         ConfigureTemplate(template);

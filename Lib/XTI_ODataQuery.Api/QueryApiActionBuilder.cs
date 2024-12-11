@@ -1,9 +1,6 @@
-﻿using DocumentFormat.OpenXml.EMMA;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
-using XTI_Schedule;
-using XTI_TempLog;
 
 namespace XTI_ODataQuery.Api;
 
@@ -14,7 +11,7 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
     private readonly IAppApiUser user;
     private string friendlyName = "";
     private readonly ActionThrottledLogPathBuilder<QueryApiActionBuilder<TArgs, TEntity>> throttledLogPathBuilder;
-    private ResourceAccess access;
+    private ResourceAccessBuilder accessBuilder;
     private Func<QueryAction<TArgs, TEntity>> createQuery;
     private QueryApiAction<TArgs, TEntity>? builtAction;
 
@@ -23,14 +20,14 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
         IServiceProvider sp,
         XtiPath groupPath,
         IAppApiUser user,
-        ResourceAccess access,
+        ResourceAccessBuilder groupAccessBuilder,
         string actionName
     )
     {
         this.sp = sp;
         this.groupPath = groupPath;
         this.user = user;
-        this.access = access;
+        accessBuilder = new ResourceAccessBuilder(groupAccessBuilder);
         throttledLogPathBuilder = new(this);
         ActionName = actionName;
         createQuery = () => new EmptyQueryAction<TArgs, TEntity>();
@@ -44,21 +41,39 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> WithAccess(ResourceAccess access)
+    public QueryApiActionBuilder<TArgs, TEntity> AllowAnonymousAccess()
     {
-        this.access = access;
+        accessBuilder.AllowAnonymous();
+        return this;
+    }
+
+    public QueryApiActionBuilder<TArgs, TEntity> ResetAccess()
+    {
+        accessBuilder.Reset();
+        return this;
+    }
+
+    public QueryApiActionBuilder<TArgs, TEntity> ResetAccess(ResourceAccess access)
+    {
+        accessBuilder.Reset(access);
+        return this;
+    }
+
+    public QueryApiActionBuilder<TArgs, TEntity> ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.Reset(roleNames);
         return this;
     }
 
     public QueryApiActionBuilder<TArgs, TEntity> WithAllowed(params AppRoleName[] roleNames)
     {
-        access = access.WithAllowed(roleNames);
+        accessBuilder.WithAllowed(roleNames);
         return this;
     }
 
     public QueryApiActionBuilder<TArgs, TEntity> WithoutAllowed(params AppRoleName[] roleNames)
     {
-        access = access.WithoutAllowed(roleNames);
+        accessBuilder.WithoutAllowed(roleNames);
         return this;
     }
 
@@ -95,7 +110,7 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
         return new QueryApiAction<TArgs, TEntity>
         (
             actionPath,
-            access,
+            accessBuilder.Build(),
             user,
             createQuery,
             new AppActionFriendlyName(friendlyName, ActionName).Value,

@@ -100,7 +100,7 @@ internal sealed class FileUploadTemplateTest
 
     private static AppApiTemplate CreateFileUploadTemplate(IServiceProvider sp)
     {
-        var api = new AppApi(sp, FakeInfo.AppKey, new AppApiSuperUser(), ResourceAccess.AllowAuthenticated(), "");
+        var api = new AppApi(sp, FakeInfo.AppKey, new AppApiSuperUser());
         var group1 = api.AddGroup("Group1");
         group1.AddAction
         (
