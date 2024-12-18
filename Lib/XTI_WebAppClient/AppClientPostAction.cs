@@ -7,7 +7,7 @@ using XTI_Forms;
 
 namespace XTI_WebAppClient;
 
-public sealed class AppClientPostAction<TModel, TResult>
+public sealed class AppClientPostAction<TRequest, TResult>
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
@@ -29,14 +29,14 @@ public sealed class AppClientPostAction<TModel, TResult>
 
     public Task<string> Url(string modifier) => _Url(default, modifier);
 
-    public Task<string> Url(TModel model) => Url(model, "");
+    public Task<string> Url(TRequest requestData) => Url(requestData, "");
 
-    public Task<string> Url(TModel model, string modifier) => _Url(model, modifier);
+    public Task<string> Url(TRequest requestData, string modifier) => _Url(requestData, modifier);
 
-    private async Task<string> _Url(TModel? model, string modifier)
+    private async Task<string> _Url(TRequest? requestData, string modifier)
     {
         var url = await clientUrl.Value(actionName, modifier);
-        var query = new ObjectToQueryString(model).Value;
+        var query = new ObjectToQueryString(requestData).Value;
         if (!string.IsNullOrWhiteSpace(query))
         {
             query = $"?{query}";
@@ -44,12 +44,12 @@ public sealed class AppClientPostAction<TModel, TResult>
         return $"{url}{query}";
     }
 
-    public Task<TResult> Post(string modifier, TModel model, CancellationToken ct) =>
-        _Post(modifier, model, true, ct);
+    public Task<TResult> Post(string modifier, TRequest requestData, CancellationToken ct) =>
+        _Post(modifier, requestData, true, ct);
 
-    private async Task<TResult> _Post(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
+    private async Task<TResult> _Post(string modifier, TRequest requestData, bool retryUnauthorized, CancellationToken ct)
     {
-        var postResult = await GetPostResponse(modifier, model, ct);
+        var postResult = await GetPostResponse(modifier, requestData, ct);
         TResult result;
         try
         {
@@ -65,7 +65,7 @@ public sealed class AppClientPostAction<TModel, TResult>
             else if (postResult.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                result = await _Post(modifier, model, false, ct);
+                result = await _Post(modifier, requestData, false, ct);
             }
             else
             {
@@ -79,10 +79,10 @@ public sealed class AppClientPostAction<TModel, TResult>
         return result;
     }
 
-    private async Task<PostResult> GetPostResponse(string modifier, object? model, CancellationToken ct)
+    private async Task<PostResult> GetPostResponse(string modifier, object? requestData, CancellationToken ct)
     {
         PostResult postResult;
-        var response = await GetPostResponseMessage(modifier, model, ct);
+        var response = await GetPostResponseMessage(modifier, requestData, ct);
         try
         {
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -102,7 +102,7 @@ public sealed class AppClientPostAction<TModel, TResult>
         return postResult;
     }
 
-    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model, CancellationToken ct)
+    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? requestData, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
         client.InitFromOptions(options);
@@ -115,22 +115,22 @@ public sealed class AppClientPostAction<TModel, TResult>
             }
         }
         var url = await clientUrl.Value(actionName, modifier);
-        if (model == null) { throw new ArgumentNullException(nameof(model)); }
-        object transformedModel = model;
-        if (model is Form form)
+        if (requestData == null) { throw new ArgumentNullException(nameof(requestData)); }
+        object transformedModel = requestData;
+        if (requestData is Form form)
         {
             transformedModel = form.Export();
         }
         HttpContent content;
         if (!cachedHasFiles.HasValue)
         {
-            cachedHasFiles = HasFiles(typeof(TModel));
+            cachedHasFiles = HasFiles(typeof(TRequest));
         }
         if (cachedHasFiles == true)
         {
             var multiContent = new MultipartFormDataContent();
             var files = new Dictionary<string, FileUpload>();
-            GetFiles(files, "", model);
+            GetFiles(files, "", requestData);
             foreach (var key in files.Keys)
             {
                 var file = files[key];
@@ -145,7 +145,7 @@ public sealed class AppClientPostAction<TModel, TResult>
                 }
             }
             var formData = new Dictionary<string, string>();
-            GetFormData(formData, "", model);
+            GetFormData(formData, "", requestData);
             foreach (var key in formData.Keys)
             {
                 var value = formData[key];

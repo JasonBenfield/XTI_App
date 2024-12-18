@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using XTI_App.Api;
 using XTI_Core.Extensions;
 
@@ -10,15 +11,16 @@ public static class AppAgendaExtensions
     {
         services.AddConfigurationOptions<AppAgendaOptions>(AppAgendaOptions.AppAgenda);
         var serviceDescriptors = services
-            .Where(s => s.ServiceType == typeof(AppAgendaBuilder))
+            .Where(s => s.ServiceType == typeof(AppAgenda))
             .ToArray();
         foreach (var serviceDescriptor in serviceDescriptors)
         {
             services.Remove(serviceDescriptor);
         }
+        services.TryAddScoped<AppAgendaBuilder>();
         services.AddScoped(sp =>
         {
-            var builder = new AppAgendaBuilder(sp);
+            var builder = sp.GetRequiredService<AppAgendaBuilder>();
             var apiFactory = sp.GetRequiredService<AppApiFactory>();
             var api = apiFactory.CreateForSuperUser();
             var schedules = api.ActionSchedules();

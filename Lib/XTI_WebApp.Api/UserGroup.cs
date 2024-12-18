@@ -1,34 +1,32 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using XTI_App.Abstractions;
-using XTI_App.Api;
+﻿using XTI_App.Api;
 using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
 public sealed class UserGroup : AppApiGroupWrapper
 {
-    public UserGroup(AppApiGroup source, IServiceProvider sp) : base(source)
+    public UserGroup(AppApiGroup source) : base(source)
     {
-        GetUserAccess = source.AddAction
-        (
-            nameof(GetUserAccess),
-            () => sp.GetRequiredService<GetUserAccessAction>()
-        );
-        UserProfile = source.AddAction
-        (
-            nameof(UserProfile),
-            () => sp.GetRequiredService<UserProfileAction>()
-        );
-        GetMenuLinks = source.AddAction
-        (
-            nameof(GetMenuLinks),
-            () => sp.GetRequiredService<GetMenuLinksAction>()
-        );
-        Logout = source.AddAction
-        (
-            nameof(Logout),
-            () => sp.GetRequiredService<LogoutAction>()
-        );
+        GetUserAccess = source.AddAction<ResourcePath[], ResourcePathAccess[]>()
+            .Named(nameof(GetUserAccess))
+            .WithExecution<GetUserAccessAction>()
+            .ThrottleRequestLogging().ForOneHour()
+            .ThrottleExceptionLogging().For(5).Minutes()
+            .Build();
+        UserProfile = source.AddAction<EmptyRequest, WebRedirectResult>()
+            .Named(nameof(UserProfile))
+            .WithExecution<UserProfileAction>()
+            .Build();
+        GetMenuLinks = source.AddAction<string, LinkModel[]>()
+            .Named(nameof(GetMenuLinks))
+            .WithExecution<GetMenuLinksAction>()
+            .ThrottleRequestLogging().ForOneHour()
+            .ThrottleExceptionLogging().For(5).Minutes()
+            .Build();
+        Logout = source.AddAction<LogoutRequest, WebRedirectResult>()
+            .Named(nameof(Logout))
+            .WithExecution<LogoutAction>()
+            .Build();
     }
 
     public AppApiAction<ResourcePath[], ResourcePathAccess[]> GetUserAccess { get; }

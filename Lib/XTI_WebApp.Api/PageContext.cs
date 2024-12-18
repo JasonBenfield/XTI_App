@@ -34,7 +34,7 @@ public sealed class PageContext : IPageContext
     public string AppTitle { get; private set; } = "";
     public string PageTitle { get; set; } = "";
     public string PageName { get; set; } = "";
-    public AppVersionDomain[] WebAppDomains { get; private set; } = new AppVersionDomain[0];
+    public AppVersionDomain[] WebAppDomains { get; private set; } = [];
 
     public async Task<string> Serialize()
     {

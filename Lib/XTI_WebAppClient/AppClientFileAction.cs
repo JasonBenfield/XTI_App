@@ -5,7 +5,7 @@ using XTI_Forms;
 
 namespace XTI_WebAppClient;
 
-public sealed class AppClientFileAction<TModel>
+public sealed class AppClientFileAction<TRequest>
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
@@ -26,14 +26,14 @@ public sealed class AppClientFileAction<TModel>
 
     public Task<string> Url(string modifier) => _Url(default, modifier);
 
-    public Task<string> Url(TModel model) => Url(model, "");
+    public Task<string> Url(TRequest requestData) => Url(requestData, "");
 
-    public Task<string> Url(TModel model, string modifier) => _Url(model, modifier);
+    public Task<string> Url(TRequest requestData, string modifier) => _Url(requestData, modifier);
 
-    private async Task<string> _Url(TModel? model, string modifier)
+    private async Task<string> _Url(TRequest? requestData, string modifier)
     {
         var url = await clientUrl.Value(actionName, modifier);
-        var query = new ObjectToQueryString(model).Value;
+        var query = new ObjectToQueryString(requestData).Value;
         if (!string.IsNullOrWhiteSpace(query))
         {
             query = $"?{query}";
@@ -41,10 +41,10 @@ public sealed class AppClientFileAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<AppClientFileResult> GetFile(string modifier, TModel model, CancellationToken ct)
-        => _GetFile(modifier, model, true, ct);
+    public Task<AppClientFileResult> GetFile(string modifier, TRequest requestData, CancellationToken ct)
+        => _GetFile(modifier, requestData, true, ct);
 
-    private async Task<AppClientFileResult> _GetFile(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
+    private async Task<AppClientFileResult> _GetFile(string modifier, TRequest requestData, bool retryUnauthorized, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
         client.InitFromOptions(options);
@@ -57,9 +57,9 @@ public sealed class AppClientFileAction<TModel>
             }
         }
         var url = await clientUrl.Value(actionName, modifier);
-        if (model == null) { throw new ArgumentNullException(nameof(model)); }
-        object transformedModel = model;
-        if (model is Form form)
+        if (requestData == null) { throw new ArgumentNullException(nameof(requestData)); }
+        object transformedModel = requestData;
+        if (requestData is Form form)
         {
             transformedModel = form.Export();
         }
@@ -89,7 +89,7 @@ public sealed class AppClientFileAction<TModel>
         else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
         {
             xtiTokenAccessor.Reset();
-            result = await _GetFile(modifier, model, false, ct);
+            result = await _GetFile(modifier, requestData, false, ct);
         }
         else
         {
@@ -100,7 +100,7 @@ public sealed class AppClientFileAction<TModel>
                 "",
                 "",
                 AppEventSeverity.Values.CriticalError,
-                new ErrorModel[0]
+                []
             );
         }
         return result;

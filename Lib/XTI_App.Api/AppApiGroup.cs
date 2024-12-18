@@ -3,35 +3,42 @@ using XTI_TempLog;
 
 namespace XTI_App.Api;
 
-public sealed class AppApiGroup : IAppApiGroup
+public sealed class AppApiGroup
 {
     private readonly IServiceProvider sp;
     private readonly List<IAppApiActionBuilder> actionBuilders = new();
     private Dictionary<string, IAppApiAction>? actions;
+    private readonly ResourceAccessBuilder accessBuilder;
 
     public AppApiGroup
     (
         IServiceProvider sp,
         XtiPath path,
         ModifierCategoryName modCategory,
-        ResourceAccess access,
+        ResourceAccessBuilder appAccessBuilder,
         IAppApiUser user
     )
     {
         this.sp = sp;
         Path = path;
         ModCategory = modCategory;
-        Access = access;
+        accessBuilder = new ResourceAccessBuilder(appAccessBuilder);
         User = user;
     }
 
-    public IAppApiUser User { get; }
-    internal ModifierCategoryName ModCategory { get; }
+    private IAppApiUser User { get; }
+    private ModifierCategoryName ModCategory { get; set; }
+
+    public AppApiGroup WithModCategory(ModifierCategoryName modCategory)
+    {
+        ModCategory = modCategory;
+        return this;
+    }
 
     public bool HasAction(string actionName) =>
         FetchActionDictionary().ContainsKey(FormatActionKey(actionName));
 
-    public TAppApiAction Action<TAppApiAction>(string actionName) 
+    public TAppApiAction Action<TAppApiAction>(string actionName)
         where TAppApiAction : IAppApiAction =>
         (TAppApiAction)Action(actionName);
 
@@ -58,7 +65,43 @@ public sealed class AppApiGroup : IAppApiGroup
 
     public XtiPath Path { get; }
     public string GroupName { get => Path.Group.DisplayText.Replace(" ", ""); }
-    public ResourceAccess Access { get; }
+    internal ResourceAccess Access { get => accessBuilder.Build(); }
+
+    public AppApiGroup AllowAnonymousAccess()
+    {
+        accessBuilder.AllowAnonymous();
+        return this;
+    }
+
+    public AppApiGroup ResetAccess()
+    {
+        accessBuilder.Reset();
+        return this;
+    }
+
+    public AppApiGroup ResetAccess(ResourceAccess access)
+    {
+        accessBuilder.Reset(access);
+        return this;
+    }
+
+    public AppApiGroup ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.Reset(roleNames);
+        return this;
+    }
+
+    public AppApiGroup WithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.WithAllowed(roleNames);
+        return this;
+    }
+
+    public AppApiGroup WithoutAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.WithoutAllowed(roleNames);
+        return this;
+    }
 
     public ScheduledAppAgendaItemOptions[] ActionSchedules() =>
         Actions()
@@ -97,7 +140,7 @@ public sealed class AppApiGroup : IAppApiGroup
             .WithFriendlyName(friendlyName);
         if (access != null)
         {
-            builder.WithAccess(access);
+            builder.ResetAccess(access);
         }
         if (createValidation != null)
         {
@@ -111,7 +154,7 @@ public sealed class AppApiGroup : IAppApiGroup
 
     public AppApiActionBuilder<TModel, TResult> AddAction<TModel, TResult>(string actionName)
     {
-        var action = new AppApiActionBuilder<TModel, TResult>(sp, Path, User, Access);
+        var action = new AppApiActionBuilder<TModel, TResult>(sp, Path, User, accessBuilder);
         action.Named(actionName);
         actionBuilders.Add(action);
         return action;
@@ -130,7 +173,7 @@ public sealed class AppApiGroup : IAppApiGroup
             (
                 Services: sp,
                 ActionPath: path,
-                GroupAccess: Access,
+                GroupAccessBuilder: accessBuilder,
                 User: User
             )
         );
@@ -147,4 +190,4 @@ public sealed class AppApiGroup : IAppApiGroup
         Actions().Select(a => a.ThrottledLogPath(xtiBasePath)).ToArray();
 }
 
-public sealed record AddActionData(IServiceProvider Services, XtiPath ActionPath, ResourceAccess GroupAccess, IAppApiUser User);
+public sealed record AddActionData(IServiceProvider Services, XtiPath ActionPath, ResourceAccessBuilder GroupAccessBuilder, IAppApiUser User);

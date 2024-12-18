@@ -7,10 +7,10 @@ using XTI_WebApp.Api;
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
+public sealed class QueryToExcelApiAction<TRequest, TEntity> : IAppApiAction
 {
     private readonly IAppApiUser user;
-    private readonly Func<QueryAction<TArgs, TEntity>> createQuery;
+    private readonly Func<QueryAction<TRequest, TEntity>> createQuery;
     private readonly Func<IQueryToExcel> createQueryToExcel;
     private readonly ThrottledLogXtiPath throttledLogPath;
 
@@ -19,7 +19,7 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
         XtiPath path,
         ResourceAccess access,
         IAppApiUser user,
-        Func<QueryAction<TArgs, TEntity>> createQuery,
+        Func<QueryAction<TRequest, TEntity>> createQuery,
         Func<IQueryToExcel> createQueryToExcel,
         string friendlyName,
         ThrottledLogXtiPath throttledLogPath,
@@ -46,11 +46,11 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
 
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
-    public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TArgs model, CancellationToken stoppingToken = default)
+    public async Task<WebFileResult> Execute(ODataQueryOptions<TEntity> options, TRequest requestData, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
-        var result = await queryAction.Execute(options, model);
+        var result = await queryAction.Execute(options, requestData);
         if(options.Filter != null)
         {
             result = options.Filter.ApplyTo(result, new ODataQuerySettings()) as IQueryable<TEntity>;
@@ -109,14 +109,14 @@ public sealed class QueryToExcelApiAction<TArgs, TEntity> : IAppApiAction
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(TArgs)).Template();
+        var requestTemplate = new ValueTemplateFromType(typeof(TRequest)).Template();
         var resultTemplate = new EmptyValueTemplate();
         return new AppApiActionTemplate
         (
             Path.Action.DisplayText,
             FriendlyName,
             Access,
-            modelTemplate,
+            requestTemplate,
             resultTemplate,
             ResourceResultType.Values.QueryToExcel
         );

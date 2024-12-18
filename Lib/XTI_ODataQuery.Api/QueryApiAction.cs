@@ -6,10 +6,10 @@ using XTI_TempLog;
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
+public sealed class QueryApiAction<TRequest, TEntity> : IAppApiAction
 {
     private readonly IAppApiUser user;
-    private readonly Func<QueryAction<TModel, TEntity>> createQuery;
+    private readonly Func<QueryAction<TRequest, TEntity>> createQuery;
     private readonly ThrottledLogXtiPath throttledLogPath;
 
     public QueryApiAction
@@ -17,7 +17,7 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
         XtiPath path,
         ResourceAccess access,
         IAppApiUser user,
-        Func<QueryAction<TModel, TEntity>> createQuery,
+        Func<QueryAction<TRequest, TEntity>> createQuery,
         string friendlyName,
         ThrottledLogXtiPath throttledLogPath,
         ScheduledAppAgendaItemOptions schedule
@@ -45,24 +45,24 @@ public sealed class QueryApiAction<TModel, TEntity> : IAppApiAction
 
     public ThrottledLogPath ThrottledLogPath(XtiBasePath xtiBasePath) => throttledLogPath.Value(xtiBasePath);
 
-    public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TModel model, CancellationToken stoppingToken = default)
+    public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TRequest requestData, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Path);
         var queryAction = createQuery();
-        var queryable = await queryAction.Execute(options, model);
+        var queryable = await queryAction.Execute(options, requestData);
         return queryable;
     }
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(TModel)).Template();
+        var requestTemplate = new ValueTemplateFromType(typeof(TRequest)).Template();
         var resultTemplate = new QueryableValueTemplate(typeof(IQueryable<TEntity>));
         return new AppApiActionTemplate
         (
             Path.Action.DisplayText, 
             FriendlyName, 
             Access, 
-            modelTemplate, 
+            requestTemplate, 
             resultTemplate
         );
     }

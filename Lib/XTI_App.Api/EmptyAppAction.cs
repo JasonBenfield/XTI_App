@@ -1,4 +1,19 @@
-﻿namespace XTI_App.Api;
+﻿using XTI_App.Abstractions;
+
+namespace XTI_App.Api;
+
+public static class EmptyAppAction
+{
+    public static EmptyAppAction<TRequest, EmptyActionResult> Create<TRequest>() =>
+        Create<TRequest, EmptyActionResult>();
+
+    public static EmptyAppAction<TRequest, TResult> Create<TRequest, TResult>()
+        where TResult : new() =>
+        Create<TRequest, TResult>(() => new TResult());
+
+    public static EmptyAppAction<TRequest, TResult> Create<TRequest, TResult>(Func<TResult> createDefault) =>
+        new EmptyAppAction<TRequest, TResult>(createDefault);
+}
 
 public sealed class EmptyAppAction<TModel, TResult> : AppAction<TModel, TResult>
 {
@@ -9,6 +24,6 @@ public sealed class EmptyAppAction<TModel, TResult> : AppAction<TModel, TResult>
         this.createDefault = createDefault;
     }
 
-    public Task<TResult> Execute(TModel model, CancellationToken stoppingToken) => 
+    public Task<TResult> Execute(TModel model, CancellationToken stoppingToken) =>
         Task.FromResult(createDefault());
 }

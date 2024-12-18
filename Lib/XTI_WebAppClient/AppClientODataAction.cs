@@ -27,14 +27,14 @@ public sealed class AppClientODataAction<TArgs, TEntity>
 
     public Task<string> Url(string modifier) => _Url(default, modifier);
 
-    public Task<string> Url(TArgs model) => Url(model, "");
+    public Task<string> Url(TArgs requestData) => Url(requestData, "");
 
-    public Task<string> Url(TArgs model, string modifier) => _Url(model, modifier);
+    public Task<string> Url(TArgs requestData, string modifier) => _Url(requestData, modifier);
 
-    private async Task<string> _Url(TArgs? model, string modifier)
+    private async Task<string> _Url(TArgs? requestData, string modifier)
     {
         var url = await clientUrl.Value(actionName, modifier);
-        var query = new ObjectToQueryString(model).Value;
+        var query = new ObjectToQueryString(requestData).Value;
         if (!string.IsNullOrWhiteSpace(query))
         {
             query = $"?{query}";
@@ -42,15 +42,15 @@ public sealed class AppClientODataAction<TArgs, TEntity>
         return $"{url}{query}";
     }
 
-    public Task<ODataResult<TEntity>> Post(string odataOptions, TArgs model, CancellationToken ct) =>
-        Post("", odataOptions, model, ct);
+    public Task<ODataResult<TEntity>> Post(string odataOptions, TArgs requestData, CancellationToken ct) =>
+        Post("", odataOptions, requestData, ct);
 
-    public Task<ODataResult<TEntity>> Post(string modKey, string odataOptions, TArgs model, CancellationToken ct) =>
-        _PostForQuery(modKey, odataOptions, model, true, ct);
+    public Task<ODataResult<TEntity>> Post(string modKey, string odataOptions, TArgs requestData, CancellationToken ct) =>
+        _PostForQuery(modKey, odataOptions, requestData, true, ct);
 
-    private async Task<ODataResult<TEntity>> _PostForQuery(string modKey, string odataOptions, TArgs model, bool retryUnauthorized, CancellationToken ct)
+    private async Task<ODataResult<TEntity>> _PostForQuery(string modKey, string odataOptions, TArgs requestData, bool retryUnauthorized, CancellationToken ct)
     {
-        var query = new ObjectToQueryString(model).Value;
+        var query = new ObjectToQueryString(requestData).Value;
         var postResult = await GetPostResponse(modKey, query, odataOptions, ct);
         ODataResult<TEntity> odataResult;
         try
@@ -66,7 +66,7 @@ public sealed class AppClientODataAction<TArgs, TEntity>
             else if (postResult.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                odataResult = await _PostForQuery(modKey, odataOptions, model, false, ct);
+                odataResult = await _PostForQuery(modKey, odataOptions, requestData, false, ct);
             }
             else
             {

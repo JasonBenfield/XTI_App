@@ -1,11 +1,10 @@
 ﻿using XTI_App.Api;
-using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
 public class WebAppApiWrapper : AppApiWrapper
 {
-    protected WebAppApiWrapper(AppApi source, IServiceProvider sp)
+    protected WebAppApiWrapper(AppApi source)
         : base(source)
     {
         User = new UserGroup
@@ -15,8 +14,7 @@ public class WebAppApiWrapper : AppApiWrapper
                 nameof(User),
                 ModifierCategoryName.Default,
                 ResourceAccess.AllowAuthenticated()
-            ),
-            sp
+            )
         );
         UserCache = new UserCacheGroup
         (
@@ -26,24 +24,10 @@ public class WebAppApiWrapper : AppApiWrapper
                 ModifierCategoryName.Default,
                 ResourceAccess.AllowAuthenticated()
                     .WithAllowed(AppRoleName.ManageUserCache)
-            ),
-            sp
+            )
         );
     }
 
     public UserGroup User { get; }
     public UserCacheGroup UserCache { get; }
-
-    protected override void ConfigureTemplate(AppApiTemplate template)
-    {
-        base.ConfigureTemplate(template);
-        template.ExcludeValueTemplates(IsValueTemplateExcluded);
-    }
-
-    private static bool IsValueTemplateExcluded(ValueTemplate templ, ApiCodeGenerators codeGenerator) =>
-        templ.DataType == typeof(EmptyRequest) || 
-        templ.DataType == typeof(EmptyActionResult) || 
-        templ.DataType == typeof(LogoutRequest) || 
-        templ.DataType == typeof(ResourcePath) || 
-        templ.DataType == typeof(ResourcePathAccess);
 }

@@ -7,44 +7,83 @@ public sealed class AppApi
     private readonly IServiceProvider sp;
     private readonly IAppApiUser user;
     private readonly Dictionary<string, AppApiGroup> groups = new();
+    private Dictionary<string, IAppApiGroup>? groupWrappers;
+    private readonly ResourceAccessBuilder accessBuilder = new();
 
     public AppApi
     (
         IServiceProvider sp,
         AppKey appKey,
         IAppApiUser user,
-        ResourceAccess access,
-        string serializedDefaultOptions
+        string serializedDefaultOptions = ""
     )
     {
         this.sp = sp;
         AppKey = appKey;
         Path = new XtiPath(appKey);
         this.user = user;
-        Access = access ?? ResourceAccess.AllowAuthenticated();
+        accessBuilder = new ResourceAccessBuilder();
+        accessBuilder.WithAllowed(AppRoleName.Admin);
         SerializedDefaultOptions = serializedDefaultOptions;
     }
 
-    internal string SerializedDefaultOptions { get; }
+    public string SerializedDefaultOptions { get; set; }
 
     public XtiPath Path { get; }
 
     public AppKey AppKey { get; }
 
-    public ResourceAccess Access { get; }
+    public ResourceAccess Access { get => accessBuilder.Build(); }
+
+    public AppApi AllowAnonymousAccess()
+    {
+        accessBuilder.AllowAnonymous();
+        return this;
+    }
+
+    public AppApi ResetAccess()
+    {
+        accessBuilder.Reset();
+        return this;
+    }
+
+    public AppApi ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.Reset(roleNames);
+        return this;
+    }
+
+    public AppApi WithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.WithAllowed(roleNames);
+        return this;
+    }
+
+    public AppApi WithoutAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.WithoutAllowed(roleNames);
+        return this;
+    }
 
     public AppApiGroup AddGroup(string name) =>
-        AddGroup(name, ModifierCategoryName.Default, Access);
+        _AddGroup(name, ModifierCategoryName.Default, null);
 
     public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory) =>
-        AddGroup(name, modCategory, Access);
+        _AddGroup(name, modCategory, null);
 
     public AppApiGroup AddGroup(string name, ResourceAccess access) =>
-        AddGroup(name, ModifierCategoryName.Default, access);
+        _AddGroup(name, ModifierCategoryName.Default, access);
 
-    public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess access)
+    public AppApiGroup AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess access) =>
+        _AddGroup(name, modCategory, access);
+
+    private AppApiGroup _AddGroup(string name, ModifierCategoryName modCategory, ResourceAccess? access)
     {
-        var group = new AppApiGroup(sp, Path.WithGroup(name), modCategory, access, user);
+        var group = new AppApiGroup(sp, Path.WithGroup(name), modCategory, accessBuilder, user);
+        if(access != null)
+        {
+            group.ResetAccess(access);
+        }
         groups.Add(FormatGroupKey(group.GroupName), group);
         return group;
     }
@@ -81,14 +120,34 @@ public sealed class AppApi
         return action;
     }
 
-    public AppApiGroup[] Groups() => groups.Values.ToArray();
+    public IAppApiGroup[] Groups() => FetchGroupWrappers().Values.ToArray();
 
-    public AppApiGroup Group(string groupName) => groups[FormatGroupKey(groupName)];
+    public IAppApiGroup Group(string groupName) => FetchGroupWrappers()[FormatGroupKey(groupName)];
+
+    private Dictionary<string, IAppApiGroup> FetchGroupWrappers() =>
+        groupWrappers ??= 
+            groups.ToDictionary
+            (
+                kvp => kvp.Key, 
+                kvp => (IAppApiGroup)new AppApiGroupWrapper(kvp.Value)
+            );
 
     private static string FormatGroupKey(string groupName) =>
         groupName.ToLower().Replace(" ", "").Replace("_", "");
 
-    public AppApiTemplate Template() => new(this, SerializedDefaultOptions);
+    public AppApiTemplate Template()
+    {
+        var template = new AppApiTemplate(this, SerializedDefaultOptions);
+        configureTemplate(template);
+        return template;
+    }
+
+    private Action<AppApiTemplate> configureTemplate = (t) => { };
+
+    public void ConfigureTemplate(Action<AppApiTemplate> configureTemplate)
+    {
+        this.configureTemplate = configureTemplate;
+    }
 
     internal AppRoleName[] RoleNames()
     {

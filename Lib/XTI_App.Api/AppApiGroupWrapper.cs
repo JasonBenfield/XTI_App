@@ -7,16 +7,18 @@ public class AppApiGroupWrapper : IAppApiGroup
 {
     private readonly AppApiGroup source;
 
-    protected AppApiGroupWrapper(AppApiGroup source)
+    protected internal AppApiGroupWrapper(AppApiGroup source)
     {
         this.source = source;
         Configure(source);
+        Path = source.Path;
+        Access = source.Access;
     }
 
     protected virtual void Configure(AppApiGroup source) { }
 
-    public XtiPath Path { get => source.Path; }
-    public ResourceAccess Access { get => source.Access; }
+    public XtiPath Path { get; }
+    public ResourceAccess Access { get; }
 
     public IAppApiAction[] Actions() => source.Actions();
 
@@ -30,7 +32,7 @@ public class AppApiGroupWrapper : IAppApiGroup
 
     public AppApiGroupTemplate Template() => source.Template();
 
-    public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) => 
+    public ThrottledLogPath[] ThrottledLogPaths(XtiBasePath xtiBasePath) =>
         source.ThrottledLogPaths(xtiBasePath);
 
     public ScheduledAppAgendaItemOptions[] ActionSchedules() => source.ActionSchedules();

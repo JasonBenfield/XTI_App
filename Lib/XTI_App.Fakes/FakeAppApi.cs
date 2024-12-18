@@ -13,8 +13,6 @@ public sealed class FakeAppApi : AppApiWrapper
                 sp,
                 FakeInfo.AppKey,
                 user,
-                ResourceAccess.AllowAuthenticated()
-                    .WithAllowed(AppRoleName.Admin),
                 XtiSerializer.Serialize(new FakeAppOptions())
             )
         )

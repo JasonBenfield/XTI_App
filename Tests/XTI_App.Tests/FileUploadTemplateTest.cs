@@ -100,43 +100,36 @@ internal sealed class FileUploadTemplateTest
 
     private static AppApiTemplate CreateFileUploadTemplate(IServiceProvider sp)
     {
-        var api = new AppApi(sp, FakeInfo.AppKey, new AppApiSuperUser(), ResourceAccess.AllowAuthenticated(), "");
+        var api = new AppApi(sp, FakeInfo.AppKey, new AppApiSuperUser());
         var group1 = api.AddGroup("Group1");
-        group1.AddAction
-        (
-            "NoFileUpload",
-            () => new NoFileUploadAction()
-        );
-        group1.AddAction
-        (
-            "FileUpload",
-            () => new FileUploadAction()
-        );
-        group1.AddAction
-        (
-            "FileUploadArray",
-            () => new FileUploadArrayAction()
-        );
-        group1.AddAction
-        (
-            "FileUploadTopLevel",
-            () => new FileUploadTopLevelAction()
-        );
-        group1.AddAction
-        (
-            "FileUploadArrayTopLevel",
-            () => new FileUploadArrayTopLevelAction()
-        );
-        group1.AddAction
-        (
-            "FileUploadSecondLevel",
-            () => new FileUploadSecondLevelAction()
-        );
-        group1.AddAction
-        (
-            "FileUploadArraySecondLevel",
-            () => new FileUploadArraySecondLevelAction()
-        );
+        group1.AddAction<NoFileUploadRequest, EmptyActionResult>()
+            .Named("NoFileUpload")
+            .WithExecution(() => EmptyAppAction.Create<NoFileUploadRequest>())
+            .Build();
+        group1.AddAction<IFormFile, EmptyActionResult>()
+            .Named("FileUpload")
+            .WithExecution(() => EmptyAppAction.Create<IFormFile>())
+            .Build();
+        group1.AddAction<IFormFile[], EmptyActionResult>()
+            .Named("FileUploadArray")
+            .WithExecution(() => EmptyAppAction.Create<IFormFile[]>())
+            .Build();
+        group1.AddAction<FileUploadTopLevelRequest, EmptyActionResult>()
+            .Named("FileUploadTopLevel")
+            .WithExecution(() => EmptyAppAction.Create<FileUploadTopLevelRequest>())
+            .Build();
+        group1.AddAction<FileUploadArrayRequest, EmptyActionResult>()
+            .Named("FileUploadArrayTopLevel")
+            .WithExecution(() => EmptyAppAction.Create<FileUploadArrayRequest>())
+            .Build();
+        group1.AddAction<FileUploadSecondLevelRequest, EmptyActionResult>()
+            .Named("FileUploadSecondLevel")
+            .WithExecution(() => EmptyAppAction.Create<FileUploadSecondLevelRequest>())
+            .Build();;
+        group1.AddAction<FileUploadArraySecondLevelRequest, EmptyActionResult>()
+            .Named("FileUploadArraySecondLevel")
+            .WithExecution(() => EmptyAppAction.Create<FileUploadArraySecondLevelRequest>())
+            .Build();
         var template = new AppApiTemplate(api, "");
         return template;
     }
@@ -167,59 +160,4 @@ internal sealed class FileUploadTemplateTest
         public string Value2 { get; set; } = "";
     }
 
-    private sealed class NoFileUploadAction : AppAction<NoFileUploadRequest, EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(NoFileUploadRequest model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
-
-    private sealed class FileUploadAction : AppAction<IFormFile, EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(IFormFile model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
-
-    private sealed class FileUploadArrayAction : AppAction<IFormFile[], EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(IFormFile[] model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
-
-    private sealed class FileUploadTopLevelAction : AppAction<FileUploadTopLevelRequest, EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(FileUploadTopLevelRequest model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
-
-    private sealed class FileUploadArrayTopLevelAction : AppAction<FileUploadArrayRequest, EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(FileUploadArrayRequest model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
-
-    private sealed class FileUploadSecondLevelAction : AppAction<FileUploadSecondLevelRequest, EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(FileUploadSecondLevelRequest model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
-
-    private sealed class FileUploadArraySecondLevelAction : AppAction<FileUploadArraySecondLevelRequest, EmptyActionResult>
-    {
-        public Task<EmptyActionResult> Execute(FileUploadArraySecondLevelRequest model, CancellationToken stoppingToken)
-        {
-            return Task.FromResult(new EmptyActionResult());
-        }
-    }
 }

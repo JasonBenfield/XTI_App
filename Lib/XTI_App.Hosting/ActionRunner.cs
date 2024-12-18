@@ -2,23 +2,30 @@
 using XTI_App.Abstractions;
 using XTI_App.Api;
 using XTI_Core;
+using XTI_TempLog;
 
 namespace XTI_App.Hosting;
 
 public sealed class ActionRunner
 {
     private readonly IServiceProvider sp;
+    private readonly XtiEnvironment xtiEnv;
+    private readonly XtiBasePath xtiBasePath;
     private readonly string groupName;
     private readonly string actionName;
 
     public ActionRunner
     (
         IServiceProvider sp,
+        XtiEnvironment xtiEnv,
+        XtiBasePath xtiBasePath,
         string groupName,
         string actionName
     )
     {
         this.sp = sp;
+        this.xtiEnv = xtiEnv;
+        this.xtiBasePath = xtiBasePath;
         this.groupName = groupName;
         this.actionName = actionName;
     }
@@ -35,25 +42,31 @@ public sealed class ActionRunner
     {
         Results result;
         using var scope = sp.CreateScope();
-        var environment = scope.ServiceProvider.GetRequiredService<XtiEnvironment>();
-        var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
-        var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
-        var xtiPath = xtiBasePath.Finish(groupName, actionName);
-        result = await VerifyActionIsRequired(environment, factory, xtiPath);
-        if (result == Results.None)
+        try
         {
-            result = await Run(environment, factory, xtiPath, stoppingToken);
+            var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
+            var session = factory.CreateTempLogSession();
+            var api = factory.CreateAppApi();
+            var action = GetApiAction(api);
+            var xtiPath = xtiBasePath.Finish(groupName, actionName);
+            result = await VerifyActionIsRequired(xtiPath, session, action);
+            if (result == Results.None)
+            {
+                result = await Run(xtiPath, session, action, stoppingToken);
+            }
+        }
+        catch
+        {
+            result = Results.Error;
         }
         return result;
     }
 
-    private async Task<Results> VerifyActionIsRequired(XtiEnvironment environment, IActionRunnerFactory factory, XtiPath xtiPath)
+    private async Task<Results> VerifyActionIsRequired(XtiPath xtiPath, TempLogSession tempLogSession, AppApiAction<EmptyRequest, EmptyActionResult> action)
     {
         var result = Results.None;
-        var session = factory.CreateTempLogSession();
         try
         {
-            var action = GetApiAction(factory);
             var isOptional = await action.IsOptional();
             if (isOptional)
             {
@@ -63,32 +76,30 @@ public sealed class ActionRunner
         catch (Exception ex)
         {
             var path = xtiPath.Format();
-            if (!environment.IsProduction())
+            if (!xtiEnv.IsProduction())
             {
                 Console.WriteLine($"Unexpected error in {path}\r\n{ex}");
             }
-            await session.StartRequest(path);
+            await tempLogSession.StartRequest(path);
             var parentEventKey = "";
-            if(ex is AppClientException clientEx)
+            if (ex is AppClientException clientEx)
             {
                 parentEventKey = clientEx.LogEntryKey;
             }
-            await session.LogException(AppEventSeverity.Values.CriticalError, ex, $"Unexpected error in {path}", parentEventKey);
-            await session.EndRequest();
+            await tempLogSession.LogException(AppEventSeverity.Values.CriticalError, ex, $"Unexpected error in {path}", parentEventKey);
+            await tempLogSession.EndRequest();
             result = Results.Error;
         }
         return result;
     }
 
-    private async Task<Results> Run(XtiEnvironment xtiEnv, IActionRunnerFactory factory, XtiPath xtiPath, CancellationToken stoppingToken)
+    private async Task<Results> Run(XtiPath xtiPath, TempLogSession tempLogSession, AppApiAction<EmptyRequest, EmptyActionResult> action, CancellationToken stoppingToken)
     {
         var result = Results.None;
-        var tempLogSession = factory.CreateTempLogSession();
         var path = xtiPath.Format();
         try
         {
             await tempLogSession.StartRequest(path);
-            var action = GetApiAction(factory);
             await action.Execute(new EmptyRequest(), stoppingToken);
             result = Results.Succeeded;
         }
@@ -119,11 +130,8 @@ public sealed class ActionRunner
         return result;
     }
 
-    private AppApiAction<EmptyRequest, EmptyActionResult> GetApiAction(IActionRunnerFactory factory)
-    {
-        var api = factory.CreateAppApi();
-        return api
+    private AppApiAction<EmptyRequest, EmptyActionResult> GetApiAction(IAppApi api) =>
+        api
             .Group(groupName)
             .Action<EmptyRequest, EmptyActionResult>(actionName);
-    }
 }

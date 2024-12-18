@@ -25,7 +25,7 @@ internal sealed class DefaultTransformedLink : ITransformedLink
         var l = link;
         if (link.IsXtiPath() && httpContextAccessor.HttpContext != null)
         {
-            var url = link.Url.Replace("~", $"/{xtiBasePath.Value.App}/{AppVersionKey.Current.DisplayText}");
+            var url = link.Url.Replace("~", $"/{xtiBasePath.Value.App}/{AppVersionKey.Current.DisplayText}".Replace(" ", ""));
             l = l with { Url = url };
         }
         if (l.DisplayText == "{User.FullName}")

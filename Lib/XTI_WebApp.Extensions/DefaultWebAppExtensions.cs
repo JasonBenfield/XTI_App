@@ -72,6 +72,7 @@ public static class DefaultWebAppExtensions
         services.AddScoped<GetUserAccessAction>();
         services.AddScoped<GetMenuLinksAction>();
         services.AddScoped<UserProfileAction>();
+        services.AddScoped<ClearCacheAction>();
         services.AddScoped<CacheBust>();
         services.AddScoped<IPageContext, PageContext>();
         services.AddScoped<WebViewResultFactory>();

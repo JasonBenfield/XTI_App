@@ -19,7 +19,7 @@ public class ComplexField : IField
 
     public string TypeName() => GetType().Name;
 
-    public void Import(IDictionary<string, object?> values)
+    public void Import(IDictionary<string, object> values)
     {
         foreach (var field in fields)
         {
@@ -27,7 +27,7 @@ public class ComplexField : IField
         }
     }
 
-    public void Export(IDictionary<string, object?> values)
+    public void Export(IDictionary<string, object> values)
     {
         foreach (var field in fields)
         {
@@ -127,7 +127,7 @@ public class ComplexField : IField
 
     public virtual void SetValue(object value)
     {
-        Import((Dictionary<string, object?>)value);
+        Import((Dictionary<string, object>)value);
     }
 
     public IEnumerable<IField> Fields() => fields.ToArray();
@@ -155,7 +155,7 @@ public class ComplexField : IField
 
     public virtual object Value()
     {
-        var dict = new Dictionary<string, object?>();
+        var dict = new Dictionary<string, object>();
         Export(dict);
         return dict;
     }

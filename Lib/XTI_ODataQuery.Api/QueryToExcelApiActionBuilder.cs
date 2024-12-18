@@ -11,7 +11,7 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
     private readonly IAppApiUser user;
     private string friendlyName = "";
     private readonly ActionThrottledLogPathBuilder<QueryToExcelApiActionBuilder<TArgs, TEntity>> throttledLogPathBuilder;
-    private ResourceAccess access;
+    private ResourceAccessBuilder accessBuilder;
     private Func<QueryAction<TArgs, TEntity>> createQuery;
     private Func<IQueryToExcel> createQueryToExcel;
     private QueryToExcelApiAction<TArgs, TEntity>? builtAction;
@@ -21,14 +21,14 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
         IServiceProvider sp,
         XtiPath groupPath,
         IAppApiUser user,
-        ResourceAccess access,
+        ResourceAccessBuilder groupAccessBuilder,
         string actionName
     )
     {
         this.sp = sp;
         this.groupPath = groupPath;
         this.user = user;
-        this.access = access;
+        accessBuilder = new ResourceAccessBuilder(groupAccessBuilder);
         throttledLogPathBuilder = new(this);
         ActionName = actionName;
         createQuery = () => new EmptyQueryAction<TArgs, TEntity>();
@@ -43,21 +43,39 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
         return this;
     }
 
-    public QueryToExcelApiActionBuilder<TArgs, TEntity> WithAccess(ResourceAccess access)
+    public QueryToExcelApiActionBuilder<TArgs, TEntity> AllowAnonymousAccess()
     {
-        this.access = access;
+        accessBuilder.AllowAnonymous();
+        return this;
+    }
+
+    public QueryToExcelApiActionBuilder<TArgs, TEntity> ResetAccess()
+    {
+        accessBuilder.Reset();
+        return this;
+    }
+
+    public QueryToExcelApiActionBuilder<TArgs, TEntity> ResetAccess(ResourceAccess access)
+    {
+        accessBuilder.Reset(access);
+        return this;
+    }
+
+    public QueryToExcelApiActionBuilder<TArgs, TEntity> ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    {
+        accessBuilder.Reset(roleNames);
         return this;
     }
 
     public QueryToExcelApiActionBuilder<TArgs, TEntity> WithAllowed(params AppRoleName[] roleNames)
     {
-        access = access.WithAllowed(roleNames);
+        accessBuilder.WithAllowed(roleNames);
         return this;
     }
 
     public QueryToExcelApiActionBuilder<TArgs, TEntity> WithoutAllowed(params AppRoleName[] roleNames)
     {
-        access = access.WithoutAllowed(roleNames);
+        accessBuilder.WithoutAllowed(roleNames);
         return this;
     }
 
@@ -106,7 +124,7 @@ public sealed class QueryToExcelApiActionBuilder<TArgs, TEntity> : IAppApiAction
         return new QueryToExcelApiAction<TArgs, TEntity>
         (
             actionPath,
-            access,
+            accessBuilder.Build(),
             user,
             createQuery,
             createQueryToExcel,

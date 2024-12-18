@@ -8,9 +8,9 @@ public class Form : ComplexField
     {
     }
 
-    public IDictionary<string, object?> Export()
+    public IDictionary<string, object> Export()
     {
-        var exported = new Dictionary<string, object?>();
+        var exported = new Dictionary<string, object>();
         Export(exported);
         return exported;
     }

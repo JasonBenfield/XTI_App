@@ -14,6 +14,7 @@ public static class TestConsoleAppExtensions
         services.AddMemoryCache();
         services.AddSingleton(sp => XtiEnvironment.Parse(sp.GetRequiredService<IHostEnvironment>().EnvironmentName));
         services.AddFakesForXtiApp();
+        services.AddScoped<StopApplicationAction>();
         services.AddAppAgenda(build);
         services.AddScoped<IActionRunnerFactory, ActionRunnerFactory>();
         services.AddHostedService<AppAgendaHostedService>();

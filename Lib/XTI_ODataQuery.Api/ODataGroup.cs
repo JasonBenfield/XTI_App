@@ -4,23 +4,15 @@ namespace XTI_ODataQuery.Api;
 
 public sealed class ODataGroup<TArgs, TEntity> : AppApiGroupWrapper
 {
-    public ODataGroup
+    internal ODataGroup
     (
         AppApiGroup source,
-        Func<QueryAction<TArgs, TEntity>> createQuery,
-        Func<DefaultQueryToExcelBuilder>? createQueryToExcelBuilder = null,
-        ResourceAccess? access = null
+        ODataGroupBuilder<TArgs, TEntity> builder
     )
         : base(source)
     {
-        Get = source.AddQueryAction<TArgs, TEntity>(nameof(Get))
-            .WithQuery(createQuery)
-            .WithAccess(access ?? source.Access)
-            .Build();
-        ToExcel = source.AddQueryToExcelAction<TArgs, TEntity>(nameof(ToExcel))
-            .WithQuery(createQuery)
-            .WithAccess(access ?? source.Access)
-            .Build();
+        Get = builder.Get.Build();
+        ToExcel = builder.ToExcel.Build();
     }
 
     public QueryApiAction<TArgs, TEntity> Get { get; }

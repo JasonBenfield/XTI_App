@@ -21,7 +21,7 @@ public sealed class ResourceAccess
 
     public AppRoleName[] Allowed { get; }
     public bool IsAnonymousAllowed { get; }
-
+    
     public ResourceAccess WithAllowed(params AppRoleName[] allowed) => 
         new(Allowed.Union(allowed).Distinct().ToArray());
 
