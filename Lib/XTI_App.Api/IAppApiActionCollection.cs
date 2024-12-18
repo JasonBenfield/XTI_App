@@ -4,5 +4,5 @@ public interface IAppApiActionCollection
 {
     IEnumerable<IAppApiAction> Actions();
     AppApiAction<TModel, TResult> Action<TModel, TResult>(string actionName);
-    AppApiAction<TModel, TResult> Add<TModel, TResult>(AppApiAction<TModel, TResult> action);
+    AppApiAction<TRequest, TResult> Add<TRequest, TResult>(AppApiAction<TRequest, TResult> action);
 }

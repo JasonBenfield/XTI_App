@@ -1,7 +1,6 @@
-﻿using NUnit.Framework;
-using System.ComponentModel;
-using XTI_App.Abstractions;
+﻿using System.ComponentModel;
 using XTI_Core;
+using XTI_Core.Extensions;
 
 namespace XTI_App.Tests;
 
@@ -30,7 +29,9 @@ internal sealed class AppKeyTest
             Title = "Testing"
         };
         var serialized = XtiSerializer.Serialize(appModel);
+        Console.WriteLine(serialized);
         var deserialized = XtiSerializer.Deserialize<AppModel>(serialized);
+        deserialized.WriteToConsole();
         Assert.That(deserialized.AppKey, Is.EqualTo(appKey));
         Assert.That(deserialized.VersionKey, Is.EqualTo(new AppVersionKey(12)));
         Assert.That(deserialized.Title, Is.EqualTo(appModel.Title));
@@ -67,6 +68,12 @@ internal sealed class AppKeyTest
         var typeConverter = TypeDescriptor.GetConverter(typeof(AppKey));
         var converted = typeConverter.ConvertFrom(serialized);
         Assert.That(converted, Is.EqualTo(appKey));
+    }
+
+    [Test]
+    public void AppNamesShouldBeEqual()
+    {
+        Assert.That(new AppName("ScheduledJobs"), Is.EqualTo(new AppName("Scheduled Jobs")));
     }
 
     private sealed class AppModel

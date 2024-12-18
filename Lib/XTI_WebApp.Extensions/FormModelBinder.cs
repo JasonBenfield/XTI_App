@@ -25,7 +25,15 @@ public sealed class FormModelBinder : IModelBinder
         options.Converters.Add(new JsonObjectConverter());
         var values = JsonSerializer.Deserialize<ExpandoObject>(serialized, options);
         if(values == null) { throw new ArgumentNullException(nameof(values)); }
-        model.Import(values);
+        var dict = new Dictionary<string, object>();
+        foreach(var kvp in values)
+        {
+            if(kvp.Value != null)
+            {
+                dict.Add(kvp.Key, kvp.Value);
+            }
+        }
+        model.Import(dict);
         bindingContext.Result = ModelBindingResult.Success(model);
     }
 }

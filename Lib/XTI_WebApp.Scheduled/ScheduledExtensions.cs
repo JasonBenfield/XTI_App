@@ -10,6 +10,6 @@ public static class ScheduledExtensions
         services.AddScoped<IActionRunnerFactory, WebActionRunnerFactory>();
         services.AddSingleton<ScheduledAppEnvironmentContext>();
         services.AddAppAgenda(build);
-        services.AddHostedService<ScheduledWebWorker>();
+        services.AddHostedService<AppAgendaHostedService>();
     }
 }

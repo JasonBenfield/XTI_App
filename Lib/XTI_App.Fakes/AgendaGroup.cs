@@ -9,26 +9,22 @@ public sealed class AgendaGroup : AppApiGroupWrapper
 {
     public AgendaGroup(AppApiGroup source, IServiceProvider sp) : base(source)
     {
-        FirstAgendaItem = source.AddAction
-        (
-            nameof(FirstAgendaItem),
-            () => new FirstAgendaItemAction(sp.GetRequiredService<FirstAgendaItemCounter>())
-        );
-        SecondAgendaItem = source.AddAction
-        (
-            nameof(SecondAgendaItem),
-            () => new SecondAgendaItemAction()
-        );
-        ThirdAgendaItem = source.AddAction
-        (
-            nameof(ThirdAgendaItem),
-            () => new ThirdAgendaItemAction()
-        );
-        Stop = source.AddAction
-        (
-            nameof(Stop),
-            () => new StopApplicationAction(sp.GetRequiredService<IHostApplicationLifetime>())
-        );
+        FirstAgendaItem = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(FirstAgendaItem))
+            .WithExecution(() => new FirstAgendaItemAction(sp.GetRequiredService<FirstAgendaItemCounter>()))
+            .Build();
+        SecondAgendaItem = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(SecondAgendaItem))
+            .WithExecution(() => new SecondAgendaItemAction())
+            .Build();
+        ThirdAgendaItem = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(ThirdAgendaItem))
+            .WithExecution(() => new ThirdAgendaItemAction())
+            .Build();
+        Stop = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(Stop))
+            .WithExecution(() => new StopApplicationAction(sp.GetRequiredService<IHostApplicationLifetime>()))
+            .Build();
     }
 
     public AppApiAction<EmptyRequest, EmptyActionResult> FirstAgendaItem { get; }

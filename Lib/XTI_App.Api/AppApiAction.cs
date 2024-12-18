@@ -5,11 +5,11 @@ using XTI_TempLog;
 
 namespace XTI_App.Api;
 
-public sealed class AppApiAction<TModel, TResult> : IAppApiAction
+public sealed class AppApiAction<TRequest, TResult> : IAppApiAction
 {
     private readonly IAppApiUser user;
-    private readonly Func<AppActionValidation<TModel>> createValidation;
-    private readonly Func<AppAction<TModel, TResult>> createAction;
+    private readonly Func<AppActionValidation<TRequest>> createValidation;
+    private readonly Func<AppAction<TRequest, TResult>> createAction;
     private readonly ThrottledLogXtiPath throttledLogPath;
 
     public AppApiAction
@@ -17,8 +17,8 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
         XtiPath path,
         ResourceAccess access,
         IAppApiUser user,
-        Func<AppActionValidation<TModel>> createValidation,
-        Func<AppAction<TModel, TResult>> createAction,
+        Func<AppActionValidation<TRequest>> createValidation,
+        Func<AppAction<TRequest, TResult>> createAction,
         string friendlyName,
         RequestDataLoggingTypes requestDataLoggingType,
         bool isResultDataLoggingEnabled,
@@ -53,33 +53,33 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
     public Task<bool> IsOptional()
     {
         var action = createAction();
-        if (action is OptionalAction<TModel, TResult> optional)
+        if (action is OptionalAction<TRequest, TResult> optional)
         {
             return optional.IsOptional();
         }
         return Task.FromResult(false);
     }
 
-    public async Task<TResult> Invoke(TModel model, CancellationToken stoppingToken = default)
+    public async Task<TResult> Invoke(TRequest requestData, CancellationToken stoppingToken = default)
     {
-        var result = await Execute(model, stoppingToken);
+        var result = await Execute(requestData, stoppingToken);
         return result.Data!;
     }
 
-    public async Task<ResultContainer<TResult>> Execute(TModel model, CancellationToken stoppingToken = default)
+    public async Task<ResultContainer<TResult>> Execute(TRequest requestData, CancellationToken stoppingToken = default)
     {
         await user.EnsureUserHasAccess(Path);
         var errors = new ErrorList();
-        if (model is Form form)
+        if (requestData is Form form)
         {
             form.Validate(errors);
             EnsureValidInput(errors);
         }
         var validation = createValidation();
-        await validation.Validate(errors, model, stoppingToken);
+        await validation.Validate(errors, requestData, stoppingToken);
         EnsureValidInput(errors);
         var action = createAction();
-        var actionResult = await action.Execute(model, stoppingToken);
+        var actionResult = await action.Execute(requestData, stoppingToken);
         return new ResultContainer<TResult>(actionResult);
     }
 
@@ -93,9 +93,9 @@ public sealed class AppApiAction<TModel, TResult> : IAppApiAction
 
     public AppApiActionTemplate Template()
     {
-        var modelTemplate = new ValueTemplateFromType(typeof(TModel)).Template();
+        var requestTemplate = new ValueTemplateFromType(typeof(TRequest)).Template();
         var resultTemplate = new ValueTemplateFromType(typeof(TResult)).Template();
-        return new AppApiActionTemplate(Path.Action.DisplayText, FriendlyName, Access, modelTemplate, resultTemplate);
+        return new AppApiActionTemplate(Path.Action.DisplayText, FriendlyName, Access, requestTemplate, resultTemplate);
     }
 
     public override string ToString() => $"{GetType().Name} {FriendlyName}";

@@ -7,21 +7,18 @@ public sealed class DemoGroup : AppApiGroupWrapper
     public DemoGroup(AppApiGroup source)
         : base(source)
     {
-        First = source.AddAction
-        (
-            nameof(First),
-            () => new FirstAction()
-        );
-        Second = source.AddAction
-        (
-            nameof(Second),
-            () => new SecondAction()
-        );
-        Third = source.AddAction
-        (
-            nameof(Third),
-            () => new ThirdAction()
-        );
+        First = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(First))
+            .WithExecution(() => new FirstAction())
+            .Build();
+        Second = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(Second))
+            .WithExecution(() => new SecondAction())
+            .Build();
+        Third = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(Third))
+            .WithExecution(() => new ThirdAction())
+            .Build();
     }
     public AppApiAction<EmptyRequest, EmptyActionResult> First { get; }
     public AppApiAction<EmptyRequest, EmptyActionResult> Second { get; }

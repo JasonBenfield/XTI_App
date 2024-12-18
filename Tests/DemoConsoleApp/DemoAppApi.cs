@@ -14,8 +14,7 @@ public sealed class DemoAppApi : ConsoleAppApiWrapper
                 DemoInfo.AppKey,
                 user,
                 ""
-            ),
-            sp
+            )
         )
     {
         PreDemo = new PreDemoGroup(source.AddGroup(nameof(PreDemo)));

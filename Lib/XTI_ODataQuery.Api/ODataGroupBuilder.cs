@@ -1,4 +1,5 @@
-﻿using XTI_App.Api;
+﻿using XTI_App.Abstractions;
+using XTI_App.Api;
 
 namespace XTI_ODataQuery.Api;
 
@@ -36,6 +37,42 @@ public sealed class ODataGroupBuilder<TArgs, TEntity>
     public ODataGroupBuilder<TArgs, TEntity> WithQueryToExcel(Func<IQueryToExcel> createQueryToExcel)
     {
         ToExcel.WithQueryToExcel(createQueryToExcel);
+        return this;
+    }
+
+    public ODataGroupBuilder<TArgs, TEntity> AllowAnonymousAccess()
+    {
+        source.AllowAnonymousAccess();
+        return this;
+    }
+
+    public ODataGroupBuilder<TArgs, TEntity> ResetAccess()
+    {
+        source.ResetAccess();
+        return this;
+    }
+
+    public ODataGroupBuilder<TArgs, TEntity> ResetAccess(ResourceAccess access)
+    {
+        source.ResetAccess(access);
+        return this;
+    }
+
+    public ODataGroupBuilder<TArgs, TEntity> ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    {
+        source.ResetAccessWithAllowed(roleNames);
+        return this;
+    }
+
+    public ODataGroupBuilder<TArgs, TEntity> WithAllowed(params AppRoleName[] roleNames)
+    {
+        source.WithAllowed(roleNames);
+        return this;
+    }
+
+    public ODataGroupBuilder<TArgs, TEntity> WithoutAllowed(params AppRoleName[] roleNames)
+    {
+        source.WithoutAllowed(roleNames);
         return this;
     }
 

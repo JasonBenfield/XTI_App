@@ -4,7 +4,7 @@ namespace XTI_WebApp.Api;
 
 public class WebAppApiWrapper : AppApiWrapper
 {
-    protected WebAppApiWrapper(AppApi source, IServiceProvider sp)
+    protected WebAppApiWrapper(AppApi source)
         : base(source)
     {
         User = new UserGroup
@@ -14,8 +14,7 @@ public class WebAppApiWrapper : AppApiWrapper
                 nameof(User),
                 ModifierCategoryName.Default,
                 ResourceAccess.AllowAuthenticated()
-            ),
-            sp
+            )
         );
         UserCache = new UserCacheGroup
         (
@@ -25,8 +24,7 @@ public class WebAppApiWrapper : AppApiWrapper
                 ModifierCategoryName.Default,
                 ResourceAccess.AllowAuthenticated()
                     .WithAllowed(AppRoleName.ManageUserCache)
-            ),
-            sp
+            )
         );
     }
 

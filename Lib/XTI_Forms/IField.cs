@@ -5,8 +5,8 @@ namespace XTI_Forms;
 public interface IField
 {
     string Name { get; }
-    void Import(IDictionary<string, object?> values);
-    void Export(IDictionary<string, object?> values);
+    void Import(IDictionary<string, object> values);
+    void Export(IDictionary<string, object> values);
     object? Value();
     void SkipValidation();
     void UnskipValidation();

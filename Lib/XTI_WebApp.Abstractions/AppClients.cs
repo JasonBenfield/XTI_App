@@ -5,7 +5,7 @@ namespace XTI_WebApp.Abstractions;
 public sealed class AppClients
 {
     private readonly IMemoryCache cache;
-    private readonly List<AppVersionDomain> appVersions = new List<AppVersionDomain>();
+    private readonly List<AppVersionDomain> appVersions = new();
     private readonly AppClientDomainSelector appClientDomains;
 
     public AppClients(IMemoryCache cache, AppClientDomainSelector appClientDomains)

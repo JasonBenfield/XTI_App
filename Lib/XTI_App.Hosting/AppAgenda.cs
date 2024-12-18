@@ -7,7 +7,11 @@ namespace XTI_App.Hosting;
 
 public sealed class AppAgenda
 {
-    private readonly IServiceScope scope;
+    private readonly IServiceProvider sp;
+    private readonly IClock clock;
+    private readonly XtiEnvironment xtiEnv;
+    private readonly XtiBasePath xtiBasePath;
+    private readonly TempLogRepository tempLogRepo;
     private readonly ImmediateAppAgendaItem[] preStartItems;
     private readonly AppAgendaItem[] items;
     private readonly ImmediateAppAgendaItem[] postStopItems;
@@ -18,12 +22,20 @@ public sealed class AppAgenda
     internal AppAgenda
     (
         IServiceProvider sp,
+        IClock clock,
+        XtiEnvironment xtiEnv,
+        XtiBasePath xtiBasePath,
+        TempLogRepository tempLogRepo,
         ImmediateAppAgendaItem[] preStartItems,
         AppAgendaItem[] items,
         ImmediateAppAgendaItem[] postStopItems
     )
     {
-        scope = sp.CreateScope();
+        this.sp = sp;
+        this.clock = clock;
+        this.xtiEnv = xtiEnv;
+        this.xtiBasePath = xtiBasePath;
+        this.tempLogRepo = tempLogRepo;
         this.preStartItems = preStartItems;
         this.items = items;
         this.postStopItems = postStopItems;
@@ -31,46 +43,63 @@ public sealed class AppAgenda
 
     public async Task Start(CancellationToken stoppingToken)
     {
-        var xtiBasePath = scope.ServiceProvider.GetRequiredService<XtiBasePath>();
         hasAgenda = xtiBasePath.VersionKey.Equals(AppVersionKey.Current) &&
             (preStartItems.Any() || items.Any() || postStopItems.Any());
         if (hasAgenda)
         {
-            var currentSession = scope.ServiceProvider.GetRequiredService<CurrentSession>();
-            var clock = scope.ServiceProvider.GetRequiredService<IClock>();
-            var factory = scope.ServiceProvider.GetRequiredService<IActionRunnerFactory>();
-            var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
+            var currentSession = sp.GetRequiredService<CurrentSession>();
+            var factory = sp.GetRequiredService<IActionRunnerFactory>();
             var tempLogSession = factory.CreateTempLogSession();
             await tempLogSession.StartSession();
             sessionWorker = new SessionWorker(currentSession, clock, tempLogSession, tempLogRepo);
             var _ = sessionWorker.StartAsync(stoppingToken);
             var preStartWorker = new ImmediateActionWorker
             (
-                scope.ServiceProvider,
+                sp,
+                xtiEnv,
+                xtiBasePath,
                 preStartItems
             );
             await preStartWorker.StartAsync(stoppingToken);
             while (!preStartWorker.HasStopped)
             {
-                await Task.Delay(100);
+                await Task.Delay(100, stoppingToken);
             }
-            StartWorkers(scope.ServiceProvider, stoppingToken);
+            StartWorkers(clock, xtiEnv, xtiBasePath, stoppingToken);
         }
     }
 
-    private void StartWorkers(IServiceProvider sp, CancellationToken stoppingToken)
+    private void StartWorkers
+    (
+        IClock clock,
+        XtiEnvironment xtiEnv,
+        XtiBasePath xtiBasePath,
+        CancellationToken stoppingToken
+    )
     {
         var immediateWorker = new ImmediateActionWorker
         (
             sp,
+            xtiEnv,
+            xtiBasePath,
             items.OfType<ImmediateAppAgendaItem>().ToArray()
         );
         immediateWorker.StartAsync(stoppingToken);
         workers.Add(immediateWorker);
-        var scheduledAppAgendaItems = items.OfType<ScheduledAppAgendaItem>().ToArray();
-        foreach (var scheduledItem in scheduledAppAgendaItems.Where(item => item.IsEnabled))
+        var scheduledAppAgendaItems = items
+            .OfType<ScheduledAppAgendaItem>()
+            .Where(item => item.IsEnabled)
+            .ToArray();
+        foreach (var scheduledItem in scheduledAppAgendaItems)
         {
-            var worker = new ScheduledActionWorker(sp, scheduledItem);
+            var worker = new ScheduledActionWorker
+            (
+                sp,
+                clock,
+                xtiEnv,
+                xtiBasePath,
+                scheduledItem
+            );
             worker.StartAsync(stoppingToken);
             workers.Add(worker);
         }
@@ -82,7 +111,6 @@ public sealed class AppAgenda
     {
         if (hasAgenda)
         {
-            var tempLogRepo = scope.ServiceProvider.GetRequiredService<TempLogRepository>();
             foreach (var worker in workers)
             {
                 try
@@ -107,7 +135,9 @@ public sealed class AppAgenda
             }
             var postStopWorker = new ImmediateActionWorker
             (
-                scope.ServiceProvider,
+                sp,
+                xtiEnv,
+                xtiBasePath,
                 postStopItems
             );
             await postStopWorker.StartAsync(stoppingToken);

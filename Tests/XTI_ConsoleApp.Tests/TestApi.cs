@@ -30,8 +30,7 @@ public sealed class TestApi : ConsoleAppApiWrapper
                 sp,
                 TestAppInfo.AppKey,
                 user
-            ),
-            sp
+            )
         )
     {
         var counter = sp.GetRequiredService<Counter>();
@@ -47,21 +46,18 @@ public sealed class TestGroup : AppApiGroupWrapper
     public TestGroup(AppApiGroup source, Counter counter, TestOptions options)
         : base(source)
     {
-        RunContinuously = source.AddAction
-        (
-            nameof(RunContinuously),
-            () => new RunContinuouslyAction(counter)
-        );
-        RunUntilSuccess = source.AddAction
-        (
-            nameof(RunUntilSuccess),
-            () => new RunUntilSuccessAction(counter)
-        );
-        OptionalRun = source.AddAction
-        (
-            nameof(OptionalRun),
-            () => new OptionalRunAction(counter, options)
-        );
+        RunContinuously = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(RunContinuously))
+            .WithExecution(() => new RunContinuouslyAction(counter))
+            .Build();
+        RunUntilSuccess = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(RunUntilSuccess))
+            .WithExecution(() => new RunUntilSuccessAction(counter))
+            .Build();
+        OptionalRun = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(OptionalRun))
+            .WithExecution(() => new OptionalRunAction(counter, options))
+            .Build();
     }
 
     public AppApiAction<EmptyRequest, EmptyActionResult> RunContinuously { get; }

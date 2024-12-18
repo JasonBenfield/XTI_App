@@ -4,16 +4,16 @@ using XTI_App.Api;
 
 namespace XTI_ODataQuery.Api;
 
-public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
+public sealed class QueryApiActionBuilder<TRequest, TEntity> : IAppApiActionBuilder
 {
     private readonly IServiceProvider sp;
     private readonly XtiPath groupPath;
     private readonly IAppApiUser user;
     private string friendlyName = "";
-    private readonly ActionThrottledLogPathBuilder<QueryApiActionBuilder<TArgs, TEntity>> throttledLogPathBuilder;
+    private readonly ActionThrottledLogPathBuilder<QueryApiActionBuilder<TRequest, TEntity>> throttledLogPathBuilder;
     private ResourceAccessBuilder accessBuilder;
-    private Func<QueryAction<TArgs, TEntity>> createQuery;
-    private QueryApiAction<TArgs, TEntity>? builtAction;
+    private Func<QueryAction<TRequest, TEntity>> createQuery;
+    private QueryApiAction<TRequest, TEntity>? builtAction;
 
     internal QueryApiActionBuilder
     (
@@ -30,84 +30,84 @@ public sealed class QueryApiActionBuilder<TArgs, TEntity> : IAppApiActionBuilder
         accessBuilder = new ResourceAccessBuilder(groupAccessBuilder);
         throttledLogPathBuilder = new(this);
         ActionName = actionName;
-        createQuery = () => new EmptyQueryAction<TArgs, TEntity>();
+        createQuery = () => new EmptyQueryAction<TRequest, TEntity>();
     }
 
     public string ActionName { get; }
 
-    public QueryApiActionBuilder<TArgs, TEntity> WithFriendlyName(string friendlyName)
+    public QueryApiActionBuilder<TRequest, TEntity> WithFriendlyName(string friendlyName)
     {
         this.friendlyName = friendlyName;
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> AllowAnonymousAccess()
+    public QueryApiActionBuilder<TRequest, TEntity> AllowAnonymousAccess()
     {
         accessBuilder.AllowAnonymous();
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> ResetAccess()
+    public QueryApiActionBuilder<TRequest, TEntity> ResetAccess()
     {
         accessBuilder.Reset();
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> ResetAccess(ResourceAccess access)
+    public QueryApiActionBuilder<TRequest, TEntity> ResetAccess(ResourceAccess access)
     {
         accessBuilder.Reset(access);
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> ResetAccessWithAllowed(params AppRoleName[] roleNames)
+    public QueryApiActionBuilder<TRequest, TEntity> ResetAccessWithAllowed(params AppRoleName[] roleNames)
     {
         accessBuilder.Reset(roleNames);
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> WithAllowed(params AppRoleName[] roleNames)
+    public QueryApiActionBuilder<TRequest, TEntity> WithAllowed(params AppRoleName[] roleNames)
     {
         accessBuilder.WithAllowed(roleNames);
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> WithoutAllowed(params AppRoleName[] roleNames)
+    public QueryApiActionBuilder<TRequest, TEntity> WithoutAllowed(params AppRoleName[] roleNames)
     {
         accessBuilder.WithoutAllowed(roleNames);
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> WithQuery<TExecution>() where TExecution : QueryAction<TArgs, TEntity>
+    public QueryApiActionBuilder<TRequest, TEntity> WithQuery<TExecution>() where TExecution : QueryAction<TRequest, TEntity>
     {
         WithQuery(() => sp.GetRequiredService<TExecution>());
         return this;
     }
 
-    public QueryApiActionBuilder<TArgs, TEntity> WithQuery(Func<QueryAction<TArgs, TEntity>> createQuery)
+    public QueryApiActionBuilder<TRequest, TEntity> WithQuery(Func<QueryAction<TRequest, TEntity>> createQuery)
     {
         this.createQuery = createQuery;
         return this;
     }
 
-    public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TArgs, TEntity>> ThrottleRequestLogging() =>
+    public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TRequest, TEntity>> ThrottleRequestLogging() =>
         throttledLogPathBuilder.RequestIntervalBuilder;
 
-    public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TArgs, TEntity>> ThrottleExceptionLogging() =>
+    public ActionThrottledLogIntervalBuilder<QueryApiActionBuilder<TRequest, TEntity>> ThrottleExceptionLogging() =>
         throttledLogPathBuilder.ExceptionIntervalBuilder;
 
     public XtiPath ActionPath() => groupPath.WithAction(ActionName);
 
-    public QueryApiAction<TArgs, TEntity> Build()
+    public QueryApiAction<TRequest, TEntity> Build()
     {
         builtAction ??= BuildAction();
         return builtAction;
     }
 
-    private QueryApiAction<TArgs, TEntity> BuildAction()
+    private QueryApiAction<TRequest, TEntity> BuildAction()
     {
         var actionPath = ActionPath();
-        var scheduledBuilder = new ActionScheduleBuilder<QueryApiActionBuilder<TArgs, TEntity>>(this);
-        return new QueryApiAction<TArgs, TEntity>
+        var scheduledBuilder = new ActionScheduleBuilder<QueryApiActionBuilder<TRequest, TEntity>>(this);
+        return new QueryApiAction<TRequest, TEntity>
         (
             actionPath,
             accessBuilder.Build(),

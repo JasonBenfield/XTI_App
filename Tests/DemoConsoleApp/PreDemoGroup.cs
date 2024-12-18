@@ -7,21 +7,18 @@ public sealed class PreDemoGroup : AppApiGroupWrapper
     public PreDemoGroup(AppApiGroup source)
         : base(source)
     {
-        First = source.AddAction
-        (
-            nameof(First),
-            () => new PreFirstAction()
-        );
-        Second = source.AddAction
-        (
-            nameof(Second),
-            () => new PreSecondAction()
-        );
-        Third = source.AddAction
-        (
-            nameof(Third),
-            () => new PreThirdAction()
-        );
+        First = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(First))
+            .WithExecution(() => new PreFirstAction())
+            .Build();
+        Second = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(Second))
+            .WithExecution(() => new PreSecondAction())
+            .Build();
+        Third = source.AddAction<EmptyRequest, EmptyActionResult>()
+            .Named(nameof(Third))
+            .WithExecution(() => new PreThirdAction())
+            .Build();
     }
     public AppApiAction<EmptyRequest, EmptyActionResult> First { get; }
     public AppApiAction<EmptyRequest, EmptyActionResult> Second { get; }

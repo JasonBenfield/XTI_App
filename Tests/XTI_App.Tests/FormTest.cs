@@ -129,7 +129,7 @@ internal sealed class FormTest
     public void ShouldImportValues()
     {
         var form = new FakeForm();
-        form.Import(new Dictionary<string, object?>
+        form.Import(new Dictionary<string, object>
         {
             { "TestForm_TestText", "Test Import" },
             { "TestForm_Password", "Password" },
@@ -158,7 +158,7 @@ internal sealed class FormTest
     public void ShouldExportValues()
     {
         var form = new FakeForm();
-        var imported = new Dictionary<string, object?>
+        var imported = new Dictionary<string, object>
         {
             { "TestForm_TestText", "Test Import" },
             { "TestForm_Password", "" },

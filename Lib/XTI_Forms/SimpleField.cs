@@ -40,16 +40,21 @@ public abstract class SimpleField<T> : IField<T>
         return this;
     }
 
-    public void Export(IDictionary<string, object?> values)
+    public void Export(IDictionary<string, object> values)
     {
-        values.Add(Key.Value(), Value());
+        var value = Value();
+        if (value != null)
+        {
+            values.Add(Key.Value(), value);
+        }
     }
 
-    public void Import(IDictionary<string, object?> values)
+    public void Import(IDictionary<string, object> values)
     {
         if (values.TryGetValue(Key.Value(), out var value))
         {
-            SetValue(new ConvertedValue<T>(value).Value());
+            var convertedValue = new ConvertedValue<T>(value).Value();
+            SetValue(convertedValue);
         }
     }
 
@@ -71,7 +76,7 @@ public abstract class SimpleField<T> : IField<T>
 
     public void UnskipValidation() => constraints.UnskipValidation();
 
-    public ErrorModel Error(string message) => new ErrorModel(message, Caption, Key.Value());
+    public ErrorModel Error(string message) => new(message, Caption, Key.Value());
 
     public FieldModel ToModel()
     {
@@ -85,5 +90,5 @@ public abstract class SimpleField<T> : IField<T>
         return model;
     }
 
-    protected virtual SimpleFieldModel _ToModel() => new SimpleFieldModel();
+    protected virtual SimpleFieldModel _ToModel() => new();
 }

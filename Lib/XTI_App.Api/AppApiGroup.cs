@@ -3,7 +3,7 @@ using XTI_TempLog;
 
 namespace XTI_App.Api;
 
-public sealed class AppApiGroup 
+public sealed class AppApiGroup
 {
     private readonly IServiceProvider sp;
     private readonly List<IAppApiActionBuilder> actionBuilders = new();
@@ -26,8 +26,14 @@ public sealed class AppApiGroup
         User = user;
     }
 
-    public IAppApiUser User { get; }
-    internal ModifierCategoryName ModCategory { get; }
+    private IAppApiUser User { get; }
+    private ModifierCategoryName ModCategory { get; set; }
+
+    public AppApiGroup WithModCategory(ModifierCategoryName modCategory)
+    {
+        ModCategory = modCategory;
+        return this;
+    }
 
     public bool HasAction(string actionName) =>
         FetchActionDictionary().ContainsKey(FormatActionKey(actionName));

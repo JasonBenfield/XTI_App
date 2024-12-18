@@ -15,7 +15,7 @@ internal sealed class AppAgendaTest
     [Test]
     public async Task ShouldRunImmediate()
     {
-        var services = setup
+        var services = Setup
         (
             (sp, agenda) =>
             {
@@ -37,7 +37,7 @@ internal sealed class AppAgendaTest
     [Test]
     public async Task ShouldRunImmediateFromOptions()
     {
-        var services = setup
+        var services = Setup
         (
             (sp, agenda) => { },
             KeyValuePair.Create("AppAgenda:ImmediateItems:0:GroupName", (string?)"Agenda"),
@@ -58,7 +58,7 @@ internal sealed class AppAgendaTest
     [Test]
     public async Task ShouldNotRunImmediate_WhenIsDisabled()
     {
-        var services = setup
+        var services = Setup
         (
             (sp, agenda) => { },
             KeyValuePair.Create("AppAgenda:ImmediateItems:0:GroupName", (string?)"Agenda"),
@@ -80,7 +80,7 @@ internal sealed class AppAgendaTest
     [Test]
     public async Task ShouldRunScheduled()
     {
-        var services = setup
+        var services = Setup
         (
             (sp, agenda) =>
             {
@@ -111,7 +111,7 @@ internal sealed class AppAgendaTest
     [Test]
     public async Task ShouldNotRun_WhenNotScheduled()
     {
-        var services = setup
+        var services = Setup
         (
             (sp, agenda) =>
             {
@@ -139,10 +139,10 @@ internal sealed class AppAgendaTest
         Assert.That(counter.Value, Is.EqualTo(0));
     }
 
-    private static IServiceProvider setup(Action<IServiceProvider, AppAgendaBuilder> build, params KeyValuePair<string, string?>[] options)
+    private static IServiceProvider Setup(Action<IServiceProvider, AppAgendaBuilder> build, params KeyValuePair<string, string?>[] options)
     {
         var hostBuilder = new XtiHostBuilder();
-        hostBuilder.Configuration.AddInMemoryCollection(options ?? new KeyValuePair<string, string?>[0]);
+        hostBuilder.Configuration.AddInMemoryCollection(options ?? []);
         hostBuilder.Services.AddServicesForTests();
         hostBuilder.Services.AddAppAgenda(build);
         var sp = hostBuilder.Build().Scope();

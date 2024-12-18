@@ -1,19 +1,36 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XTI_App.Abstractions;
 using XTI_App.Api;
+using XTI_Core;
+using XTI_TempLog;
 
 namespace XTI_App.Hosting;
 
 public sealed class AppAgendaBuilder
 {
     private readonly IServiceProvider sp;
+    private readonly IClock clock;
+    private readonly XtiEnvironment xtiEnv;
+    private readonly XtiBasePath xtiBasePath;
+    private readonly TempLogRepository tempLogRepo;
     private readonly List<IAppAgendaItemBuilder> preStartBuilders = new();
     private readonly List<IAppAgendaItemBuilder> itemBuilders = new();
     private readonly List<IAppAgendaItemBuilder> postStopBuilders = new();
 
-    public AppAgendaBuilder(IServiceProvider sp)
+    public AppAgendaBuilder
+    (
+        IServiceProvider sp,
+        IClock clock,
+        XtiEnvironment xtiEnv,
+        XtiBasePath xtiBasePath,
+        TempLogRepository tempLogRepo
+    )
     {
         this.sp = sp;
+        this.clock = clock;
+        this.xtiEnv = xtiEnv;
+        this.xtiBasePath = xtiBasePath;
+        this.tempLogRepo = tempLogRepo;
     }
 
     public AppAgendaBuilder AddPreStart<TAppApi>(Func<TAppApi, AppApiAction<EmptyRequest, EmptyActionResult>> createAction)
@@ -99,6 +116,10 @@ public sealed class AppAgendaBuilder
         new
         (
             sp,
+            clock,
+            xtiEnv,
+            xtiBasePath,
+            tempLogRepo,
             preStartBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray(),
             itemBuilders.Select(b => b.Build()).ToArray(),
             postStopBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray()
