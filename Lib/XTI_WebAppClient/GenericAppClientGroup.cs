@@ -15,9 +15,9 @@ public sealed class GenericAppClientGroup : AppClientGroup
     public Task<TResult> ExecuteAction<TResult>(string action, CancellationToken ct) =>
         CreatePostAction<EmptyRequest, TResult>(action).Post("", new EmptyRequest(), ct);
 
-    public Task<TResult> ExecuteAction<TModel, TResult>(string action, TModel model, CancellationToken ct) =>
-        CreatePostAction<TModel, TResult>(action).Post("", model, ct);
+    public Task<TResult> ExecuteAction<TRequest, TResult>(string action, TRequest requestData, CancellationToken ct) =>
+        CreatePostAction<TRequest, TResult>(action).Post("", requestData, ct);
 
-    public Task<TResult> ExecuteAction<TModel, TResult>(string action, string modifier, TModel model, CancellationToken ct) =>
-        CreatePostAction<TModel, TResult>(action).Post(modifier, model, ct);
+    public Task<TResult> ExecuteAction<TRequest, TResult>(string action, string modifier, TRequest requestData, CancellationToken ct) =>
+        CreatePostAction<TRequest, TResult>(action).Post(modifier, requestData, ct);
 }

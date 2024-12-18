@@ -7,7 +7,7 @@ using XTI_Forms;
 
 namespace XTI_WebAppClient;
 
-public sealed class AppClientContentAction<TModel>
+public sealed class AppClientContentAction<TRequest>
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly XtiTokenAccessor xtiTokenAccessor;
@@ -28,14 +28,14 @@ public sealed class AppClientContentAction<TModel>
 
     public Task<string> Url(string modifier) => _Url(default, modifier);
 
-    public Task<string> Url(TModel model) => Url(model, "");
+    public Task<string> Url(TRequest requestData) => Url(requestData, "");
 
-    public Task<string> Url(TModel model, string modifier) => _Url(model, modifier);
+    public Task<string> Url(TRequest requestData, string modifier) => _Url(requestData, modifier);
 
-    private async Task<string> _Url(TModel? model, string modifier)
+    private async Task<string> _Url(TRequest? requestData, string modifier)
     {
         var url = await clientUrl.Value(actionName, modifier);
-        var query = new ObjectToQueryString(model).Value;
+        var query = new ObjectToQueryString(requestData).Value;
         if (!string.IsNullOrWhiteSpace(query))
         {
             query = $"?{query}";
@@ -43,12 +43,12 @@ public sealed class AppClientContentAction<TModel>
         return $"{url}{query}";
     }
 
-    public Task<WebContentResult> Post(string modifier, TModel model, CancellationToken ct) =>
-        _Post(modifier, model, true, ct);
+    public Task<WebContentResult> Post(string modifier, TRequest requestData, CancellationToken ct) =>
+        _Post(modifier, requestData, true, ct);
 
-    private async Task<WebContentResult> _Post(string modifier, TModel model, bool retryUnauthorized, CancellationToken ct)
+    private async Task<WebContentResult> _Post(string modifier, TRequest requestData, bool retryUnauthorized, CancellationToken ct)
     {
-        using var response = await GetPostResponseMessage(modifier, model, ct);
+        using var response = await GetPostResponseMessage(modifier, requestData, ct);
         var responseContent = await response.Content.ReadAsStringAsync();
         WebContentResult result;
         try
@@ -60,7 +60,7 @@ public sealed class AppClientContentAction<TModel>
             else if (response.StatusCode == HttpStatusCode.Unauthorized && retryUnauthorized)
             {
                 xtiTokenAccessor.Reset();
-                result = await _Post(modifier, model, false, ct);
+                result = await _Post(modifier, requestData, false, ct);
             }
             else
             {
@@ -74,7 +74,7 @@ public sealed class AppClientContentAction<TModel>
         return result;
     }
 
-    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? model, CancellationToken ct)
+    private async Task<HttpResponseMessage> GetPostResponseMessage(string modifier, object? requestData, CancellationToken ct)
     {
         using var client = httpClientFactory.CreateClient();
         client.InitFromOptions(options);
@@ -87,9 +87,9 @@ public sealed class AppClientContentAction<TModel>
             }
         }
         var url = await clientUrl.Value(actionName, modifier);
-        if (model == null) { throw new ArgumentNullException(nameof(model)); }
-        object transformedModel = model;
-        if (model is Form form)
+        if (requestData == null) { throw new ArgumentNullException(nameof(requestData)); }
+        object transformedModel = requestData;
+        if (requestData is Form form)
         {
             transformedModel = form.Export();
         }
@@ -122,6 +122,6 @@ public sealed class AppClientContentAction<TModel>
             content,
             "",
             AppEventSeverity.Values.CriticalError,
-            new[] { new ErrorModel(ex.Message) }
+            [new ErrorModel(ex.Message)]
         );
 }

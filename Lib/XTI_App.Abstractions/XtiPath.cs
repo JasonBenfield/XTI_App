@@ -77,7 +77,7 @@ public sealed class XtiPath : IEquatable<XtiPath>, IEquatable<string>
         Group = group;
         Action = action;
         Modifier = modifier;
-        value = $"/{App}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}";
+        value = $"/{App}/{Version.Value}/{Group.Value}/{Action.Value}/{Modifier.Value}".Replace(" ", "");
         hashCode = value.GetHashCode();
     }
 
