@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using XTI_App.Abstractions;
 using XTI_Core;
@@ -9,7 +10,7 @@ public sealed class VerifyModelStateActionFilter : IActionFilter
 {
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        if (!context.ModelState.IsValid)
+        if (!context.ModelState.IsValid && context.HttpContext.Request.HasJsonContentType())
         {
             throw new ValidationFailedException
             (
