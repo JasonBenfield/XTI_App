@@ -130,5 +130,6 @@ public static class DefaultWebAppExtensions
         );
         options.ModelBinderProviders.Insert(0, new FormModelBinderProvider());
         options.ModelBinderProviders.Insert(0, new FileUploadModelBinderProvider());
+        options.Filters.Add<VerifyModelStateActionFilter>();
     }
 }
