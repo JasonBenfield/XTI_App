@@ -195,12 +195,12 @@ public sealed class AppClientPostAction<TRequest, TResult>
     {
         if (sourceObj is FileUpload file)
         {
-            files.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, file);
+            files.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, file);
         }
         else if (sourceObj.GetType().IsArray)
         {
             var arr = (Array)sourceObj;
-            var arrPre = string.IsNullOrWhiteSpace(pre) ? "model" : pre;
+            var arrPre = string.IsNullOrWhiteSpace(pre) ? "requestData" : pre;
             foreach (var i in Enumerable.Range(0, arr.Length))
             {
                 var value = arr.GetValue(i);
@@ -238,36 +238,36 @@ public sealed class AppClientPostAction<TRequest, TResult>
         {
             if (sourceObj is string str)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, str);
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, str);
             }
             else if (sourceObj is DateTimeOffset dateTimeOffset)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateTimeOffset.ToString("O"));
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, dateTimeOffset.ToString("O"));
             }
             else if (sourceObj is DateTime dateTime)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateTime.ToString("O"));
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, dateTime.ToString("O"));
             }
             else if (sourceObj is DateOnly dateOnly)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, dateOnly.ToString("O"));
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, dateOnly.ToString("O"));
             }
             else if (sourceObj is TimeOnly timeOnly)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, timeOnly.ToString("O"));
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, timeOnly.ToString("O"));
             }
             else if (sourceObj is TimeSpan timeSpan)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, timeSpan.ToString("G"));
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, timeSpan.ToString("G"));
             }
             else if (sourceObj.GetType().IsValueType)
             {
-                formData.Add(string.IsNullOrWhiteSpace(pre) ? "model" : pre, sourceObj.ToString() ?? "");
+                formData.Add(string.IsNullOrWhiteSpace(pre) ? "requestData" : pre, sourceObj.ToString() ?? "");
             }
             else if (sourceObj.GetType().IsArray)
             {
                 var arr = (Array)sourceObj;
-                var arrPre = string.IsNullOrWhiteSpace(pre) ? "model" : pre;
+                var arrPre = string.IsNullOrWhiteSpace(pre) ? "requestData" : pre;
                 foreach (var i in Enumerable.Range(0, arr.Length))
                 {
                     var value = arr.GetValue(i);
