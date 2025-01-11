@@ -7,7 +7,8 @@ public sealed class GenericAppClient : AppClient
         IHttpClientFactory httpClientFactory,
         XtiTokenAccessorFactory xtiTokenAccessorFactory,
         AppClientUrl clientUrl,
-        AppClientOptions options,
+        IAppClientSessionKey sessionKey,
+        IAppClientRequestKey requestKey,
         string appName,
         AppClientVersion version
     )
@@ -16,7 +17,8 @@ public sealed class GenericAppClient : AppClient
             httpClientFactory,
             xtiTokenAccessorFactory,
             clientUrl,
-            options,
+            sessionKey,
+            requestKey,
             appName,
             version.IsBlank() ? "Current" : version.Value
         )
