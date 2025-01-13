@@ -9,18 +9,19 @@ public class AppClient
 
     protected AppClient
     (
-        IHttpClientFactory httpClientFactory, 
-        XtiTokenAccessorFactory xtiTokenAccessorFactory, 
+        IHttpClientFactory httpClientFactory,
+        XtiTokenAccessorFactory xtiTokenAccessorFactory,
         AppClientUrl clientUrl,
-        AppClientOptions options, 
-        string appName, 
+        IAppClientSessionKey sessionKey,
+        IAppClientRequestKey requestKey,
+        string appName,
         string version
     )
     {
         this.httpClientFactory = httpClientFactory;
         xtiTokenAccessor = xtiTokenAccessorFactory.Create();
         this.clientUrl = clientUrl.WithApp(appName, version);
-        this.options = options;
+        options = new AppClientOptions(sessionKey, requestKey);
         UserCache = CreateGroup
         (
             (_httpClientFactory, _tokenAccessor, _clientUrl, _options) =>
@@ -64,6 +65,11 @@ public class AppClient
     public UserClientGroup User { get; }
 
     public Task<string> UserName() => xtiTokenAccessor.UserName();
+
+    public void ConfigureOptions(Action<AppClientOptions> configure)
+    {
+        configure(options);
+    }
 
     public void UseToken<T>() where T : IXtiToken => xtiTokenAccessor.UseToken<T>();
 
