@@ -136,7 +136,6 @@ internal sealed class GetMenuLinksTest
         hostBuilder.Services.AddScoped<FakeAppSetup>();
         hostBuilder.Services.AddScoped<IAppSetup>(sp => sp.GetRequiredService<FakeAppSetup>());
         hostBuilder.Services.AddHttpContextAccessor();
-        hostBuilder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         hostBuilder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
         hostBuilder.Services.AddScoped<IAppContext>(sp => sp.GetRequiredService<FakeAppContext>());
         hostBuilder.Services.AddScoped<ICurrentUserName>(sp => sp.GetRequiredService<FakeCurrentUserName>());
