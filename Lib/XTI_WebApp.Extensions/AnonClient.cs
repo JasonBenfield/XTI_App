@@ -37,11 +37,20 @@ public sealed class AnonClient : IAnonClient
         }
         else
         {
-            var unprotectedText = new DecryptedValue(protector, cookieText).Value();
-            var info = XtiSerializer.Deserialize<AnonInfo>(unprotectedText);
-            SessionKey = info.SessionKey;
-            SessionExpirationTime = info.SessionExpirationTime;
-            RequesterKey = info.RequesterKey;
+            try
+            {
+                var unprotectedText = new DecryptedValue(protector, cookieText).Value();
+                var info = XtiSerializer.Deserialize<AnonInfo>(unprotectedText);
+                SessionKey = info.SessionKey;
+                SessionExpirationTime = info.SessionExpirationTime;
+                RequesterKey = info.RequesterKey;
+            }
+            catch
+            {
+                SessionKey = "";
+                SessionExpirationTime = DateTimeOffset.MinValue;
+                RequesterKey = "";
+            }
         }
     }
 
