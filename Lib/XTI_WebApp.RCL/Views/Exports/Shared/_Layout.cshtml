@@ -12,7 +12,7 @@
     @{
         var cacheBust = string.IsNullOrWhiteSpace(pageContext.CacheBust)
             ? ""
-            : $"?cacheBust={pageContext.CacheBust}";
+            : $"?v={pageContext.CacheBust}";
         var rootPath = @Url.Content("~");
     }
     @foreach(var styleSheet in pageModel.PreStyleSheets)
@@ -35,7 +35,7 @@
     @{
         var scriptCacheBust = string.IsNullOrWhiteSpace(pageContext.CacheBust)
             ? ""
-            : $"?cacheBust={pageContext.CacheBust}";
+            : $"?v={pageContext.CacheBust}";
         var scriptRootPath = @Url.Content("~");
     }
     @foreach(var script in pageModel.PreScripts)

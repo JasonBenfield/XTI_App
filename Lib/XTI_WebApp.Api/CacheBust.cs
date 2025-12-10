@@ -26,7 +26,14 @@ public sealed class CacheBust
         string? cacheBust;
         if (xtiEnv.IsDevelopmentOrTest())
         {
-            cacheBust = Guid.NewGuid().ToString("N");
+            if (string.IsNullOrWhiteSpace(options.WebApp.CacheBust))
+            {
+                cacheBust = Guid.NewGuid().ToString("N");
+            }
+            else
+            {
+                cacheBust = options.WebApp.CacheBust;
+            }
         }
         else
         {
@@ -55,6 +62,6 @@ public sealed class CacheBust
     public async Task<string> Query()
     {
         var value = await Value();
-        return string.IsNullOrWhiteSpace(value) ? "" : $"cacheBust={value}";
+        return string.IsNullOrWhiteSpace(value) ? "" : $"v={value}";
     }
 }

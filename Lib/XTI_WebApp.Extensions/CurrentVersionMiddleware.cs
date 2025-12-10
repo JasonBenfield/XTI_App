@@ -24,26 +24,46 @@ public sealed class CurrentVersionMiddleware
         {
             if (xtiEnv.IsProduction())
             {
-                var queryCacheBust = request.Query["cacheBust"].FirstOrDefault() ?? "";
+                var oldQueryCacheBust =
+                    request.Query["cacheBust"].FirstOrDefault() ??
+                    "";
+                var queryCacheBust =
+                    request.Query["v"].FirstOrDefault() ??
+                    "";
                 var versionKey = context.RequestServices.GetRequiredService<AppVersionKey>();
                 if (versionKey.IsCurrent())
                 {
                     var url = request.GetDisplayUrl();
                     var cacheBustValue = await cacheBust.Value();
+                    if (!string.IsNullOrWhiteSpace(oldQueryCacheBust))
+                    {
+                        url = url
+                            .Replace
+                            (
+                                $"cacheBust={oldQueryCacheBust}",
+                                ""
+                            );
+                    }
                     if (string.IsNullOrWhiteSpace(queryCacheBust))
                     {
                         var delimiter = url.Contains("?") ? "&" : "?";
-                        url = $"{url}{delimiter}cacheBust={cacheBustValue}";
+                        url = $"{url}{delimiter}v={cacheBustValue}";
                         context.Response.Redirect(url);
                         return;
                     }
                     else if (queryCacheBust != cacheBustValue)
                     {
-                        url = url.Replace
+                        url = url
+                            .Replace
                             (
-                                $"cacheBust={queryCacheBust}",
-                                $"cacheBust={cacheBustValue}"
+                                $"v={queryCacheBust}",
+                                $"v={cacheBustValue}"
                             );
+                        context.Response.Redirect(url);
+                        return;
+                    }
+                    if (!string.IsNullOrWhiteSpace(oldQueryCacheBust))
+                    {
                         context.Response.Redirect(url);
                         return;
                     }

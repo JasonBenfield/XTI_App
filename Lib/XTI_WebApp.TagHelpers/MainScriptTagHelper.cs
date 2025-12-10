@@ -48,12 +48,12 @@ public sealed class MainScriptTagHelper : TagHelper
         (
             ViewContext ?? throw new ArgumentNullException(nameof(ViewContext))
         );
-        var pageUrl = await getPageUrl(urlHelper, path);
+        var pageUrl = await GetPageUrl(urlHelper, path);
         output.Attributes.Add("src", pageUrl);
         output.TagMode = TagMode.StartTagAndEndTag;
     }
 
-    private async Task<string> getPageUrl(IUrlHelper urlHelper, string path)
+    private async Task<string> GetPageUrl(IUrlHelper urlHelper, string path)
     {
         var query = await cacheBust.Query();
         if (!string.IsNullOrWhiteSpace(query))
