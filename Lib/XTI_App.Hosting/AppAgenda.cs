@@ -12,6 +12,7 @@ public sealed class AppAgenda
     private readonly XtiEnvironment xtiEnv;
     private readonly XtiBasePath xtiBasePath;
     private readonly TempLogRepository tempLogRepo;
+    private readonly bool isRunForAllVersionsEnabled;
     private readonly ImmediateAppAgendaItem[] preStartItems;
     private readonly AppAgendaItem[] items;
     private readonly ImmediateAppAgendaItem[] postStopItems;
@@ -26,6 +27,7 @@ public sealed class AppAgenda
         XtiEnvironment xtiEnv,
         XtiBasePath xtiBasePath,
         TempLogRepository tempLogRepo,
+        bool isRunForAllVersionsEnabled,
         ImmediateAppAgendaItem[] preStartItems,
         AppAgendaItem[] items,
         ImmediateAppAgendaItem[] postStopItems
@@ -36,6 +38,7 @@ public sealed class AppAgenda
         this.xtiEnv = xtiEnv;
         this.xtiBasePath = xtiBasePath;
         this.tempLogRepo = tempLogRepo;
+        this.isRunForAllVersionsEnabled = isRunForAllVersionsEnabled;
         this.preStartItems = preStartItems;
         this.items = items;
         this.postStopItems = postStopItems;
@@ -43,7 +46,7 @@ public sealed class AppAgenda
 
     public async Task Start(CancellationToken stoppingToken)
     {
-        hasAgenda = xtiBasePath.VersionKey.Equals(AppVersionKey.Current) &&
+        hasAgenda = (isRunForAllVersionsEnabled || xtiBasePath.VersionKey.Equals(AppVersionKey.Current)) &&
             (preStartItems.Any() || items.Any() || postStopItems.Any());
         if (hasAgenda)
         {

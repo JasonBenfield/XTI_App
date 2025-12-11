@@ -53,7 +53,7 @@ internal sealed class MainScriptTagHelperTest
         var sp = await setup(cacheBust: "X");
         var result = await Execute(sp);
         var src = result.Attributes[0].Value;
-        Assert.That(src, Does.EndWith("?cacheBust=X"));
+        Assert.That(src, Does.EndWith("?v=X"));
     }
 
     [Test]
@@ -65,7 +65,7 @@ internal sealed class MainScriptTagHelperTest
         var src = result.Attributes[0].Value;
         var cacheBust = await sp.GetRequiredService<CacheBust>().Value();
         Console.WriteLine($"cacheBust: {cacheBust}");
-        Assert.That(src, Does.EndWith($"?cacheBust={cacheBust}"));
+        Assert.That(src, Does.EndWith($"?v={cacheBust}"));
     }
 
     [Test]

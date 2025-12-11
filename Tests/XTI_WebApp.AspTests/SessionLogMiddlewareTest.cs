@@ -379,7 +379,7 @@ internal sealed class SessionLogMiddlewareTest
                 return Task.CompletedTask;
             }
         );
-        var uri = $"/Fake/Current/Controller1/Action1?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
+        var uri = $"/Fake/Current/Controller1/Action1?v={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         var response = await input.GetAsync(uri);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
         var result = await response.Content.ReadAsStringAsync();
@@ -432,7 +432,7 @@ internal sealed class SessionLogMiddlewareTest
         AccessDeniedException? exception = null;
         const string envName = "Production";
         var input = await Setup(envName);
-        var uri = $"/Fake/Current/Controller1/Action1?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
+        var uri = $"/Fake/Current/Controller1/Action1?v={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
             c =>
@@ -477,7 +477,7 @@ internal sealed class SessionLogMiddlewareTest
         TestAppException? exception = null;
         const string envName = "Production";
         var input = await Setup(envName);
-        var uri = $"/Fake/Current/Controller1/Action1t?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
+        var uri = $"/Fake/Current/Controller1/Action1t?v={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
             c =>
@@ -524,7 +524,7 @@ internal sealed class SessionLogMiddlewareTest
     {
         const string envName = "Production";
         var input = await Setup(envName);
-        var uri = $"/Fake/Current/User/Logout?cacheBust={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
+        var uri = $"/Fake/Current/User/Logout?v={input.AppContext.GetCurrentApp().Version.VersionKey.DisplayText}";
         input.CurrentAction.Configure
         (
             async c =>
