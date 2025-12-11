@@ -42,7 +42,9 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
         while (!stoppingToken.IsCancellationRequested)
         {
             var schedule = scheduledItem.Schedule;
-            if (schedule.IsInSchedule(clock.Now()))
+            var interval = scheduledItem.Interval;
+            var now = clock.Now();
+            if (schedule.IsInSchedule(now))
             {
                 if (scheduledItem.Type != ScheduledActionTypes.PeriodicUntilSuccess || !periodicSucceeded)
                 {
@@ -64,10 +66,20 @@ public sealed class ScheduledActionWorker : BackgroundService, IWorker
             else
             {
                 periodicSucceeded = false;
+                var timeRanges = schedule.DateTimeRanges(DateRange.From(now).ForOneDay());
+                var firstTimeRange = timeRanges
+                    .OrderBy(tr => tr.Start)
+                    .FirstOrDefault(tr => tr.Start > now);
+                var endTime = firstTimeRange?.Start.LocalDateTime ?? now.LocalDateTime.Date.AddDays(1);
+                var intervalToNextTime = endTime - now.LocalDateTime;
+                if (intervalToNextTime > interval)
+                {
+                    interval = intervalToNextTime;
+                }
             }
             try
             {
-                await Task.Delay(scheduledItem.Interval, stoppingToken);
+                await Task.Delay(interval, stoppingToken);
             }
             catch (TaskCanceledException) { }
         }

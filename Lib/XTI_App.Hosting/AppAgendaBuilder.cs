@@ -16,6 +16,7 @@ public sealed class AppAgendaBuilder
     private readonly List<IAppAgendaItemBuilder> preStartBuilders = new();
     private readonly List<IAppAgendaItemBuilder> itemBuilders = new();
     private readonly List<IAppAgendaItemBuilder> postStopBuilders = new();
+    private bool isRunForAllVersionsEnabled = false;
 
     public AppAgendaBuilder
     (
@@ -31,6 +32,12 @@ public sealed class AppAgendaBuilder
         this.xtiEnv = xtiEnv;
         this.xtiBasePath = xtiBasePath;
         this.tempLogRepo = tempLogRepo;
+    }
+
+    public AppAgendaBuilder RunForAllVersions()
+    {
+        isRunForAllVersionsEnabled = true;
+        return this;
     }
 
     public AppAgendaBuilder AddPreStart<TAppApi>(Func<TAppApi, AppApiAction<EmptyRequest, EmptyActionResult>> createAction)
@@ -120,6 +127,7 @@ public sealed class AppAgendaBuilder
             xtiEnv,
             xtiBasePath,
             tempLogRepo,
+            isRunForAllVersionsEnabled,
             preStartBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray(),
             itemBuilders.Select(b => b.Build()).ToArray(),
             postStopBuilders.Select(b => (ImmediateAppAgendaItem)b.Build()).ToArray()

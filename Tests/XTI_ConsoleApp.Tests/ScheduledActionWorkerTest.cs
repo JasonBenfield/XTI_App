@@ -17,7 +17,7 @@ public sealed class ScheduledActionWorkerTest
         var host = BuildHost().Build();
         SetTimeWithinSchedule(host.Services);
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         var counter = host.Services.GetRequiredService<Counter>();
         Assert.That(counter.ContinuousValue, Is.GreaterThan(0));
         Console.WriteLine($"Counter value: {counter.ContinuousValue}");
@@ -30,7 +30,7 @@ public sealed class ScheduledActionWorkerTest
         var host = BuildHost().Build();
         SetTimeWithinSchedule(host.Services);
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         var counter = host.Services.GetRequiredService<Counter>();
         Assert.That(counter.UntilSuccessValue, Is.EqualTo(1));
         await host.StopAsync();
@@ -42,7 +42,7 @@ public sealed class ScheduledActionWorkerTest
         var host = BuildHost().Build();
         SetTimeWithinSchedule(host.Services);
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         var startRequests = await GetStartRequests(host.Services);
         var api = host.Services.GetRequiredService<TestApi>();
         var startRequest = startRequests.FirstOrDefault(r => api.Test.RunContinuously.Path.Equals(r.Path));
@@ -57,7 +57,7 @@ public sealed class ScheduledActionWorkerTest
         SetTimeWithinSchedule(host.Services);
         var counter = host.Services.GetService<Counter>();
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         var startRequests = await GetStartRequests(host.Services);
         var endRequests = await GetEndRequests(host.Services);
         var endRequest = endRequests.FirstOrDefault(r => r.RequestKey == startRequests[0].RequestKey);
@@ -75,7 +75,7 @@ public sealed class ScheduledActionWorkerTest
         testOptions.ThrowException = true;
         var counter = host.Services.GetRequiredService<Counter>();
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         var requests = await GetStartRequests(host.Services);
         var api = host.Services.GetRequiredService<TestApi>();
         var request = requests.First
@@ -101,7 +101,7 @@ public sealed class ScheduledActionWorkerTest
         var clock = host.Services.GetRequiredService<FakeClock>();
         clock.Set(new DateTime(2020, 10, 16, 14, 30, 0, DateTimeKind.Utc));
         var _ = Task.Run(() => host.RunAsync());
-        await delay();
+        await Delay();
         var counter = host.Services.GetRequiredService<Counter>();
         Assert.That(counter.ContinuousValue, Is.EqualTo(0));
         await host.StopAsync();
@@ -117,7 +117,7 @@ public sealed class ScheduledActionWorkerTest
         var testOptions = host.Services.GetRequiredService<TestOptions>();
         testOptions.IsOptional = false;
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         FastForward(host.Services, TimeSpan.FromMinutes(1));
         var startRequests = await GetStartRequests(host.Services);
         var api = host.Services.GetRequiredService<TestApi>();
@@ -137,7 +137,7 @@ public sealed class ScheduledActionWorkerTest
         var testOptions = host.Services.GetRequiredService<TestOptions>();
         testOptions.IsOptional = true;
         var _ = Task.Run(() => host.Run());
-        await delay();
+        await Delay();
         FastForward(host.Services, TimeSpan.FromMinutes(1));
         var startRequests = await GetStartRequests(host.Services);
         var api = host.Services.GetRequiredService<TestApi>();
@@ -195,7 +195,7 @@ public sealed class ScheduledActionWorkerTest
         return logEntries;
     }
 
-    private static Task delay() => Task.Delay(500);
+    private static Task Delay() => Task.Delay(500);
 
     private IHostBuilder BuildHost()
     {
@@ -218,7 +218,12 @@ public sealed class ScheduledActionWorkerTest
                                     .Interval(TimeSpan.FromMilliseconds(100))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday)
+                                            .At
+                                            (
+                                                TimeRange.From(new TimeOnly(9, 0)).ForOneHour(),
+                                                TimeRange.From(new TimeOnly(15, 0)).ForOneHour()
+                                            )
                                     );
                             }
                         );
@@ -232,7 +237,12 @@ public sealed class ScheduledActionWorkerTest
                                     .Interval(TimeSpan.FromMilliseconds(100))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday)
+                                            .At
+                                            (
+                                                TimeRange.From(new TimeOnly(9, 0)).ForOneHour(),
+                                                TimeRange.From(new TimeOnly(15, 0)).ForOneHour()
+                                            )
                                     );
                             }
                         );
@@ -246,7 +256,12 @@ public sealed class ScheduledActionWorkerTest
                                     .Interval(TimeSpan.FromMilliseconds(100))
                                     .AddSchedule
                                     (
-                                        Schedule.On(DayOfWeek.Friday).At(TimeRange.From(new TimeOnly(9, 0)).ForOneHour())
+                                        Schedule.On(DayOfWeek.Friday)
+                                            .At
+                                            (
+                                                TimeRange.From(new TimeOnly(9, 0)).ForOneHour(),
+                                                TimeRange.From(new TimeOnly(15, 0)).ForOneHour()
+                                            )
                                     );
                             }
                         );
