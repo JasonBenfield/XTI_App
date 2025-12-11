@@ -10,6 +10,7 @@ using Microsoft.Net.Http.Headers;
 using System.Text;
 using XTI_App.Abstractions;
 using XTI_Core;
+using XTI_WebApp.Abstractions;
 using XTI_WebApp.Api;
 
 namespace XTI_WebApp.Extensions;
@@ -40,8 +41,8 @@ public static class CookieAndTokenAuthentication
                 options =>
                 {
                     options.ForwardDefaultSelector = context =>
-                        context.IsBearerAuthentication() ? 
-                            "Bearer" : 
+                        context.IsBearerAuthentication() ?
+                            "Bearer" :
                             "Cookies";
                 }
             );
@@ -162,7 +163,12 @@ public static class CookieAndTokenAuthentication
         {
             returnUrl += $"{x.Request.QueryString.Value}";
         }
-        var loginUrl = await sp.GetRequiredService<LoginUrl>().Value(returnUrl);
+        var anonClient = sp.GetRequiredService<IAnonClient>();
+        anonClient.Load();
+        var requesterKey = string.IsNullOrWhiteSpace(anonClient.RequesterKey) ?
+            Guid.NewGuid().ToString("N") :
+            anonClient.RequesterKey;
+        var loginUrl = await sp.GetRequiredService<LoginUrl>().Value(requesterKey, returnUrl);
         x.Response.Redirect(loginUrl);
     }
 

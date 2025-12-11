@@ -6,12 +6,12 @@ public sealed class FakeLoginReturnKey : ILoginReturnKey
 {
     private readonly string value;
 
-    public FakeLoginReturnKey(string value = "")
+    public FakeLoginReturnKey(string requesterKey = "", string value = "")
     {
-        this.value = string.IsNullOrWhiteSpace(value)
-            ? Guid.NewGuid().ToString("N")
-            : value;
+        this.value = string.IsNullOrWhiteSpace(value) ? 
+            Guid.NewGuid().ToString("N") : 
+            value;
     }
 
-    public Task<string> Value(string returnUrl) => Task.FromResult(value);
+    public Task<string> Value(string requesterKey, string returnUrl) => Task.FromResult(value);
 }

@@ -13,12 +13,13 @@ public sealed class LoginUrl
         this.options = options;
     }
 
-    public async Task<string> Value(string returnUrl)
+    public async Task<string> Value(string requesterKey, string returnUrl)
     {
-        var returnKeyValue = await returnKey.Value(returnUrl);
-        var delimiter = options.XtiAuthentication.AuthenticatorUrl.Contains("?")
-            ? "&"
-            : "?";
+        var returnKeyValue = await returnKey.Value(requesterKey, returnUrl);
+        var delimiter = 
+            options.XtiAuthentication.AuthenticatorUrl.Contains("?") ? 
+                "&" : 
+                "?";
         return $"{options.XtiAuthentication.AuthenticatorUrl}{delimiter}returnKey={returnKeyValue}";
     }
 }

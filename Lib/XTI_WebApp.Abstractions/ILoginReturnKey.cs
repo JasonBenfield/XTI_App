@@ -2,5 +2,5 @@
 
 public interface ILoginReturnKey
 {
-    Task<string> Value(string returnUrl);
+    Task<string> Value(string requesterKey, string returnUrl);
 }

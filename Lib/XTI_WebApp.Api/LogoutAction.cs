@@ -10,12 +10,14 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ILogoutProcess logoutProcess;
     private readonly LoginUrl loginUrl;
+    private readonly IAnonClient anonClient;
 
-    public LogoutAction(IHttpContextAccessor httpContextAccessor, ILogoutProcess logoutProcess, LoginUrl loginUrl)
+    public LogoutAction(IHttpContextAccessor httpContextAccessor, ILogoutProcess logoutProcess, LoginUrl loginUrl, IAnonClient anonClient)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.logoutProcess = logoutProcess;
         this.loginUrl = loginUrl;
+        this.anonClient = anonClient;
     }
 
     public async Task<WebRedirectResult> Execute(LogoutRequest logoutRequest, CancellationToken stoppingToken)
@@ -43,7 +45,11 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
         {
             returnUrl = GetDefaultReturnUrl();
         }
-        var authUrl = await loginUrl.Value(returnUrl);
+        anonClient.Load();
+        var requesterKey = string.IsNullOrWhiteSpace(anonClient.RequesterKey) ?
+            Guid.NewGuid().ToString("N") :
+            anonClient.RequesterKey;
+        var authUrl = await loginUrl.Value(requesterKey, returnUrl);
         return new WebRedirectResult(authUrl);
     }
 
