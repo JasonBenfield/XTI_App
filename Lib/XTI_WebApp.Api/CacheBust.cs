@@ -21,7 +21,7 @@ public sealed class CacheBust
         this.xtiBasePath = xtiBasePath;
     }
 
-    public async Task<string> Value()
+    public async Task<string> Value(CancellationToken ct)
     {
         string? cacheBust;
         if (xtiEnv.IsDevelopmentOrTest())
@@ -45,7 +45,7 @@ public sealed class CacheBust
                     var xtiPath = xtiBasePath.Value;
                     if (xtiPath.IsCurrentVersion())
                     {
-                        var app = await appContext.App();
+                        var app = await appContext.App(ct);
                         cacheBust = app.Version.VersionKey.DisplayText;
                         cache.Set(cacheKey, cacheBust);
                     }
@@ -59,9 +59,9 @@ public sealed class CacheBust
         return cacheBust ?? "";
     }
 
-    public async Task<string> Query()
+    public async Task<string> Query(CancellationToken ct)
     {
-        var value = await Value();
+        var value = await Value(ct);
         return string.IsNullOrWhiteSpace(value) ? "" : $"v={value}";
     }
 }

@@ -28,10 +28,10 @@ public sealed class FakeAppSetup : IAppSetup
         private set => user = value;
     }
 
-    public async Task Run(AppVersionKey versionKey)
+    public async Task Run(AppVersionKey versionKey, CancellationToken ct)
     {
         var setup = new DefaultFakeSetup(apiFactory, appContext);
-        await setup.Run(versionKey);
+        await setup.Run(versionKey, ct);
         App = setup.App;
         var departmentModCategoryName = new ModifierCategoryName("Department");
         App = appContext.AddModifier(departmentModCategoryName, new ModifierKey("IT"), "IT");

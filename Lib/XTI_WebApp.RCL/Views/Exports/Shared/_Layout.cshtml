@@ -1,7 +1,7 @@
 ﻿@inject XTI_WebApp.Abstractions.IPageContext pageContext
 @inject XTI_WebApp.Abstractions.AppPageModel pageModel
 @{
-    var serializedPageContext = await pageContext.Serialize();
+    var serializedPageContext = await pageContext.Serialize(Context.RequestAborted);
 }
 <!doctype html>
 <html lang="en">

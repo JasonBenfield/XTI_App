@@ -4,6 +4,6 @@ namespace XTI_App.Api;
 
 public interface IAppContext
 {
-    Task<AppContextModel> App();
-    Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey);
+    Task<AppContextModel> App(CancellationToken ct);
+    Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey, CancellationToken ct);
 }

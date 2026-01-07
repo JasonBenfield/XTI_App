@@ -20,7 +20,7 @@ internal sealed class PageContextTest
         var services = await Setup(AppVersionKey.Current);
         var pageContext = await Execute(services);
         var appContext = services.GetRequiredService<IAppContext>();
-        var app = await appContext.App();
+        var app = await appContext.App(ct: default);
         Assert.That(pageContext.AppTitle, Is.EqualTo(app.App.AppKey.Name.DisplayText), "Should set app title");
     }
 
@@ -96,14 +96,14 @@ internal sealed class PageContextTest
         httpContextAccessor.HttpContext = new DefaultHttpContext();
         httpContextAccessor.HttpContext.Request.PathBase = "/Fake/Current";
         var pageContext = sp.GetRequiredService<IPageContext>();
-        var serialized = await pageContext.Serialize();
+        var serialized = await pageContext.Serialize(ct: default);
         var deserialized = XtiSerializer.Deserialize<PageContextRecord>(serialized);
         return deserialized;
     }
 
     private class PageContextRecord
     {
-        public AppVersionDomainRecord[] WebAppDomains { get; set; } = new AppVersionDomainRecord[0];
+        public AppVersionDomainRecord[] WebAppDomains { get; set; } = [];
         public string CacheBust { get; set; } = "";
         public string AppTitle { get; set; } = "";
         public string PageTitle { get; set; } = "";
@@ -145,7 +145,7 @@ internal sealed class PageContextTest
         });
         var sp = hostBuilder.Build().Scope();
         var setup = sp.GetRequiredService<FakeAppSetup>();
-        await setup.Run(AppVersionKey.Current);
+        await setup.Run(AppVersionKey.Current, ct: default);
         var userContext = sp.GetRequiredService<FakeUserContext>();
         userContext.AddUser(new AppUserName("someone"));
         return sp;

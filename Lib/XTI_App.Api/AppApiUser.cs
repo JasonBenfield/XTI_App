@@ -13,17 +13,17 @@ public sealed class AppApiUser : IAppApiUser
         this.modifierKeyAccessor = modifierKeyAccessor;
     }
 
-    public async Task<bool> HasAccess(XtiPath path)
+    public async Task<bool> HasAccess(XtiPath path, CancellationToken ct)
     {
         path = GetModifiedPath(path);
-        var result = await currentUserAccess.HasAccess(path);
+        var result = await currentUserAccess.HasAccess(path, ct);
         return result.HasAccess;
     }
 
-    public async Task EnsureUserHasAccess(XtiPath path)
+    public async Task EnsureUserHasAccess(XtiPath path, CancellationToken ct)
     {
         path = GetModifiedPath(path);
-        var result = await currentUserAccess.HasAccess(path);
+        var result = await currentUserAccess.HasAccess(path, ct);
         if (!result.HasAccess)
         {
             throw new AccessDeniedException(result.AccessDeniedMessage);

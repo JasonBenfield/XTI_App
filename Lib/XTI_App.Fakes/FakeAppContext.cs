@@ -16,7 +16,7 @@ public sealed class FakeAppContext : ISourceAppContext
         currentApp = RegisterApp(new AppApiTemplateModel { AppKey = appKey });
     }
 
-    public Task<AppContextModel> App()
+    public Task<AppContextModel> App(CancellationToken ct)
     {
         return Task.FromResult(currentApp ?? throw new ArgumentNullException(nameof(currentApp)));
     }
@@ -194,7 +194,7 @@ public sealed class FakeAppContext : ISourceAppContext
 
     public void SetCurrentApp(AppContextModel currentApp) => this.currentApp = currentApp;
 
-    public Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey)
+    public Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey, CancellationToken ct)
     {
         var modifier = GetModifier(category, modKey);
         return Task.FromResult(modifier);

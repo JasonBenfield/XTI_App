@@ -145,7 +145,7 @@ internal sealed class GetMenuLinksTest
         hostBuilder.Services.AddSingleton(sp => sp.GetRequiredService<IMenuDefinitionBuilder>().Build());
         var sp = hostBuilder.Build().Scope();
         var setup = sp.GetRequiredService<FakeAppSetup>();
-        await setup.Run(AppVersionKey.Current);
+        await setup.Run(AppVersionKey.Current, ct: default);
         var userContext = sp.GetRequiredService<FakeUserContext>();
         var userName = new AppUserName("Someone");
         userContext.AddUser(userName);

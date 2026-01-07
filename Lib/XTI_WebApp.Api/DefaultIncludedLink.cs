@@ -16,7 +16,7 @@ internal sealed class DefaultIncludedLink : IIncludedLink
         this.link = link;
     }
 
-    public async Task<bool> IsIncluded()
+    public async Task<bool> IsIncluded(CancellationToken ct)
     {
         bool isIncluded;
         if (link.IsXtiPath())
@@ -29,7 +29,7 @@ internal sealed class DefaultIncludedLink : IIncludedLink
             }
             else
             {
-                var accessResult = await currentUserAccess.HasAccess(xtiPath);
+                var accessResult = await currentUserAccess.HasAccess(xtiPath, ct);
                 isIncluded = accessResult.HasAccess;
             }
         }

@@ -2,5 +2,5 @@
 
 public interface IAppSetup
 {
-    Task Run(AppVersionKey versionKey);
+    Task Run(AppVersionKey versionKey, CancellationToken ct);
 }

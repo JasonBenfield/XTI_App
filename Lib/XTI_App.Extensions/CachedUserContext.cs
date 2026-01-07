@@ -25,19 +25,19 @@ public sealed class CachedUserContext : ICachedUserContext
 
     private static string GetUserCacheKey(AppUserName userName) => $"xti_user_{userName.Value}";
 
-    public async Task<AppUserModel> User()
+    public async Task<AppUserModel> User(CancellationToken ct)
     {
         var userName = await currentUserName.Value();
-        var cachedUser = await User(userName);
+        var cachedUser = await User(userName, ct);
         return cachedUser;
     }
 
-    public async Task<AppUserModel> User(AppUserName userName)
+    public async Task<AppUserModel> User(AppUserName userName, CancellationToken ct)
     {
         var cacheKey = GetUserCacheKey(userName);
         if (!cache.TryGetValue<AppUserModel>(cacheKey, out var cachedUser))
         {
-            cachedUser = await sourceUserContext.User(userName);
+            cachedUser = await sourceUserContext.User(userName, ct);
             if (!userName.IsAnon() && cachedUser.IsAnon())
             {
                 throw new Exception($"User '{userName.DisplayText}' was not found.");
@@ -52,12 +52,12 @@ public sealed class CachedUserContext : ICachedUserContext
         return cachedUser ?? new AppUserModel();
     }
 
-    public async Task<AppUserModel> UserOrAnon(AppUserName userName)
+    public async Task<AppUserModel> UserOrAnon(AppUserName userName, CancellationToken ct)
     {
         var cacheKey = GetUserCacheKey(userName);
         if (!cache.TryGetValue<AppUserModel>(cacheKey, out var cachedUser))
         {
-            cachedUser = await sourceUserContext.UserOrAnon(userName);
+            cachedUser = await sourceUserContext.UserOrAnon(userName, ct);
             cache.Set
             (
                 cacheKey,
@@ -68,7 +68,7 @@ public sealed class CachedUserContext : ICachedUserContext
         return cachedUser ?? new AppUserModel();
     }
 
-    public async Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier)
+    public async Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier, CancellationToken ct)
     {
         var cacheKey = GetUserRolesCacheKey(user.UserName);
         if (!cache.TryGetValue<List<ModifiedUserRoles>>(cacheKey, out var modifiedUserRoles))
@@ -88,7 +88,7 @@ public sealed class CachedUserContext : ICachedUserContext
         var modifiedUserRole = modifiedUserRoles.FirstOrDefault(mur => mur.Modifier.ID == modifier.ID);
         if (modifiedUserRole == null)
         {
-            var userRoles = await sourceUserContext.UserRoles(user, modifier);
+            var userRoles = await sourceUserContext.UserRoles(user, modifier, ct);
             modifiedUserRole = new ModifiedUserRoles(modifier, userRoles);
             modifiedUserRoles.Add(modifiedUserRole);
         }

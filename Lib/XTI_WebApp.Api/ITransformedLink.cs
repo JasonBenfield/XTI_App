@@ -2,5 +2,5 @@
 
 public interface ITransformedLink
 {
-    Task<LinkModel> Value();
+    Task<LinkModel> Value(CancellationToken ct);
 }

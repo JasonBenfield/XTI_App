@@ -98,7 +98,7 @@ internal sealed class SessionLogMiddlewareTest
         var input = await Setup();
         input.UserContext.SetCurrentUser(AppUserName.Anon);
         await input.GetAsync("/Fake/Current/Controller1/Action1");
-        var anonUser = await input.UserContext.User(AppUserName.Anon);
+        var anonUser = await input.UserContext.User(AppUserName.Anon, ct: default);
         var sessions = await GetSessions(input.Host.Services);
         Assert.That(sessions.Length, Is.EqualTo(1), "Should use session for authenticated user");
         Assert.That(sessions[0].SessionKey.UserName, Is.EqualTo(""), "Should create session with anonymous user");
@@ -648,7 +648,7 @@ internal sealed class SessionLogMiddlewareTest
         var authOptions = host.Services.GetRequiredService<XtiAuthenticationOptions>();
         authOptions.JwtSecret = "JwtSecret";
         var setup = host.Services.GetRequiredService<FakeAppSetup>();
-        await setup.Run(AppVersionKey.Current);
+        await setup.Run(AppVersionKey.Current, ct: default);
         var userContext = host.Services.GetRequiredService<FakeUserContext>();
         userContext.AddUser(new AppUserName("xartogg"));
         return new TestInput(host);

@@ -4,6 +4,6 @@ namespace XTI_ODataQuery.Api;
 
 public sealed class EmptyQueryAction<TArgs, TEntity> : QueryAction<TArgs, TEntity>
 {
-    public Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TArgs requestData) =>
+    public Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TArgs requestData, CancellationToken ct) =>
         Task.FromResult(new TEntity[0].AsQueryable());
 }

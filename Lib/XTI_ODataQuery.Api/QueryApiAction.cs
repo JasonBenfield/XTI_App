@@ -47,9 +47,9 @@ public sealed class QueryApiAction<TRequest, TEntity> : IAppApiAction
 
     public async Task<IQueryable<TEntity>> Execute(ODataQueryOptions<TEntity> options, TRequest requestData, CancellationToken stoppingToken = default)
     {
-        await user.EnsureUserHasAccess(Path);
+        await user.EnsureUserHasAccess(Path, stoppingToken);
         var queryAction = createQuery();
-        var queryable = await queryAction.Execute(options, requestData);
+        var queryable = await queryAction.Execute(options, requestData, stoppingToken);
         return queryable;
     }
 

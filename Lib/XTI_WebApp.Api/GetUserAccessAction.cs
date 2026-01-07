@@ -21,7 +21,8 @@ public sealed class GetUserAccessAction : AppAction<ResourcePath[], ResourcePath
             (
                 new ResourceGroupName(path.Group),
                 new ResourceName(path.Action),
-                new ModifierKey(path.ModKey)
+                new ModifierKey(path.ModKey),
+                stoppingToken
             );
             accesses.Add(new ResourcePathAccess(path, result.HasAccess));
         }

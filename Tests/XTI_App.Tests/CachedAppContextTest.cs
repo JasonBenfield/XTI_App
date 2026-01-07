@@ -14,7 +14,7 @@ internal sealed class CachedAppContextTest
     {
         var services = await Setup();
         var appContext = GetAppContext(services);
-        var appFromContext = await appContext.App();
+        var appFromContext = await appContext.App(ct: default);
         var appSetup = services.GetRequiredService<FakeAppSetup>();
         Assert.That(appFromContext.App.ID, Is.EqualTo(appSetup.App.App.ID), "Should retrieve app from source");
         Assert.That(appFromContext.App.AppKey.Name.DisplayText, Is.EqualTo(appSetup.App.App.AppKey.Name.DisplayText), "Should retrieve app from source");
@@ -26,9 +26,9 @@ internal sealed class CachedAppContextTest
         var services = await Setup();
         var sourceAppContext = GetSourceAppContext(services);
         var cachedAppContext = GetAppContext(services);
-        var cachedApp1 = await cachedAppContext.App();
+        var cachedApp1 = await cachedAppContext.App(ct: default);
         var originalTitle = cachedApp1.App.AppKey.Name.DisplayText;
-        var originalApp = await sourceAppContext.App();
+        var originalApp = await sourceAppContext.App(ct: default);
         var originalVersionName = originalApp.App.VersionName;
         sourceAppContext.Update
         (
@@ -44,7 +44,7 @@ internal sealed class CachedAppContextTest
                 )
             }
         );
-        var cachedApp2 = await cachedAppContext.App();
+        var cachedApp2 = await cachedAppContext.App(ct: default);
         Assert.That(cachedApp2.App.VersionName, Is.EqualTo(originalVersionName), "Should retrieve app from cache");
     }
 
@@ -53,7 +53,7 @@ internal sealed class CachedAppContextTest
     {
         var services = await Setup();
         var appContext = GetAppContext(services);
-        var app = await appContext.App();
+        var app = await appContext.App(ct: default);
         var expectedRoleNames = new[]
         {
             FakeInfo.Roles.Viewer,

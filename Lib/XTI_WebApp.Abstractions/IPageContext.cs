@@ -12,5 +12,5 @@ public interface IPageContext
     string PageName { get; set; }
     public AppVersionDomain[] WebAppDomains { get; }
 
-    Task<string> Serialize();
+    Task<string> Serialize(CancellationToken ct);
 }

@@ -20,9 +20,9 @@ public sealed class FakeUserContext : ISourceUserContext
 
     public AppUserName GetCurrentUserName() => currentUserName.GetUserName();
 
-    public Task<AppUserModel> User() => User(GetCurrentUserName());
+    public Task<AppUserModel> User(CancellationToken ct) => User(GetCurrentUserName(), ct);
 
-    public Task<AppUserModel> User(AppUserName userName)
+    public Task<AppUserModel> User(AppUserName userName, CancellationToken ct)
     {
         var user = GetUser(userName);
         return Task.FromResult(user);
@@ -34,7 +34,7 @@ public sealed class FakeUserContext : ISourceUserContext
         users.FirstOrDefault(u => u.UserName.Equals(userName)) ??
         throw new Exception($"User '{userName.DisplayText}' was not found.");
 
-    public Task<AppUserModel> UserOrAnon(AppUserName userName) =>
+    public Task<AppUserModel> UserOrAnon(AppUserName userName, CancellationToken ct) =>
         Task.FromResult(GetUserOrAnon(userName));
 
     public AppUserModel GetUserOrAnon(AppUserName userName) =>
@@ -145,7 +145,7 @@ public sealed class FakeUserContext : ISourceUserContext
         return userID;
     }
 
-    public Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier)
+    public Task<AppRoleModel[]> UserRoles(AppUserModel user, ModifierModel modifier, CancellationToken ct)
     {
         var roles = GetUserRoles(user, modifier);
         return Task.FromResult(roles);
@@ -158,7 +158,7 @@ public sealed class FakeUserContext : ISourceUserContext
             var defaultModifier = appContext.GetDefaultModifier();
             if (!userRoles.TryGetValue(GetUserRoleKey(user, defaultModifier), out roles))
             {
-                roles = new AppRoleModel[0];
+                roles = [];
             }
         }
         return roles;

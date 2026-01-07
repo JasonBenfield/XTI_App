@@ -35,6 +35,6 @@ internal static class Extensions
     public static async Task Setup(this IServiceProvider services)
     {
         var setup = services.GetRequiredService<FakeAppSetup>();
-        await setup.Run(AppVersionKey.Current);
+        await setup.Run(AppVersionKey.Current, ct: default);
     }
 }

@@ -21,21 +21,21 @@ public sealed class CurrentUserAccess
         return userName.IsAnon();
     }
 
-    public Task<UserAccessResult> HasAccess(XtiPath xtiPath) =>
-        HasAccess(xtiPath.Group, xtiPath.Action, xtiPath.Modifier);
+    public Task<UserAccessResult> HasAccess(XtiPath xtiPath, CancellationToken ct) =>
+        HasAccess(xtiPath.Group, xtiPath.Action, xtiPath.Modifier, ct);
 
-    public async Task<UserAccessResult> HasAccess(ResourceGroupName group, ResourceName action, ModifierKey modKey)
+    public async Task<UserAccessResult> HasAccess(ResourceGroupName group, ResourceName action, ModifierKey modKey, CancellationToken ct)
     {
         var error = "";
         var userName = await currentUserName.Value();
-        var user = await userContext.User(userName);
+        var user = await userContext.User(userName, ct);
         if (!user.IsActive())
         {
             error = "User has been deactivated";
         }
         else
         {
-            var appContextModel = await appContext.App();
+            var appContextModel = await appContext.App(ct);
             bool isAnonymousAllowed;
             AppRoleName[] allowedRoles;
             if (action.IsBlank())
@@ -60,8 +60,8 @@ public sealed class CurrentUserAccess
             else if (allowedRoles.Any())
             {
                 var modCategory = appContextModel.ModCategory(group);
-                var modifier = await appContext.Modifier(modCategory, modKey);
-                var userRoles = await userContext.UserRoles(user, modifier);
+                var modifier = await appContext.Modifier(modCategory, modKey, ct);
+                var userRoles = await userContext.UserRoles(user, modifier, ct);
                 var userRoleNames = userRoles.Select(ur => ur.Name);
                 if (userRoles.Any(ur => ur.IsDenyAccess()))
                 {

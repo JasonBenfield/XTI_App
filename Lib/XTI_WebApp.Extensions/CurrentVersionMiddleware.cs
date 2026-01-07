@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using XTI_App.Abstractions;
 using XTI_Core;
 using XTI_WebApp.Api;
@@ -24,47 +26,33 @@ public sealed class CurrentVersionMiddleware
         {
             if (xtiEnv.IsProduction())
             {
-                var oldQueryCacheBust =
-                    request.Query["cacheBust"].FirstOrDefault() ??
-                    "";
-                var queryCacheBust =
-                    request.Query["v"].FirstOrDefault() ??
-                    "";
                 var versionKey = context.RequestServices.GetRequiredService<AppVersionKey>();
                 if (versionKey.IsCurrent())
                 {
-                    var url = request.GetDisplayUrl();
-                    var cacheBustValue = await cacheBust.Value();
-                    if (!string.IsNullOrWhiteSpace(oldQueryCacheBust))
+                    var cacheBustValue = await cacheBust.Value(context.RequestAborted);
+                    var parsedQueryString = QueryHelpers.ParseQuery(request.QueryString.Value ?? "");
+                    if (parsedQueryString.ContainsKey("cacheBust"))
                     {
-                        url = url
-                            .Replace
-                            (
-                                $"cacheBust={oldQueryCacheBust}",
-                                ""
-                            );
+                        parsedQueryString.Remove("cacheBust");
                     }
-                    if (string.IsNullOrWhiteSpace(queryCacheBust))
+                    if (parsedQueryString.ContainsKey("v"))
                     {
-                        var delimiter = url.Contains("?") ? "&" : "?";
-                        url = $"{url}{delimiter}v={cacheBustValue}";
-                        context.Response.Redirect(url);
-                        return;
+                        var v = parsedQueryString["v"].FirstOrDefault() ?? "";
+                        if (v != cacheBustValue)
+                        {
+                            parsedQueryString["v"] = new StringValues(cacheBustValue);
+                        }
                     }
-                    else if (queryCacheBust != cacheBustValue)
+                    else
                     {
-                        url = url
-                            .Replace
-                            (
-                                $"v={queryCacheBust}",
-                                $"v={cacheBustValue}"
-                            );
-                        context.Response.Redirect(url);
-                        return;
+                        parsedQueryString.Add("v", cacheBustValue);
                     }
-                    if (!string.IsNullOrWhiteSpace(oldQueryCacheBust))
+                    var originalUrl = request.GetDisplayUrl();
+                    var uri = new Uri(originalUrl);
+                    var newUrl = QueryHelpers.AddQueryString(uri.GetLeftPart(UriPartial.Path), parsedQueryString);
+                    if(newUrl != originalUrl)
                     {
-                        context.Response.Redirect(url);
+                        context.Response.Redirect(newUrl);
                         return;
                     }
                 }

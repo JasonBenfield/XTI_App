@@ -63,7 +63,7 @@ internal sealed class MainScriptTagHelperTest
         var sp = await setup("/Shared/Current/Home/Index");
         var result = await Execute(sp);
         var src = result.Attributes[0].Value;
-        var cacheBust = await sp.GetRequiredService<CacheBust>().Value();
+        var cacheBust = await sp.GetRequiredService<CacheBust>().Value(ct: default);
         Console.WriteLine($"cacheBust: {cacheBust}");
         Assert.That(src, Does.EndWith($"?v={cacheBust}"));
     }
@@ -113,7 +113,7 @@ internal sealed class MainScriptTagHelperTest
         };
         httpContextAccessor.HttpContext.Request.Path = path;
         var fakeSetup = sp.GetRequiredService<FakeAppSetup>();
-        await fakeSetup.Run(AppVersionKey.Current);
+        await fakeSetup.Run(AppVersionKey.Current, ct: default);
         var appContext = sp.GetRequiredService<FakeAppContext>();
         appContext.SetCurrentApp(fakeSetup.App);
         var tagHelper = sp.GetRequiredService<MainScriptTagHelper>();

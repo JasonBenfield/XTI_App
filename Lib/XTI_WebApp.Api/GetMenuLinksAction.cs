@@ -1,5 +1,4 @@
 ﻿using XTI_App.Api;
-using XTI_WebApp.Abstractions;
 
 namespace XTI_WebApp.Api;
 
@@ -23,10 +22,10 @@ public sealed class GetMenuLinksAction : AppAction<string, LinkModel[]>
         foreach(var link in links)
         {
             var includedLink = includedLinkFactory.Create(menuName, link);
-            var isIncluded = await includedLink.IsIncluded();
+            var isIncluded = await includedLink.IsIncluded(stoppingToken);
             if (isIncluded)
             {
-                var transformedLink = await transformedLinkFactory.Create(link).Value();
+                var transformedLink = await transformedLinkFactory.Create(link).Value(stoppingToken);
                 includedLinks.Add(transformedLink);
             }
         }

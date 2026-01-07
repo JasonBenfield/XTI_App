@@ -17,12 +17,12 @@ public sealed class CachedAppContext : IAppContext
         this.appKey = appKey;
     }
 
-    public async Task<AppContextModel> App()
+    public async Task<AppContextModel> App(CancellationToken ct)
     {
         var cacheKey = $"xti_app_{appKey.Type.Value}_{appKey.Name.Value}";
         if(!cache.TryGetValue<AppContextModel>(cacheKey, out var cachedApp))
         {
-            cachedApp = await sourceAppContext.App();
+            cachedApp = await sourceAppContext.App(ct);
             cache.Set
             (
                 cacheKey, 
@@ -33,12 +33,12 @@ public sealed class CachedAppContext : IAppContext
         return cachedApp ?? new AppContextModel();
     }
 
-    public async Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey)
+    public async Task<ModifierModel> Modifier(ModifierCategoryModel category, ModifierKey modKey, CancellationToken ct)
     {
         var cacheKey = $"xti_modifier_{appKey.Type.Value}_{appKey.Name.Value}_{category.Name.DisplayText}_{modKey.DisplayText}";
         if (!cache.TryGetValue<ModifierModel>(cacheKey, out var cachedModifier))
         {
-            cachedModifier = await sourceAppContext.Modifier(category, modKey);
+            cachedModifier = await sourceAppContext.Modifier(category, modKey, ct);
             cache.Set
             (
                 cacheKey,

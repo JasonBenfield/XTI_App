@@ -12,5 +12,5 @@ internal sealed class FakeTransformedLink : ITransformedLink
         this.link = link;
     }
 
-    public Task<LinkModel> Value() => Task.FromResult(link);
+    public Task<LinkModel> Value(CancellationToken ct) => Task.FromResult(link);
 }

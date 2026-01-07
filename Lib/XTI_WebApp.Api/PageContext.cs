@@ -36,12 +36,12 @@ public sealed class PageContext : IPageContext
     public string PageName { get; set; } = "";
     public AppVersionDomain[] WebAppDomains { get; private set; } = [];
 
-    public async Task<string> Serialize()
+    public async Task<string> Serialize(CancellationToken ct)
     {
         if (!hasLoaded)
         {
-            CacheBust = await cacheBust.Value();
-            var app = await appContext.App();
+            CacheBust = await cacheBust.Value(ct);
+            var app = await appContext.App(ct);
             AppTitle = app.App.AppKey.Name.DisplayText;
             EnvironmentName = xtiEnv.EnvironmentName;
             RootUrl = httpContextAccessor.HttpContext?.Request.PathBase ?? "";

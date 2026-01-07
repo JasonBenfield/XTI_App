@@ -20,7 +20,7 @@ internal sealed class DefaultTransformedLink : ITransformedLink
         this.link = link;
     }
 
-    public async Task<LinkModel> Value()
+    public async Task<LinkModel> Value(CancellationToken ct)
     {
         var l = link;
         if (link.IsXtiPath() && httpContextAccessor.HttpContext != null)
@@ -30,7 +30,7 @@ internal sealed class DefaultTransformedLink : ITransformedLink
         }
         if (l.DisplayText == "{User.FullName}")
         {
-            var user = await userContext.User();
+            var user = await userContext.User(ct);
             l = l with { DisplayText = user.Name.DisplayText };
         }
         return l;

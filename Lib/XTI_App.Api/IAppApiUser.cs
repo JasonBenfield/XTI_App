@@ -4,5 +4,5 @@ namespace XTI_App.Api;
 
 public interface IAppApiUser
 {
-    Task EnsureUserHasAccess(XtiPath path);
+    Task EnsureUserHasAccess(XtiPath path, CancellationToken ct);
 }

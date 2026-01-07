@@ -21,7 +21,7 @@ public sealed class DefaultFakeSetup : IAppSetup
         private set => app = value;
     }
 
-    public Task Run(AppVersionKey versionKey)
+    public Task Run(AppVersionKey versionKey, CancellationToken ct)
     {
         var template = apiFactory.CreateTemplate();
         var templateModel = template.ToModel();

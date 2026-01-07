@@ -2,5 +2,5 @@
 
 public interface IIncludedLink
 {
-    Task<bool> IsIncluded();
+    Task<bool> IsIncluded(CancellationToken ct);
 }

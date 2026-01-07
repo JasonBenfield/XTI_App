@@ -68,7 +68,7 @@ public sealed class AppApiAction<TRequest, TResult> : IAppApiAction
 
     public async Task<ResultContainer<TResult>> Execute(TRequest requestData, CancellationToken stoppingToken = default)
     {
-        await user.EnsureUserHasAccess(Path);
+        await user.EnsureUserHasAccess(Path, stoppingToken);
         var errors = new ErrorList();
         if (requestData is Form form)
         {
