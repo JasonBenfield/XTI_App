@@ -40,6 +40,8 @@ internal sealed class CachedAppContextTest
                     originalApp.App.ID,
                     originalApp.App.AppKey,
                     new AppVersionName("New Version Name"),
+                    originalApp.App.RepoOwner,
+                    originalApp.App.RepoName,
                     new ModifierKey(originalApp.App.AppKey.Format())
                 )
             }

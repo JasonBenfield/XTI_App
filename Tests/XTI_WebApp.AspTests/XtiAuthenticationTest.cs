@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using NUnit.Framework;
 using System.Net;
-using System.Web;
-using XTI_App.Abstractions;
 using XTI_App.Fakes;
 using XTI_Core;
 using XTI_Core.Extensions;
@@ -90,7 +87,14 @@ internal sealed class XtiAuthenticationTest
                         services.AddDataProtection();
                         services.ConfigureXtiCookieAndTokenAuthentication(XtiEnvironment.Parse(context.HostingEnvironment.EnvironmentName), context.Configuration);
                         services.AddFakesForXtiWebApp();
-                        services.AddScoped<ILoginReturnKey>(_ => new FakeLoginReturnKey(returnKey));
+                        services.AddScoped<ILoginReturnKey>
+                        (
+                            _ => new FakeLoginReturnKey
+                            (
+                                requesterKey: "",
+                                value: returnKey
+                            )
+                        );
                         services.AddSingleton<MainApp>();
                         services.AddMvc();
                     })

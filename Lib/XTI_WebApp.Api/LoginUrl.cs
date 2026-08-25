@@ -13,9 +13,9 @@ public sealed class LoginUrl
         this.options = options;
     }
 
-    public async Task<string> Value(string requesterKey, string returnUrl)
+    public async Task<string> Value(string requesterKey, string returnUrl, CancellationToken ct)
     {
-        var returnKeyValue = await returnKey.Value(requesterKey, returnUrl);
+        var returnKeyValue = await returnKey.Value(requesterKey, returnUrl, ct);
         var delimiter = 
             options.XtiAuthentication.AuthenticatorUrl.Contains("?") ? 
                 "&" : 

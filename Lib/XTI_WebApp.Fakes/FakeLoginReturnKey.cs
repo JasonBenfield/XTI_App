@@ -13,5 +13,6 @@ public sealed class FakeLoginReturnKey : ILoginReturnKey
             value;
     }
 
-    public Task<string> Value(string requesterKey, string returnUrl) => Task.FromResult(value);
+    public Task<string> Value(string requesterKey, string returnUrl, CancellationToken ct) => 
+        Task.FromResult(value);
 }

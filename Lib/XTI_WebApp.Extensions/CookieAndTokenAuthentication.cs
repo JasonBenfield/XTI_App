@@ -87,7 +87,7 @@ public static class CookieAndTokenAuthentication
             {
                 if (x.Request.IsApiRequest())
                 {
-                    if (x.HttpContext?.User?.Identity?.IsAuthenticated ?? false)
+                    if (x.HttpContext.User.Identity?.IsAuthenticated == true)
                     {
                         x.Response.StatusCode = StatusCodes.Status403Forbidden;
                     }
@@ -98,7 +98,7 @@ public static class CookieAndTokenAuthentication
                 }
                 else
                 {
-                    await RedirectToLogin(x.HttpContext.RequestServices, x);
+                    await RedirectToLogin(x.HttpContext.RequestServices, x, x.HttpContext.RequestAborted);
                 }
             }
         };
@@ -148,7 +148,7 @@ public static class CookieAndTokenAuthentication
         return authTicketFormat;
     }
 
-    private static async Task RedirectToLogin(IServiceProvider sp, RedirectContext<CookieAuthenticationOptions> x)
+    private static async Task RedirectToLogin(IServiceProvider sp, RedirectContext<CookieAuthenticationOptions> x, CancellationToken ct)
     {
         var returnUrl = $"{x.Request.Scheme}://{x.Request.Host.Value}{x.Request.PathBase.Value}";
         if (x.Request.Path.HasValue)
@@ -168,7 +168,7 @@ public static class CookieAndTokenAuthentication
         var requesterKey = string.IsNullOrWhiteSpace(anonClient.RequesterKey) ?
             Guid.NewGuid().ToString("N") :
             anonClient.RequesterKey;
-        var loginUrl = await sp.GetRequiredService<LoginUrl>().Value(requesterKey, returnUrl);
+        var loginUrl = await sp.GetRequiredService<LoginUrl>().Value(requesterKey, returnUrl, ct: ct);
         x.Response.Redirect(loginUrl);
     }
 

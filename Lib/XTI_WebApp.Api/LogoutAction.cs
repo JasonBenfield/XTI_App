@@ -49,7 +49,7 @@ public sealed class LogoutAction : AppAction<LogoutRequest, WebRedirectResult>
         var requesterKey = string.IsNullOrWhiteSpace(anonClient.RequesterKey) ?
             Guid.NewGuid().ToString("N") :
             anonClient.RequesterKey;
-        var authUrl = await loginUrl.Value(requesterKey, returnUrl);
+        var authUrl = await loginUrl.Value(requesterKey, returnUrl, stoppingToken);
         return new WebRedirectResult(authUrl);
     }
 

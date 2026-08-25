@@ -71,6 +71,8 @@ public sealed class FakeAppContext : ISourceAppContext
                 currentAppID,
                 appTemplate.AppKey,
                 new AppVersionName("Fake"),
+                "Fake",
+                "FakeName",
                 new ModifierKey(appTemplate.AppKey.Format())
             ),
             new XtiVersionModel
